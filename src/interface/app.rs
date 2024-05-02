@@ -12,6 +12,8 @@ use ratatui::{
     widgets::{block::*, *},
 };
 
+use crate::{statemachine::transition::Transition, tagengine::action::Action};
+
 use super::{
     commands::{EngineCommand, UiCommand},
     options::Options,
@@ -22,7 +24,7 @@ use super::{
 #[derive(Debug)]
 pub struct App {
     scene: Option<Scene>,
-    options: Option<Options>,
+    options: Option<Options<Transition<Action>>>,
     channel: Channel<UiCommand, EngineCommand>,
     exit: bool,
 }
@@ -68,7 +70,7 @@ impl App {
     fn make_choice(&mut self) {
         let options = self.options.take();
         if let Some(options) = options {
-            self.channel.send(UiCommand::Choice(options)).unwrap();
+            self.channel.send(UiCommand::Choice(options.current_transition())).unwrap();
         }
     }
 

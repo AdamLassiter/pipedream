@@ -2,12 +2,12 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{prelude::*, widgets::*};
 
 #[derive(Debug, Clone)]
-pub struct Options {
-    pub options: Vec<String>,
+pub struct Options<T> {
+    pub options: Vec<(String, T)>,
     pub cursor: usize,
 }
 
-impl Options {
+impl <T: Clone> Options<T> {
     fn cursor_down(&mut self) {
         if self.options.len() > 0 {
             self.cursor = self
@@ -33,14 +33,18 @@ impl Options {
             _ => {}
         }
     }
+
+    pub fn current_transition(&self) -> T {
+        self.options.get(self.cursor).unwrap().1.clone()
+    }
 }
 
-impl Widget for &Options {
+impl <T> Widget for &Options<T> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let options = Text::from(
             self.options
                 .iter()
-                .map(|option| Line::from(vec![option.into()]))
+                .map(|(option, _)| Line::from(vec![option.into()]))
                 .collect::<Vec<_>>(),
         );
         let mut state = ListState::default().with_selected(Some(self.cursor));

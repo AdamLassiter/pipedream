@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
-use super::{location::Location, state::State};
+use crate::resource::location::Location;
 
-pub struct Machine {
-    pub states: HashMap<Location, State>,
+use super::state::State;
+
+#[derive(Debug)]
+pub struct Machine<S, A> {
+    pub states: HashMap<Location, State<S, A>>,
     pub current: Location,
 }

@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use crate::interface::options::Options;
+use crate::resource::location::Location;
 
-use crate::interface::{options::Options, scene::Scene};
+use super::transition::Transition;
 
-use super::location::Location;
-
-pub struct State {
-    pub location: String,
-    pub scene: Scene,
-    pub transitions: HashMap<Options, Location>,
+#[derive(Debug)]
+pub struct State<S, A> {
+    pub location: Location,
+    pub scene: S,
+    pub transitions: Options<Transition<A>>,
 }
