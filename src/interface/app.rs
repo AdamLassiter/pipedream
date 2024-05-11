@@ -12,25 +12,20 @@ use ratatui::{
     widgets::{block::*, *},
 };
 
-use crate::{statemachine::transition::Transition, tagengine::action::Action};
+use crate::resource::{commands::{EngineCommand, UiCommand}, scene::Scene};
 
-use super::{
-    commands::{EngineCommand, UiCommand},
-    options::Options,
-    scene::Scene,
-    tui,
-};
+use super::{choices::Choices, tui};
 
 #[derive(Debug)]
 pub struct App {
     scene: Option<Scene>,
-    options: Option<Options<Transition<Action>>>,
+    options: Option<Choices>,
     channel: Channel<UiCommand, EngineCommand>,
     exit: bool,
 }
 
 impl App {
-    pub fn new() -> (Self, Channel<EngineCommand, UiCommand>) {
+    fn new() -> (Self, Channel<EngineCommand, UiCommand>) {
         let (ui_chan, engine_chan) = channel();
 
         let this = App {
@@ -64,13 +59,16 @@ impl App {
     }
 
     fn exit(&mut self) {
+        self.channel.send(UiCommand::Exit).unwrap();
         self.exit = true;
     }
 
     fn make_choice(&mut self) {
         let options = self.options.take();
         if let Some(options) = options {
-            self.channel.send(UiCommand::Choice(options.current_transition())).unwrap();
+            self.channel
+                .send(UiCommand::Choice(options.current_transition()))
+                .unwrap();
         }
     }
 
@@ -114,7 +112,7 @@ impl Widget for &App {
 
         let vertical = Layout::vertical([
             Constraint::Fill(1),
-            Constraint::Length(self.options.as_ref().map(|x| x.options.len()).unwrap_or(0) as u16),
+            Constraint::Length(self.options.as_ref().map(|x| x.choices.len()).unwrap_or(0) as u16),
         ]);
 
         let instructions = Title::from(Line::from(vec![

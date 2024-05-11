@@ -1,4 +1,4 @@
 use serde_derive::Serialize;
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize)]
-pub struct Location(pub String);
+pub struct Tag(pub String);

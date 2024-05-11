@@ -1,64 +1,25 @@
+use std::io;
+
 use pipedream::{
-    interface::{
-        app::App,
-        commands::{EngineCommand, UiCommand},
-        options::Options,
-        scene::Scene,
-    },
-    resource::location::Location,
-    statemachine::transition::Transition,
-    tagengine::action::Action,
+    interface::app::App,
+    resource::{location::Location, world::World},
+    statemachine::{daemon::Daemon, machine::StateMachine},
+    tagengine::engine::TagEngine,
 };
 
-use std::{io::Result, thread};
+fn main() -> io::Result<()> {
+    let (channel, ui_thread) = App::spawn();
 
-fn main() -> Result<()> {
-    let (chan, ui_thread) = App::spawn();
+    let world = World::generate();
+    world.dump();
+    let current = Location("woods:entrance".into());
 
-    thread::spawn(move || {
-        let options = Options {
-            options: vec![
-                (
-                    "Go alone".to_string(),
-                    Transition {
-                        next: Location("You are still in the woods".into()),
-                        action: Action {},
-                    },
-                ),
-                (
-                    "Take this".to_string(),
-                    Transition {
-                        next: Location("You are in the woods... with a sword!".into()),
-                        action: Action {},
-                    },
-                ),
-                (
-                    "[INT 3] Leeroy".to_string(),
-                    Transition {
-                        next: Location("You are dead... in the woods".into()),
-                        action: Action {},
-                    },
-                ),
-            ],
-            cursor: 0,
-        };
+    let machine = StateMachine { world, current };
+    let engine = TagEngine::new();
 
-        let mut location: Location = Location("You are in the woods".to_string());
+    let engine_thread = Daemon::spawn(machine, engine, channel);
 
-        loop {
-            let scene = Scene(vec![location.clone().0]);
-
-            chan.send(EngineCommand::NewScene(scene.clone())).unwrap();
-            chan.send(EngineCommand::NeedChoice(options.clone()))
-                .unwrap();
-
-            match chan.recv().unwrap() {
-                UiCommand::Choice(Transition { next, action: _ }) => {
-                    location = next;
-                }
-            }
-        }
-    });
-
-    ui_thread.join().unwrap()
+    engine_thread.join().unwrap()?;
+    ui_thread.join().unwrap()?;
+    Ok(())
 }
