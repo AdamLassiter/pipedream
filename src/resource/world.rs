@@ -1,16 +1,16 @@
-use std::{collections::BTreeMap, fs::File};
+use std::collections::BTreeMap;
 
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{
+    resource::action::Action,
     resource::scene::Scene,
-    resource::{action::Action, tag::Tag},
     resource::{state::State, transition::Transition},
 };
 
-use super::location::Location;
+use super::{location::Location, predicate::Predicate};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct World(pub BTreeMap<Location, State>);
 
 impl World {
@@ -20,7 +20,14 @@ impl World {
                 State {
                     location: Location("woods:entrance".into()),
                     scene: Scene {
-                        descriptions: vec!["You are in the woods".into()],
+                        descriptions: vec![
+                            "You are in the woods".into(),
+                            (
+                                Predicate::Tag("woods:entrance:item:sword".into()),
+                                "You see a shiny sword lodged in a stone".into(),
+                            )
+                                .into(),
+                        ],
                     },
                     options: vec![
                         (
@@ -31,12 +38,16 @@ impl World {
                             },
                         ),
                         (
-                            "Pick up the sword".into(),
+                            (
+                                Predicate::Tag("woods:entrance:item:sword".into()),
+                                "Pick up the sword".into(),
+                            )
+                                .into(),
                             Transition {
                                 next: Location("woods:entrance".into()),
                                 actions: vec![
-                                    Action::Insert(Tag("player:item:sword".into())),
-                                    Action::Insert(Tag("woods:entrance:item:no-sword".into())),
+                                    Action::Insert("player:item:sword".into()),
+                                    Action::Remove("woods:entrance:item:sword".into()),
                                 ],
                             },
                         ),
@@ -63,10 +74,5 @@ impl World {
             .into_iter()
             .collect(),
         )
-    }
-
-    pub fn dump(&self) {
-        let buffer = File::create("./world.yaml").unwrap();
-        serde_yaml::to_writer(buffer, &self).unwrap();
     }
 }

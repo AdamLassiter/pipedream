@@ -3,21 +3,27 @@ use std::io;
 use pipedream::{
     interface::app::App,
     resource::{location::Location, world::World},
-    statemachine::{daemon::Daemon, machine::StateMachine},
-    tagengine::engine::TagEngine,
+    engine::{daemon::Daemon, state_machine::StateMachine, tag_engine::TagEngine},
 };
 
 fn main() -> io::Result<()> {
     let (channel, ui_thread) = App::spawn();
 
     let world = World::generate();
-    world.dump();
+    let engine = TagEngine::generate();
     let current = Location("woods:entrance".into());
 
-    let machine = StateMachine { world, current };
-    let engine = TagEngine::new();
+    let machine = StateMachine {
+        world,
+        current,
+        engine,
+    };
 
-    let engine_thread = Daemon::spawn(machine, engine, channel);
+    {
+        machine.dump();
+    }
+
+    let engine_thread = Daemon::spawn(machine, channel);
 
     engine_thread.join().unwrap()?;
     ui_thread.join().unwrap()?;

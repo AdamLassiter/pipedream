@@ -1,8 +1,8 @@
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::tag::Tag;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Action {
     None,
     Insert(Tag),

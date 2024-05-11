@@ -1,11 +1,11 @@
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::tag::Tag;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Predicate {
-    And(Box<Predicate>),
-    Or(Box<Predicate>),
-    Not(Box<Predicate>),
+    And(Box<Vec<Predicate>>),
+    Or(Box<Vec<Predicate>>),
+    Not(Box<Vec<Predicate>>),
     Tag(Tag),
 }

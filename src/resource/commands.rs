@@ -1,15 +1,14 @@
-use crate::interface::choices::Choices;
-
-use super::{scene::Scene, transition::Transition};
+use super::{choice::Choices, scene::Scene, tag::Tags, transition::Transition};
 
 #[derive(Debug)]
-pub enum UiCommand {
+pub enum EngineCommand {
     Choice(Transition),
     Exit,
 }
 
 #[derive(Debug)]
-pub enum EngineCommand {
-    NewScene(Scene),
-    NeedChoice(Choices),
+pub enum UiCommand {
+    SceneChange(Scene),
+    TagsChange(Tags),
+    ChoicesChange(Choices),
 }

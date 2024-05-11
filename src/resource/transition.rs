@@ -1,8 +1,8 @@
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
-use crate::{resource::location::Location, resource::action::Action};
+use crate::{resource::action::Action, resource::location::Location};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transition {
     pub next: Location,
     pub actions: Vec<Action>,

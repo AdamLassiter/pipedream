@@ -1,4 +1,5 @@
 pub mod action;
+pub mod choice;
 pub mod commands;
 pub mod description;
 pub mod location;

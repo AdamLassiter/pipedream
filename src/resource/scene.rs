@@ -1,9 +1,9 @@
 use ratatui::{prelude::*, widgets::*};
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::description::Description;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scene {
     pub descriptions: Vec<Description>,
 }
@@ -13,7 +13,7 @@ impl Widget for &Scene {
         let scene = Text::from(
             self.descriptions
                 .iter()
-                .map(|Description(_, line)| Line::from(vec![line.into()]))
+                .map(|Description { descriptor, .. }| Line::from(vec![descriptor.into()]))
                 .collect::<Vec<_>>(),
         );
         Widget::render(Paragraph::new(scene), area, buf);

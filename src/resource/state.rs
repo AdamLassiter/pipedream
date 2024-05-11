@@ -1,13 +1,14 @@
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
-use crate::interface::choices::Choices;
+use crate::resource::choice::Choices;
 
 use super::{location::Location, scene::Scene};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct State {
     pub location: Location,
     pub scene: Scene,
+    #[serde(flatten)]
     pub options: Choices,
 }
 

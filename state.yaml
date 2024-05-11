@@ -1,0 +1,37 @@
+world:
+  woods:depths:
+    location: woods:depths
+    scene:
+      descriptions:
+      - descriptor: You are lost in the woods
+    choices:
+    - description:
+        descriptor: Go deeper into the woods
+      transition:
+        next: woods:depths
+        actions: []
+  woods:entrance:
+    location: woods:entrance
+    scene:
+      descriptions:
+      - descriptor: You are in the woods
+      - predicate: !Tag woods:entrance:item:sword
+        descriptor: You see a shiny sword lodged in a stone
+    choices:
+    - description:
+        descriptor: Go deeper into the woods
+      transition:
+        next: woods:depths
+        actions: []
+    - description:
+        predicate: !Tag woods:entrance:item:sword
+        descriptor: Pick up the sword
+      transition:
+        next: woods:entrance
+        actions:
+        - !Insert player:item:sword
+        - !Remove woods:entrance:item:sword
+engine:
+  tags:
+  - woods:entrance:item:sword
+current: woods:entrance

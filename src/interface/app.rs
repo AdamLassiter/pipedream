@@ -12,24 +12,31 @@ use ratatui::{
     widgets::{block::*, *},
 };
 
-use crate::resource::{commands::{EngineCommand, UiCommand}, scene::Scene};
+use crate::resource::{
+    choice::Choices,
+    commands::{EngineCommand, UiCommand},
+    scene::Scene,
+    tag::Tags,
+};
 
-use super::{choices::Choices, tui};
+use super::tui;
 
 #[derive(Debug)]
 pub struct App {
     scene: Option<Scene>,
+    tags: Option<Tags>,
     options: Option<Choices>,
-    channel: Channel<UiCommand, EngineCommand>,
+    channel: Channel<EngineCommand, UiCommand>,
     exit: bool,
 }
 
 impl App {
-    fn new() -> (Self, Channel<EngineCommand, UiCommand>) {
+    fn new() -> (Self, Channel<UiCommand, EngineCommand>) {
         let (ui_chan, engine_chan) = channel();
 
         let this = App {
             scene: None,
+            tags: None,
             options: None,
             channel: ui_chan,
             exit: false,
@@ -39,7 +46,7 @@ impl App {
     }
 
     pub fn spawn() -> (
-        Channel<EngineCommand, UiCommand>,
+        Channel<UiCommand, EngineCommand>,
         JoinHandle<io::Result<()>>,
     ) {
         let (mut app, chan) = App::new();
@@ -59,7 +66,7 @@ impl App {
     }
 
     fn exit(&mut self) {
-        self.channel.send(UiCommand::Exit).unwrap();
+        self.channel.send(EngineCommand::Exit).unwrap();
         self.exit = true;
     }
 
@@ -67,7 +74,7 @@ impl App {
         let options = self.options.take();
         if let Some(options) = options {
             self.channel
-                .send(UiCommand::Choice(options.current_transition()))
+                .send(EngineCommand::Choice(options.current_transition()))
                 .unwrap();
         }
     }
@@ -98,8 +105,9 @@ impl App {
         }
         while let Some(ev) = self.channel.try_recv().ok() {
             match ev {
-                EngineCommand::NewScene(scen) => self.scene = Some(scen),
-                EngineCommand::NeedChoice(opts) => self.options = Some(opts),
+                UiCommand::SceneChange(scen) => self.scene = Some(scen),
+                UiCommand::TagsChange(tags) => self.tags = Some(tags),
+                UiCommand::ChoicesChange(opts) => self.options = Some(opts),
             }
         }
         Ok(())
@@ -114,6 +122,7 @@ impl Widget for &App {
             Constraint::Fill(1),
             Constraint::Length(self.options.as_ref().map(|x| x.choices.len()).unwrap_or(0) as u16),
         ]);
+        let horizontal = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
 
         let instructions = Title::from(Line::from(vec![
             " Up ".into(),
@@ -137,14 +146,19 @@ impl Widget for &App {
             .border_set(border::THICK)
             .padding(Padding::uniform(1));
 
-        let [scene_area, options_area] = vertical.areas(block.inner(area));
+        let [info_area, choices_area] = vertical.areas(block.inner(area));
+        let [scene_area, tags_area] = horizontal.areas(info_area);
 
         if let Some(scene) = self.scene.as_ref() {
             scene.render(scene_area, buf);
         }
 
+        if let Some(tags) = self.tags.as_ref() {
+            tags.render(tags_area, buf);
+        }
+
         if let Some(options) = self.options.as_ref() {
-            options.render(options_area, buf);
+            options.render(choices_area, buf);
         }
 
         block.render(area, buf);
