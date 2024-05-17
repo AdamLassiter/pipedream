@@ -1,37 +1,66 @@
-world:
-  woods:depths:
-    location: woods:depths
-    scene:
-      descriptions:
-      - descriptor: You are lost in the woods
-    choices:
-    - description:
-        descriptor: Go deeper into the woods
-      transition:
-        next: woods:depths
-        actions: []
-  woods:entrance:
-    location: woods:entrance
-    scene:
-      descriptions:
-      - descriptor: You are in the woods
-      - predicate: !Tag woods:entrance:item:sword
-        descriptor: You see a shiny sword lodged in a stone
-    choices:
-    - description:
-        descriptor: Go deeper into the woods
-      transition:
-        next: woods:depths
-        actions: []
-    - description:
-        predicate: !Tag woods:entrance:item:sword
-        descriptor: Pick up the sword
-      transition:
-        next: woods:entrance
-        actions:
-        - !Insert player:item:sword
-        - !Remove woods:entrance:item:sword
-engine:
+start: woods:entrance
+tag_engine:
   tags:
   - woods:entrance:item:sword
-current: woods:entrance
+state_machine:
+  world:
+    ephemeral:shop:
+      location: ephemeral:shop
+      scene:
+        descriptions:
+        - descriptor: The shop is cozy, and staffed by a weathered crone
+        - predicate: !Tag player:item:sword
+          descriptor: Her eyes keep flitting to the sword at your side
+      choices:
+      - description:
+          descriptor: Leave the shop
+        effect:
+          next: Pop
+          actions: []
+      - description:
+          predicate: !Tag player:item:sword
+          descriptor: Give her the sword
+        effect:
+          next: None
+          actions:
+          - !Remove player:item:sword
+          - !Insert player:item:cursed-ring
+    woods:depths:
+      location: woods:depths
+      scene:
+        descriptions:
+        - descriptor: You are lost in the woods
+      choices:
+      - description:
+          descriptor: Go deeper into the woods
+        effect:
+          next: !Swap woods:depths
+          actions: []
+    woods:entrance:
+      location: woods:entrance
+      scene:
+        descriptions:
+        - descriptor: You are in the woods
+        - descriptor: There is a mysterious moss-covered shop in a small grove
+        - predicate: !Tag woods:entrance:item:sword
+          descriptor: You see a shiny sword lodged in a stone
+      choices:
+      - description:
+          predicate: !Tag woods:entrance:item:sword
+          descriptor: Pick up the sword
+        effect:
+          next: None
+          actions:
+          - !Insert player:item:sword
+          - !Remove woods:entrance:item:sword
+      - description:
+          descriptor: Go into the shop
+        effect:
+          next: !Push ephemeral:shop
+          actions: []
+      - description:
+          descriptor: Go deeper into the woods
+        effect:
+          next: !Swap woods:depths
+          actions: []
+  current: []

@@ -6,7 +6,7 @@ use ratatui::{
 };
 use serde::{Deserialize, Serialize};
 
-static TAG_SEP: &str = ":";
+pub static TAG_SEP: char = ':';
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Tag(String);
@@ -22,6 +22,12 @@ impl From<&str> for Tag {
     }
 }
 
+impl From<Vec<String>> for Tag {
+    fn from(value: Vec<String>) -> Self {
+        Tag(value.join(&TAG_SEP.to_string()))
+    }
+}
+
 impl Tag {
     pub fn typehint(&self) -> TagType {
         match self.parts().last().unwrap().parse::<f64>() {
@@ -31,12 +37,13 @@ impl Tag {
     }
 
     pub fn pretty(&self) -> String {
-        self.parts().join(TAG_SEP)
+        self.parts().join(&TAG_SEP.to_string())
     }
 
     pub fn parts(&self) -> Vec<String> {
         self.0.split(TAG_SEP).map(|s| s.into()).collect()
     }
+
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

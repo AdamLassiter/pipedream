@@ -1,29 +1,34 @@
 use std::io;
 
 use pipedream::{
+    engine::{daemon::Daemon, game::Game, state_machine::StateMachine, tag_engine::TagEngine},
     interface::app::App,
     resource::{location::Location, world::World},
-    engine::{daemon::Daemon, state_machine::StateMachine, tag_engine::TagEngine},
 };
 
 fn main() -> io::Result<()> {
     let (channel, ui_thread) = App::spawn();
 
     let world = World::generate();
-    let engine = TagEngine::generate();
-    let current = Location("woods:entrance".into());
+    let tag_engine = TagEngine::generate();
+    let start = Location("woods:entrance".into());
 
-    let machine = StateMachine {
+    let state_machine = StateMachine {
         world,
-        current,
-        engine,
+        current: vec![],
+    };
+
+    let game = Game {
+        start,
+        tag_engine,
+        state_machine,
     };
 
     {
-        machine.dump();
+        game.dump();
     }
 
-    let engine_thread = Daemon::spawn(machine, channel);
+    let engine_thread = Daemon::spawn(game, channel);
 
     engine_thread.join().unwrap()?;
     ui_thread.join().unwrap()?;

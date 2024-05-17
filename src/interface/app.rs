@@ -19,7 +19,7 @@ use crate::resource::{
     tag::Tags,
 };
 
-use super::tui;
+use super::utils;
 
 #[derive(Debug)]
 pub struct App {
@@ -54,12 +54,12 @@ impl App {
         (
             chan,
             thread::spawn(move || {
-                let mut terminal = tui::init()?;
+                let mut terminal = utils::init()?;
                 while !app.exit {
                     terminal.draw(|frame| app.render_frame(frame))?;
                     app.handle_events()?;
                 }
-                tui::restore()?;
+                utils::restore()?;
                 Ok(())
             }),
         )
@@ -74,7 +74,7 @@ impl App {
         let options = self.options.take();
         if let Some(options) = options {
             self.channel
-                .send(EngineCommand::Choice(options.current_transition()))
+                .send(EngineCommand::Choice(options.current_effect()))
                 .unwrap();
         }
     }

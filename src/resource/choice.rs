@@ -2,7 +2,7 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{prelude::*, widgets::*};
 use serde::{Deserialize, Serialize};
 
-use crate::resource::{description::Description, transition::Transition};
+use crate::resource::{description::Description, transition::SideEffect};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choices {
@@ -15,21 +15,21 @@ pub struct Choices {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
     pub description: Description,
-    pub transition: Transition,
+    pub effect: SideEffect,
 }
 
 fn zero() -> usize {
     0
 }
 
-impl From<Vec<(Description, Transition)>> for Choices {
-    fn from(value: Vec<(Description, Transition)>) -> Self {
+impl From<Vec<(Description, SideEffect)>> for Choices {
+    fn from(value: Vec<(Description, SideEffect)>) -> Self {
         Choices {
             choices: value
                 .into_iter()
-                .map(|(description, transition)| Choice {
+                .map(|(description, effect)| Choice {
                     description,
-                    transition,
+                    effect,
                 })
                 .collect(),
             cursor: 0,
@@ -64,8 +64,8 @@ impl Choices {
         }
     }
 
-    pub fn current_transition(&self) -> Transition {
-        self.choices.get(self.cursor).unwrap().transition.clone()
+    pub fn current_effect(&self) -> SideEffect {
+        self.choices.get(self.cursor).unwrap().effect.clone()
     }
 }
 
