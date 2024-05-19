@@ -24,7 +24,9 @@ impl TagEngine {
         }
     }
 
-    pub fn run_actions(&mut self, actions: &Vec<Action>) {
+    pub fn handle_actions(&mut self, actions: &Vec<Action>) {
+        debug!(target:"Event/Actions", "{:?}", actions);
+
         actions.into_iter().for_each(|action| match action {
             Action::Insert(tag) => {
                 self.tags.insert(tag.clone());
@@ -39,8 +41,7 @@ impl TagEngine {
             Action::None => { /* None */ }
         });
 
-        debug!(target = "Tag"; "Run {:?}", actions);
-        debug!(target = "Tag"; "State {:?}", self.tags);
+        debug!(target:"State/Tags", "{:?}", self.tags);
     }
 
     fn compute(&mut self, new: &Tag, op: impl Fn(f64) -> f64, identity: f64) {

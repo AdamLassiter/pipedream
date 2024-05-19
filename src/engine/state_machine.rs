@@ -1,3 +1,4 @@
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 use crate::resource::{
@@ -25,7 +26,14 @@ impl StateMachine {
         engine: &mut TagEngine,
         side_effect: SideEffect,
     ) -> Vec<UiCommand> {
-        engine.run_actions(&side_effect.actions);
+        engine.handle_actions(&side_effect.actions);
+        self.handle_transition(side_effect);
+
+        self.next_options(engine)
+    }
+
+    fn handle_transition(&mut self, side_effect: SideEffect) {
+        debug!(target:"Event/Transition", "{:?}", side_effect.next);
 
         match side_effect.next {
             TransitionType::Pop => {
@@ -39,9 +47,9 @@ impl StateMachine {
                 self.current.push(next);
             }
             TransitionType::None => {}
-        }
+        };
 
-        self.next_options(engine)
+        debug!(target:"State/Location", "{:?}", self.current);
     }
 
     fn next_options(&mut self, engine: &TagEngine) -> Vec<UiCommand> {

@@ -1,7 +1,9 @@
 use std::io;
 
 use pipedream::{
-    engine::{daemon::Daemon, game::Game, state_machine::StateMachine, tag_engine::TagEngine},
+    engine::{
+        campaign::Campaign, daemon::Daemon, state_machine::StateMachine, tag_engine::TagEngine,
+    },
     interface::app::App,
     resource::{location::Location, world::World},
 };
@@ -18,7 +20,7 @@ fn main() -> io::Result<()> {
         current: vec![],
     };
 
-    let game = Game {
+    let game = Campaign {
         start,
         tag_engine,
         state_machine,

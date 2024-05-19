@@ -4,7 +4,7 @@ use ratatui::{
     style::{Color, Style},
     widgets::Widget,
 };
-use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget, TuiWidgetState};
+use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget, TuiWidgetState};
 
 pub struct Logging {
     log: TuiWidgetState,
@@ -20,13 +20,13 @@ impl Logging {
 
 impl Widget for &Logging {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        TuiLoggerSmartWidget::default()
+        TuiLoggerWidget::default()
             .style_error(Style::default().fg(Color::Red))
             .style_debug(Style::default().fg(Color::Green))
             .style_warn(Style::default().fg(Color::Yellow))
             .style_trace(Style::default().fg(Color::Magenta))
             .style_info(Style::default().fg(Color::Cyan))
-            .output_separator(':')
+            .output_separator(' ')
             .output_timestamp(None)
             .output_level(Some(TuiLoggerLevelOutput::Abbreviated))
             .output_target(true)

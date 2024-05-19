@@ -9,10 +9,10 @@ use crate::resource::transition::SideEffect;
 
 use bichannel::Channel;
 
-use super::game::Game;
+use super::campaign::Campaign;
 
 pub struct Daemon {
-    pub game: Game,
+    pub game: Campaign,
     pub channel: Channel<UiCommand, EngineCommand>,
     pub exit: bool,
 }
@@ -44,7 +44,7 @@ impl Daemon {
     }
 
     pub fn spawn(
-        game: Game,
+        game: Campaign,
         channel: Channel<UiCommand, EngineCommand>,
     ) -> JoinHandle<io::Result<()>> {
         let start = game.start.clone();
