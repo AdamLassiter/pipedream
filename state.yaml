@@ -19,12 +19,35 @@ state_machine:
           actions: []
       - description:
           predicate: !Tag player:item:sword
-          descriptor: Give her the sword
+          descriptor: Trade a sword for two swords
         effect:
           next: None
           actions:
-          - !Remove player:item:sword
-          - !Insert player:item:cursed-ring
+          - !Subtract player:item:sword:1
+          - !Add player:item:sword:2
+      - description:
+          predicate: !Tag player:item:sword
+          descriptor: Trade each sword for two swords
+        effect:
+          next: None
+          actions:
+          - !Multiply player:item:sword:2
+      - description:
+          predicate: !Tag player:item:sword:2
+          descriptor: Forge two swords into a cursed ring
+        effect:
+          next: None
+          actions:
+          - !Subtract player:item:sword:2
+          - !Add player:item:cursed-ring
+      - description:
+          predicate: !Tag player:item:sword:2
+          descriptor: Forge every other sword into a cursed ring
+        effect:
+          next: None
+          actions:
+          - !Divide player:item:sword:2
+          - !Add player:item:cursed-ring
     woods:depths:
       location: woods:depths
       scene:

@@ -48,7 +48,6 @@ impl StateMachine {
         let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();
-        let tags = engine.tags.clone();
 
         let test = |predicate: &Option<Predicate>| {
             predicate.is_none()
@@ -70,7 +69,6 @@ impl StateMachine {
         vec![
             UiCommand::SceneChange(scene),
             UiCommand::ChoicesChange(options),
-            UiCommand::TagsChange(tags), // debug
         ]
     }
 

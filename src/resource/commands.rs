@@ -1,4 +1,4 @@
-use super::{choice::Choices, scene::Scene, tag::Tags, transition::SideEffect};
+use super::{choice::Choices, scene::Scene, transition::SideEffect};
 
 #[derive(Debug)]
 pub enum EngineCommand {
@@ -9,6 +9,5 @@ pub enum EngineCommand {
 #[derive(Debug)]
 pub enum UiCommand {
     SceneChange(Scene),
-    TagsChange(Tags),
     ChoicesChange(Choices),
 }

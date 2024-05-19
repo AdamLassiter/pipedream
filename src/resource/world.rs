@@ -101,14 +101,53 @@ impl World {
                         (
                             (
                                 Predicate::Tag("player:item:sword".into()),
-                                "Give her the sword".into(),
+                                "Trade a sword for two swords".into(),
                             )
                                 .into(),
                             SideEffect {
                                 next: TransitionType::None,
                                 actions: vec![
-                                    Action::Remove("player:item:sword".into()),
-                                    Action::Insert("player:item:cursed-ring".into()),
+                                    Action::Subtract("player:item:sword:1".into()),
+                                    Action::Add("player:item:sword:2".into()),
+                                ],
+                            },
+                        ),
+                        (
+                            (
+                                Predicate::Tag("player:item:sword".into()),
+                                "Trade each sword for two swords".into(),
+                            )
+                                .into(),
+                            SideEffect {
+                                next: TransitionType::None,
+                                actions: vec![Action::Multiply("player:item:sword:2".into())],
+                            },
+                        ),
+                        (
+                            (
+                                Predicate::Tag("player:item:sword:2".into()),
+                                "Forge two swords into a cursed ring".into(),
+                            )
+                                .into(),
+                            SideEffect {
+                                next: TransitionType::None,
+                                actions: vec![
+                                    Action::Subtract("player:item:sword:2".into()),
+                                    Action::Add("player:item:cursed-ring".into()),
+                                ],
+                            },
+                        ),
+                        (
+                            (
+                                Predicate::Tag("player:item:sword:2".into()),
+                                "Forge every other sword into a cursed ring".into(),
+                            )
+                                .into(),
+                            SideEffect {
+                                next: TransitionType::None,
+                                actions: vec![
+                                    Action::Divide("player:item:sword:2".into()),
+                                    Action::Add("player:item:cursed-ring".into()),
                                 ],
                             },
                         ),

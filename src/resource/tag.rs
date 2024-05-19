@@ -11,7 +11,8 @@ pub static TAG_SEP: char = ':';
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Tag(String);
 
-pub enum TagType {
+#[derive(Eq, PartialEq)]
+pub enum TypeHint {
     String,
     Number,
 }
@@ -29,11 +30,28 @@ impl From<Vec<String>> for Tag {
 }
 
 impl Tag {
-    pub fn typehint(&self) -> TagType {
-        match self.parts().last().unwrap().parse::<f64>() {
-            Ok(_) => TagType::Number,
-            Err(_) => TagType::String,
+    pub fn tag_sep() -> &'static char {
+        &TAG_SEP
+    }
+
+    pub fn typehint(&self) -> TypeHint {
+        if let Ok(_) = self.parts().last().unwrap().parse::<f64>() {
+            TypeHint::Number
+        } else {
+            TypeHint::String
         }
+    }
+
+    pub fn pop(&self) -> Self {
+        let mut parts = self.parts();
+        parts.pop();
+        Tag::from(parts)
+    }
+
+    pub fn append(&self, mut tail: Vec<String>) -> Self {
+        let mut parts = self.parts();
+        parts.append(&mut tail);
+        Tag::from(parts)
     }
 
     pub fn pretty(&self) -> String {
@@ -44,6 +62,22 @@ impl Tag {
         self.0.split(TAG_SEP).map(|s| s.into()).collect()
     }
 
+    pub fn wildcarding_numbers(&self) -> Self {
+        match self.typehint() {
+            TypeHint::Number => self.pop(),
+            TypeHint::String => self.clone(),
+        }
+    }
+
+    pub fn as_number(&self) -> f64 {
+        match self.typehint() {
+            TypeHint::Number => {
+                let mut parts = self.parts();
+                parts.pop().unwrap().parse::<f64>().unwrap()
+            }
+            TypeHint::String => 1.,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

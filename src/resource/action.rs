@@ -7,8 +7,8 @@ pub enum Action {
     None,
     Insert(Tag),
     Remove(Tag),
-    Add(Tag, f64),
-    Subtract(Tag, f64),
-    Multiply(Tag, f64),
-    Divide(Tag, f64),
+    Add(Tag),
+    Subtract(Tag),
+    Multiply(Tag),
+    Divide(Tag),
 }

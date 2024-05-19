@@ -1,3 +1,5 @@
+use tui_logger;
+
 use std::io::{self, stdout, Stdout};
 
 use crossterm::{execute, terminal::*};
@@ -8,7 +10,13 @@ pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 pub fn init() -> io::Result<Tui> {
     execute!(stdout(), EnterAlternateScreen)?;
     enable_raw_mode()?;
-    Terminal::new(CrosstermBackend::new(stdout()))
+
+    let tui = Terminal::new(CrosstermBackend::new(stdout()));
+
+    tui_logger::init_logger(log::LevelFilter::Trace).unwrap();
+    tui_logger::set_default_level(log::LevelFilter::Trace);
+
+    tui
 }
 
 pub fn restore() -> io::Result<()> {

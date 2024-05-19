@@ -4,6 +4,11 @@ use std::{
     time::Duration,
 };
 
+use crate::resource::{
+    choice::Choices,
+    commands::{EngineCommand, UiCommand},
+    scene::Scene,
+};
 use bichannel::{channel, Channel};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
@@ -12,22 +17,14 @@ use ratatui::{
     widgets::{block::*, *},
 };
 
-use crate::resource::{
-    choice::Choices,
-    commands::{EngineCommand, UiCommand},
-    scene::Scene,
-    tag::Tags,
-};
+use super::{logging::Logging, utils};
 
-use super::utils;
-
-#[derive(Debug)]
 pub struct App {
     scene: Option<Scene>,
-    tags: Option<Tags>,
     options: Option<Choices>,
     channel: Channel<EngineCommand, UiCommand>,
     exit: bool,
+    log: Logging,
 }
 
 impl App {
@@ -36,10 +33,10 @@ impl App {
 
         let this = App {
             scene: None,
-            tags: None,
             options: None,
             channel: ui_chan,
             exit: false,
+            log: Logging::new(),
         };
 
         (this, engine_chan)
@@ -106,7 +103,6 @@ impl App {
         while let Some(ev) = self.channel.try_recv().ok() {
             match ev {
                 UiCommand::SceneChange(scen) => self.scene = Some(scen),
-                UiCommand::TagsChange(tags) => self.tags = Some(tags),
                 UiCommand::ChoicesChange(opts) => self.options = Some(opts),
             }
         }
@@ -118,10 +114,12 @@ impl Widget for &App {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let title = Title::from(" PipeDream ".bold());
 
-        let vertical = Layout::vertical([
-            Constraint::Fill(1),
-            Constraint::Length(self.options.as_ref().map(|x| x.choices.len()).unwrap_or(0) as u16),
-        ]);
+        let vertical = |bottom: Option<usize>| {
+            Layout::vertical([
+                Constraint::Fill(1),
+                Constraint::Length(bottom.unwrap_or(0) as u16),
+            ])
+        };
         let horizontal = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
 
         let instructions = Title::from(Line::from(vec![
@@ -146,20 +144,19 @@ impl Widget for &App {
             .border_set(border::THICK)
             .padding(Padding::uniform(1));
 
-        let [info_area, choices_area] = vertical.areas(block.inner(area));
-        let [scene_area, tags_area] = horizontal.areas(info_area);
+        let [game_area, debug_area] = horizontal.areas(block.inner(area));
+        let [description_area, choices_area] =
+            vertical(self.options.as_ref().map(|x| x.choices.len())).areas(game_area);
 
         if let Some(scene) = self.scene.as_ref() {
-            scene.render(scene_area, buf);
-        }
-
-        if let Some(tags) = self.tags.as_ref() {
-            tags.render(tags_area, buf);
+            scene.render(description_area, buf);
         }
 
         if let Some(options) = self.options.as_ref() {
             options.render(choices_area, buf);
         }
+
+        self.log.render(debug_area, buf);
 
         block.render(area, buf);
     }

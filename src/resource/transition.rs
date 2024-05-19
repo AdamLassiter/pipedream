@@ -4,8 +4,13 @@ use crate::{resource::action::Action, resource::location::Location};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SideEffect {
+    #[serde(default = "none")]
     pub next: TransitionType,
     pub actions: Vec<Action>,
+}
+
+fn none() -> TransitionType {
+    TransitionType::None
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

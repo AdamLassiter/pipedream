@@ -8,6 +8,8 @@ edition = "2024"
 [dependencies]
 bichannel = "0.0.4"
 crossterm = "0.27.0"
+log = { version = "0.4.21", features = ["kv"] }
 ratatui = { version = "0.26.2", features = ["all-widgets"] }
 serde = { version = "1.0.201", features = ["derive"] }
 serde_yaml = "0.9.34"
+tui-logger = "0.11.1"

@@ -6,6 +6,6 @@ use super::tag::Tag;
 pub enum Predicate {
     And(Box<Vec<Predicate>>),
     Or(Box<Vec<Predicate>>),
-    Not(Box<Vec<Predicate>>),
+    Not(Box<Predicate>),
     Tag(Tag),
 }
