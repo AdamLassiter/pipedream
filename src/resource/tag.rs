@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, ops::Deref};
+use std::{collections::BTreeMap, ops::Deref};
 
 use ratatui::{
     prelude::{Buffer, Rect},
@@ -6,82 +6,73 @@ use ratatui::{
 };
 use serde::{Deserialize, Serialize};
 
-pub static TAG_SEP: char = ':';
+pub static VAL_SEP: char = '/';
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Tag(pub TagKey, pub TagValue);
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct Tag(String);
+pub struct TagKey(String);
 
-#[derive(Eq, PartialEq)]
-pub enum TypeHint {
-    String,
-    Number,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TagValue {
+    Tag(TagKey),
+    Number(f64),
+}
+
+impl Into<String> for TagValue {
+    fn into(self) -> String {
+        match self {
+            Self::Tag(s) => s.0,
+            Self::Number(n) => format!("{}", n),
+        }
+    }
+}
+
+impl From<&str> for TagKey {
+    fn from(value: &str) -> Self {
+        Self(value.into())
+    }
+}
+
+impl From<&str> for TagValue {
+    fn from(value: &str) -> Self {
+        value
+            .parse::<f64>()
+            .map_or(Self::Tag(value.into()), |num| Self::Number(num))
+    }
 }
 
 impl From<&str> for Tag {
     fn from(value: &str) -> Self {
-        Tag(value.into())
+        let parts = value.split(VAL_SEP).collect::<Vec<_>>();
+        let (&key, val) = (parts.get(0).unwrap(), parts.get(1));
+        let normalised = Self(
+            key.into(),
+            val.map(|&v| TagValue::from(v))
+                .unwrap_or(TagValue::Number(1.))
+                .into(),
+        );
+        normalised
     }
 }
 
-impl From<Vec<String>> for Tag {
-    fn from(value: Vec<String>) -> Self {
-        Tag(value.join(&TAG_SEP.to_string()))
-    }
-}
-
-impl Tag {
-    pub fn tag_sep() -> &'static char {
-        &TAG_SEP
-    }
-
-    pub fn typehint(&self) -> TypeHint {
-        if let Ok(_) = self.parts().last().unwrap().parse::<f64>() {
-            TypeHint::Number
-        } else {
-            TypeHint::String
-        }
-    }
-
-    pub fn pop(&self) -> Self {
-        let mut parts = self.parts();
-        parts.pop();
-        Tag::from(parts)
-    }
-
-    pub fn append(&self, mut tail: Vec<String>) -> Self {
-        let mut parts = self.parts();
-        parts.append(&mut tail);
-        Tag::from(parts)
-    }
-
-    pub fn pretty(&self) -> String {
-        self.parts().join(&TAG_SEP.to_string())
-    }
-
-    pub fn parts(&self) -> Vec<String> {
-        self.0.split(TAG_SEP).map(|s| s.into()).collect()
-    }
-
-    pub fn wildcarding_numbers(&self) -> Self {
-        match self.typehint() {
-            TypeHint::Number => self.pop(),
-            TypeHint::String => self.clone(),
-        }
-    }
-
-    pub fn as_number(&self) -> f64 {
-        match self.typehint() {
-            TypeHint::Number => {
-                let mut parts = self.parts();
-                parts.pop().unwrap().parse::<f64>().unwrap()
-            }
-            TypeHint::String => 1.,
-        }
+impl Into<(TagKey, TagValue)> for &Tag {
+    fn into(self) -> (TagKey, TagValue) {
+        let Tag(key, val) = self;
+        (key.clone(), val.clone())
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tags(pub BTreeSet<Tag>);
+pub struct Tags(BTreeMap<TagKey, TagValue>);
+
+impl<const N: usize> From<[Tag; N]> for Tags {
+    fn from(tags: [Tag; N]) -> Self {
+        let kv_pairs = tags.iter().map(|tag| tag.into());
+        Tags(BTreeMap::from_iter(kv_pairs))
+    }
+}
 
 impl std::ops::DerefMut for Tags {
     fn deref_mut(&mut self) -> &mut Self::Target {
@@ -90,7 +81,7 @@ impl std::ops::DerefMut for Tags {
 }
 
 impl Deref for Tags {
-    type Target = BTreeSet<Tag>;
+    type Target = BTreeMap<TagKey, TagValue>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -99,6 +90,13 @@ impl Deref for Tags {
 
 impl Widget for &Tags {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        Widget::render(List::new(self.iter().map(|tag| tag.pretty())), area, buf);
+        Widget::render(
+            List::new(
+                self.iter()
+                    .map(|(key, val)| format!("{:?}/{:?}", key.0, val)),
+            ),
+            area,
+            buf,
+        );
     }
 }

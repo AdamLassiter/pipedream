@@ -15,12 +15,12 @@ use crate::resource::{
 use super::tag_engine::TagEngine;
 
 #[derive(Serialize, Deserialize)]
-pub struct StateMachine {
-    pub world: World,
+pub struct StateMachine<W: World> {
+    pub world: W,
     pub current: Vec<Location>,
 }
 
-impl StateMachine {
+impl <W: World> StateMachine<W> {
     pub fn handle_effect(
         &mut self,
         engine: &mut TagEngine,
@@ -81,6 +81,6 @@ impl StateMachine {
     }
 
     pub fn current_state(&self) -> &State {
-        self.world.0.get(&self.current.last().unwrap()).unwrap()
+        self.world.get_state(&self.current.last().unwrap())
     }
 }

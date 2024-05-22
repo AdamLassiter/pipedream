@@ -12,7 +12,7 @@ use bichannel::Channel;
 use super::campaign::Campaign;
 
 pub struct Daemon {
-    pub game: Campaign,
+    pub campaign: Campaign,
     pub channel: Channel<UiCommand, EngineCommand>,
     pub exit: bool,
 }
@@ -30,7 +30,7 @@ impl Daemon {
     }
 
     fn handle_effect(&mut self, effect: SideEffect) {
-        let commands = self.game.handle_effect(effect);
+        let commands = self.campaign.handle_effect(effect);
         commands
             .into_iter()
             .for_each(|command| self.channel.send(command).unwrap())
@@ -50,7 +50,7 @@ impl Daemon {
         let start = game.start.clone();
 
         let mut this = Daemon {
-            game,
+            campaign: game,
             channel,
             exit: false,
         };

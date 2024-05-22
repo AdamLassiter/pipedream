@@ -1,7 +1,7 @@
 start: woods:entrance
 tag_engine:
   tags:
-  - woods:entrance:item:sword
+    woods:entrance:item:sword: !Number 1.0
 state_machine:
   world:
     ephemeral:shop:
@@ -9,7 +9,9 @@ state_machine:
       scene:
         descriptions:
         - descriptor: The shop is cozy, and staffed by a weathered crone
-        - predicate: !Tag player:item:sword
+        - predicate: !Tag
+          - player:item:sword
+          - !Number 1.0
           descriptor: Her eyes keep flitting to the sword at your side
       choices:
       - description:
@@ -18,36 +20,58 @@ state_machine:
           next: Pop
           actions: []
       - description:
-          predicate: !Tag player:item:sword
+          predicate: !Tag
+          - player:item:sword
+          - !Number 1.0
           descriptor: Trade a sword for two swords
         effect:
           next: None
           actions:
-          - !Subtract player:item:sword:1
-          - !Add player:item:sword:2
+          - !Subtract
+            - player:item:sword
+            - !Number 1.0
+          - !Add
+            - player:item:sword
+            - !Number 2.0
       - description:
-          predicate: !Tag player:item:sword
+          predicate: !Tag
+          - player:item:sword
+          - !Number 1.0
           descriptor: Trade each sword for two swords
         effect:
           next: None
           actions:
-          - !Multiply player:item:sword:2
+          - !Multiply
+            - player:item:sword
+            - !Number 2.0
       - description:
-          predicate: !Tag player:item:sword:2
+          predicate: !Tag
+          - player:item:sword
+          - !Number 2.0
           descriptor: Forge two swords into a cursed ring
         effect:
           next: None
           actions:
-          - !Subtract player:item:sword:2
-          - !Add player:item:cursed-ring
+          - !Subtract
+            - player:item:sword
+            - !Number 2.0
+          - !Add
+            - player:item:cursed-ring
+            - !Number 1.0
       - description:
-          predicate: !Tag player:item:sword:2
+          predicate: !Tag
+          - player:item:sword
+          - !Number 2.0
           descriptor: Forge every other sword into a cursed ring
         effect:
           next: None
           actions:
-          - !Divide player:item:sword:2
-          - !Add player:item:cursed-ring
+          - !Divide
+            - player:item:sword
+            - !Number 2.0
+          - !Add
+            - player:item:cursed-ring
+            - !Tag player:item:sword
     woods:depths:
       location: woods:depths
       scene:
@@ -65,17 +89,25 @@ state_machine:
         descriptions:
         - descriptor: You are in the woods
         - descriptor: There is a mysterious moss-covered shop in a small grove
-        - predicate: !Tag woods:entrance:item:sword
+        - predicate: !Tag
+          - woods:entrance:item:sword
+          - !Number 1.0
           descriptor: You see a shiny sword lodged in a stone
       choices:
       - description:
-          predicate: !Tag woods:entrance:item:sword
+          predicate: !Tag
+          - woods:entrance:item:sword
+          - !Number 1.0
           descriptor: Pick up the sword
         effect:
           next: None
           actions:
-          - !Insert player:item:sword
-          - !Remove woods:entrance:item:sword
+          - !Insert
+            - player:item:sword
+            - !Number 1.0
+          - !Remove
+            - woods:entrance:item:sword
+            - !Number 1.0
       - description:
           descriptor: Go into the shop
         effect:

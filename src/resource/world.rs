@@ -10,12 +10,22 @@ use crate::{
 
 use super::{location::Location, predicate::Predicate, transition::TransitionType};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct World(pub BTreeMap<Location, State>);
+pub trait World {
+    fn get_state(&self, location: &Location) -> &State;
+}
 
-impl World {
-    pub fn generate() -> World {
-        World(
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CampaignWorld(BTreeMap<Location, State>);
+
+impl World for CampaignWorld {
+    fn get_state(&self, location: &Location) -> &State {
+        self.0.get(location).unwrap()
+    }
+}
+
+impl CampaignWorld {
+    pub fn generate_campaign() -> CampaignWorld {
+        CampaignWorld(
             vec![
                 State {
                     location: Location("woods:entrance".into()),
@@ -107,8 +117,8 @@ impl World {
                             SideEffect {
                                 next: TransitionType::None,
                                 actions: vec![
-                                    Action::Subtract("player:item:sword:1".into()),
-                                    Action::Add("player:item:sword:2".into()),
+                                    Action::Subtract("player:item:sword/1".into()),
+                                    Action::Add("player:item:sword/2".into()),
                                 ],
                             },
                         ),
@@ -120,34 +130,34 @@ impl World {
                                 .into(),
                             SideEffect {
                                 next: TransitionType::None,
-                                actions: vec![Action::Multiply("player:item:sword:2".into())],
+                                actions: vec![Action::Multiply("player:item:sword/2".into())],
                             },
                         ),
                         (
                             (
-                                Predicate::Tag("player:item:sword:2".into()),
+                                Predicate::Tag("player:item:sword/2".into()),
                                 "Forge two swords into a cursed ring".into(),
                             )
                                 .into(),
                             SideEffect {
                                 next: TransitionType::None,
                                 actions: vec![
-                                    Action::Subtract("player:item:sword:2".into()),
+                                    Action::Subtract("player:item:sword/2".into()),
                                     Action::Add("player:item:cursed-ring".into()),
                                 ],
                             },
                         ),
                         (
                             (
-                                Predicate::Tag("player:item:sword:2".into()),
+                                Predicate::Tag("player:item:sword/2".into()),
                                 "Forge every other sword into a cursed ring".into(),
                             )
                                 .into(),
                             SideEffect {
                                 next: TransitionType::None,
                                 actions: vec![
-                                    Action::Divide("player:item:sword:2".into()),
-                                    Action::Add("player:item:cursed-ring".into()),
+                                    Action::Divide("player:item:sword/2".into()),
+                                    Action::Add("player:item:cursed-ring/player:item:sword".into()),
                                 ],
                             },
                         ),
@@ -159,5 +169,16 @@ impl World {
             .into_iter()
             .collect(),
         )
+    }
+}
+
+#[derive(Debug)]
+pub struct CombatWorld<CombatState> {
+    states: BTreeMap<Location, fn(CombatState) -> State>,
+}
+
+impl World for CombatWorld<()> {
+    fn get_state(&self, location: &Location) -> &State {
+        todo!()
     }
 }

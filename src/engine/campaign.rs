@@ -4,14 +4,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     engine::{state_machine::StateMachine, tag_engine::TagEngine},
-    resource::{commands::UiCommand, location::Location, transition::SideEffect},
+    resource::{
+        commands::UiCommand, location::Location, transition::SideEffect, world::CampaignWorld,
+    },
 };
 
 #[derive(Serialize, Deserialize)]
 pub struct Campaign {
     pub start: Location,
     pub tag_engine: TagEngine,
-    pub state_machine: StateMachine,
+    pub state_machine: StateMachine<CampaignWorld>,
 }
 
 impl Campaign {

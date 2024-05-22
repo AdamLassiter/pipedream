@@ -5,13 +5,13 @@ use pipedream::{
         campaign::Campaign, daemon::Daemon, state_machine::StateMachine, tag_engine::TagEngine,
     },
     interface::app::App,
-    resource::{location::Location, world::World},
+    resource::{location::Location, world::CampaignWorld},
 };
 
 fn main() -> io::Result<()> {
     let (channel, ui_thread) = App::spawn();
 
-    let world = World::generate();
+    let world = CampaignWorld::generate_campaign();
     let tag_engine = TagEngine::generate();
     let start = Location("woods:entrance".into());
 
