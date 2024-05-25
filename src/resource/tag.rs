@@ -20,11 +20,11 @@ pub enum TagValue {
     Number(f64),
 }
 
-impl Into<String> for TagValue {
-    fn into(self) -> String {
-        match self {
-            Self::Tag(s) => s.0,
-            Self::Number(n) => format!("{}", n),
+impl From<TagValue> for String {
+    fn from(val: TagValue) -> Self {
+        match val {
+            TagValue::Tag(s) => s.0,
+            TagValue::Number(n) => format!("{}", n),
         }
     }
 }
@@ -39,27 +39,26 @@ impl From<&str> for TagValue {
     fn from(value: &str) -> Self {
         value
             .parse::<f64>()
-            .map_or(Self::Tag(value.into()), |num| Self::Number(num))
+            .map_or(Self::Tag(value.into()), Self::Number)
     }
 }
 
 impl From<&str> for Tag {
     fn from(value: &str) -> Self {
         let parts = value.split(VAL_SEP).collect::<Vec<_>>();
-        let (&key, val) = (parts.get(0).unwrap(), parts.get(1));
-        let normalised = Self(
+        let (&key, val) = (parts.first().unwrap(), parts.get(1));
+        
+        Self(
             key.into(),
             val.map(|&v| TagValue::from(v))
-                .unwrap_or(TagValue::Number(1.))
-                .into(),
-        );
-        normalised
+                .unwrap_or(TagValue::Number(1.)),
+        )
     }
 }
 
-impl Into<(TagKey, TagValue)> for &Tag {
-    fn into(self) -> (TagKey, TagValue) {
-        let Tag(key, val) = self;
+impl From<&Tag> for (TagKey, TagValue) {
+    fn from(val: &Tag) -> Self {
+        let Tag(key, val) = val;
         (key.clone(), val.clone())
     }
 }

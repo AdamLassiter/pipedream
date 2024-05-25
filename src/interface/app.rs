@@ -100,7 +100,7 @@ impl App {
                 _ => {}
             };
         }
-        while let Some(ev) = self.channel.try_recv().ok() {
+        while let Ok(ev) = self.channel.try_recv() {
             match ev {
                 UiCommand::SceneChange(scen) => self.scene = Some(scen),
                 UiCommand::ChoicesChange(opts) => self.options = Some(opts),

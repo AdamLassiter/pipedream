@@ -24,7 +24,7 @@ impl TagEngine {
     pub fn handle_actions(&mut self, actions: &Vec<Action>) {
         debug!(target:"Event/Actions", "{:?}", actions);
 
-        actions.into_iter().for_each(|action| match action {
+        actions.iter().for_each(|action| match action {
             Action::Insert(tag) => {
                 self.tags.insert(tag.0.clone(), tag.1.clone());
             }
@@ -86,7 +86,7 @@ impl TagEngine {
 
     pub fn satisfies(&self, predicate: &Predicate) -> bool {
         let result = match predicate {
-            Predicate::Tag(tag) => self.contains(&tag),
+            Predicate::Tag(tag) => self.contains(tag),
             Predicate::And(preds) => preds.iter().all(|pred| self.satisfies(pred)),
             Predicate::Or(preds) => preds.iter().any(|pred| self.satisfies(pred)),
             Predicate::Not(pred) => !self.satisfies(pred),

@@ -39,7 +39,7 @@ impl From<Vec<(Description, SideEffect)>> for Choices {
 
 impl Choices {
     fn cursor_down(&mut self) {
-        if self.choices.len() > 0 {
+        if !self.choices.is_empty() {
             self.cursor = self
                 .cursor
                 .saturating_add(1)
@@ -48,7 +48,7 @@ impl Choices {
     }
 
     fn cursor_up(&mut self) {
-        if self.choices.len() > 0 {
+        if !self.choices.is_empty() {
             self.cursor = self
                 .cursor
                 .saturating_sub(1)

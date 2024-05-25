@@ -18,6 +18,12 @@ impl Logging {
     }
 }
 
+impl Default for Logging {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Widget for &Logging {
     fn render(self, area: Rect, buf: &mut Buffer) {
         TuiLoggerWidget::default()

@@ -19,7 +19,7 @@ pub struct Daemon {
 
 impl Daemon {
     pub fn handle_commands(&mut self) {
-        while let Some(ev) = self.channel.try_recv().ok() {
+        while let Ok(ev) = self.channel.try_recv() {
             match ev {
                 EngineCommand::Choice(effect) => {
                     self.handle_effect(effect);

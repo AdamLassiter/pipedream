@@ -81,6 +81,6 @@ impl <W: World> StateMachine<W> {
     }
 
     pub fn current_state(&self) -> &State {
-        self.world.get_state(&self.current.last().unwrap())
+        self.world.get_state(self.current.last().unwrap())
     }
 }
