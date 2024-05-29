@@ -1,5 +1,6 @@
 pub mod action;
 pub mod choice;
+pub mod combat;
 pub mod commands;
 pub mod description;
 pub mod dynamic_world;

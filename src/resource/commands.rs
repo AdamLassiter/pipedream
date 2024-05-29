@@ -1,8 +1,8 @@
-use super::{choice::Choices, scene::Scene, transition::SideEffect};
+use super::{choice::Choices, scene::Scene, transition::Transition};
 
 #[derive(Debug)]
 pub enum EngineCommand {
-    Choice(SideEffect),
+    Choice(Transition),
     Exit,
 }
 

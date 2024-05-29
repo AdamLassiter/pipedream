@@ -5,19 +5,19 @@ use std::thread::JoinHandle;
 use crate::resource::commands::EngineCommand;
 use crate::resource::commands::UiCommand;
 use crate::resource::location::Location;
-use crate::resource::transition::SideEffect;
+use crate::resource::transition::Transition;
 
 use bichannel::Channel;
 
-use super::campaign::Campaign;
+use super::campaign_coordinator::CampaignCoordinator;
 
-pub struct Daemon {
-    pub campaign: Campaign,
+pub struct GameCoordinator {
+    pub campaign: CampaignCoordinator,
     pub channel: Channel<UiCommand, EngineCommand>,
     pub exit: bool,
 }
 
-impl Daemon {
+impl GameCoordinator {
     pub fn handle_commands(&mut self) {
         while let Ok(ev) = self.channel.try_recv() {
             match ev {
@@ -29,7 +29,7 @@ impl Daemon {
         }
     }
 
-    fn handle_effect(&mut self, effect: SideEffect) {
+    fn handle_effect(&mut self, effect: Transition) {
         let commands = self.campaign.handle_effect(effect);
         commands
             .into_iter()
@@ -37,19 +37,19 @@ impl Daemon {
     }
 
     fn init(&mut self, start: Location) {
-        self.handle_effect(SideEffect {
+        self.handle_effect(Transition {
             next: crate::resource::transition::TransitionType::Push(start),
             actions: vec![],
         });
     }
 
     pub fn spawn(
-        game: Campaign,
+        game: CampaignCoordinator,
         channel: Channel<UiCommand, EngineCommand>,
     ) -> JoinHandle<io::Result<()>> {
         let start = game.start.clone();
 
-        let mut this = Daemon {
+        let mut this = GameCoordinator {
             campaign: game,
             channel,
             exit: false,

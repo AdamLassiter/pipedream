@@ -8,7 +8,7 @@ use crate::resource::{
     location::Location,
     predicate::Predicate,
     scene::Scene,
-    transition::{SideEffect, TransitionType},
+    transition::{Transition, TransitionType},
 };
 
 pub struct CombatWorld {
@@ -22,7 +22,7 @@ impl DynamicWorld for CombatWorld {
 }
 
 impl CombatWorld {
-    pub fn generate_combat() -> Self {
+    pub fn generate() -> Self {
         let states = {
             let mut states = BTreeMap::new();
             states.insert(
@@ -60,7 +60,7 @@ impl CombatWorld {
                         "Pick up the sword".into(),
                     )
                         .into(),
-                    SideEffect {
+                    Transition {
                         next: TransitionType::None,
                         actions: vec![
                             Action::Insert("player:item:sword".into()),
@@ -70,14 +70,14 @@ impl CombatWorld {
                 ),
                 (
                     "Go into the shop".into(),
-                    SideEffect {
+                    Transition {
                         next: TransitionType::Push(Location("ephemeral:shop".into())),
                         actions: vec![],
                     },
                 ),
                 (
                     "Go deeper into the woods".into(),
-                    SideEffect {
+                    Transition {
                         next: TransitionType::Swap(Location("woods:depths".into())),
                         actions: vec![],
                     },

@@ -17,7 +17,7 @@ use ratatui::{
     widgets::{block::*, *},
 };
 
-use super::{logging::Logging, utils};
+use super::{utils, widgets::logging::Logging};
 
 pub struct App {
     scene: Option<Scene>,
@@ -71,7 +71,7 @@ impl App {
         let options = self.options.take();
         if let Some(options) = options {
             self.channel
-                .send(EngineCommand::Choice(options.current_effect()))
+                .send(EngineCommand::Choice(options.current_transition()))
                 .unwrap();
         }
     }

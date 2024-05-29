@@ -9,7 +9,7 @@ use crate::resource::{
     location::Location,
     predicate::Predicate,
     state::State,
-    transition::{SideEffect, TransitionType},
+    transition::{Transition, TransitionType},
 };
 
 use super::tag_engine::TagEngine;
@@ -24,7 +24,7 @@ impl<W: DynamicWorld> DynamicStateMachine<W> {
     pub fn handle_effect(
         &mut self,
         engine: &mut TagEngine,
-        side_effect: SideEffect,
+        side_effect: Transition,
     ) -> Vec<UiCommand> {
         engine.handle_actions(&side_effect.actions);
         self.handle_transition(side_effect);
@@ -32,7 +32,7 @@ impl<W: DynamicWorld> DynamicStateMachine<W> {
         self.next_options(engine)
     }
 
-    fn handle_transition(&mut self, side_effect: SideEffect) {
+    fn handle_transition(&mut self, side_effect: Transition) {
         debug!(target:"Event/Transition", "{:?}", side_effect.next);
 
         match side_effect.next {
@@ -82,7 +82,7 @@ impl<W: DynamicWorld> DynamicStateMachine<W> {
 
     pub fn current_state(&self) -> State {
         let state_fn = self.world.get_state(self.current.last().unwrap());
-        
+
         state_fn.apply(self)
     }
 }

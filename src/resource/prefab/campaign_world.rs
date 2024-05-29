@@ -10,7 +10,7 @@ use crate::resource::{
     predicate::Predicate,
     scene::Scene,
     static_world::StaticWorld,
-    transition::{SideEffect, TransitionType},
+    transition::{Transition, TransitionType},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,7 +25,7 @@ impl StaticWorld for CampaignWorld {
 }
 
 impl CampaignWorld {
-    pub fn generate_campaign() -> CampaignWorld {
+    pub fn generate() -> CampaignWorld {
         CampaignWorld {
             states: vec![
                 State {
@@ -48,7 +48,7 @@ impl CampaignWorld {
                                 "Pick up the sword".into(),
                             )
                                 .into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::None,
                                 actions: vec![
                                     Action::Insert("player:item:sword".into()),
@@ -58,14 +58,14 @@ impl CampaignWorld {
                         ),
                         (
                             "Go into the shop".into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::Push(Location("ephemeral:shop".into())),
                                 actions: vec![],
                             },
                         ),
                         (
                             "Go deeper into the woods".into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::Swap(Location("woods:depths".into())),
                                 actions: vec![],
                             },
@@ -81,7 +81,7 @@ impl CampaignWorld {
                     },
                     options: vec![(
                         "Go deeper into the woods".into(),
-                        SideEffect {
+                        Transition {
                             next: TransitionType::Swap(Location("woods:depths".into())),
                             actions: vec![],
                         },
@@ -104,7 +104,7 @@ impl CampaignWorld {
                     options: vec![
                         (
                             "Leave the shop".into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::Pop,
                                 actions: vec![],
                             },
@@ -115,7 +115,7 @@ impl CampaignWorld {
                                 "Trade a sword for two swords".into(),
                             )
                                 .into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::None,
                                 actions: vec![
                                     Action::Subtract("player:item:sword/1".into()),
@@ -129,7 +129,7 @@ impl CampaignWorld {
                                 "Trade each sword for two swords".into(),
                             )
                                 .into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::None,
                                 actions: vec![Action::Multiply("player:item:sword/2".into())],
                             },
@@ -140,7 +140,7 @@ impl CampaignWorld {
                                 "Forge two swords into a cursed ring".into(),
                             )
                                 .into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::None,
                                 actions: vec![
                                     Action::Subtract("player:item:sword/2".into()),
@@ -154,7 +154,7 @@ impl CampaignWorld {
                                 "Forge every other sword into a cursed ring".into(),
                             )
                                 .into(),
-                            SideEffect {
+                            Transition {
                                 next: TransitionType::None,
                                 actions: vec![
                                     Action::Divide("player:item:sword/2".into()),

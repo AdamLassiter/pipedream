@@ -1,9 +1,5 @@
 use std::{collections::BTreeMap, ops::Deref};
 
-use ratatui::{
-    prelude::{Buffer, Rect},
-    widgets::{List, Widget},
-};
 use serde::{Deserialize, Serialize};
 
 pub static VAL_SEP: char = '/';
@@ -12,7 +8,7 @@ pub static VAL_SEP: char = '/';
 pub struct Tag(pub TagKey, pub TagValue);
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct TagKey(String);
+pub struct TagKey(pub String);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TagValue {
@@ -47,7 +43,7 @@ impl From<&str> for Tag {
     fn from(value: &str) -> Self {
         let parts = value.split(VAL_SEP).collect::<Vec<_>>();
         let (&key, val) = (parts.first().unwrap(), parts.get(1));
-        
+
         Self(
             key.into(),
             val.map(|&v| TagValue::from(v))
@@ -64,7 +60,7 @@ impl From<&Tag> for (TagKey, TagValue) {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tags(BTreeMap<TagKey, TagValue>);
+pub struct Tags(pub BTreeMap<TagKey, TagValue>);
 
 impl<const N: usize> From<[Tag; N]> for Tags {
     fn from(tags: [Tag; N]) -> Self {
@@ -84,18 +80,5 @@ impl Deref for Tags {
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl Widget for &Tags {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        Widget::render(
-            List::new(
-                self.iter()
-                    .map(|(key, val)| format!("{:?}/{:?}", key.0, val)),
-            ),
-            area,
-            buf,
-        );
     }
 }

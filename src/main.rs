@@ -2,8 +2,8 @@ use std::io;
 
 use pipedream::{
     engine::{
-        campaign::Campaign, daemon::Daemon, static_state_machine::StaticStateMachine,
-        tag_engine::TagEngine,
+        campaign_coordinator::CampaignCoordinator, game_coordinator::GameCoordinator,
+        static_state_machine::StaticStateMachine, tag_engine::TagEngine,
     },
     interface::app::App,
     resource::{location::Location, prefab::campaign_world::CampaignWorld},
@@ -12,7 +12,7 @@ use pipedream::{
 fn main() -> io::Result<()> {
     let (channel, ui_thread) = App::spawn();
 
-    let world = CampaignWorld::generate_campaign();
+    let world = CampaignWorld::generate();
     let tag_engine = TagEngine::generate();
     let start = Location("woods:entrance".into());
 
@@ -21,7 +21,7 @@ fn main() -> io::Result<()> {
         current: vec![],
     };
 
-    let game = Campaign {
+    let game = CampaignCoordinator {
         start,
         tag_engine,
         state_machine,
@@ -31,7 +31,7 @@ fn main() -> io::Result<()> {
         game.dump();
     }
 
-    let engine_thread = Daemon::spawn(game, channel);
+    let engine_thread = GameCoordinator::spawn(game, channel);
 
     engine_thread.join().unwrap()?;
     ui_thread.join().unwrap()?;
