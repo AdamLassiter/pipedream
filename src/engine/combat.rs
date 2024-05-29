@@ -3,9 +3,11 @@ use std::{collections::BTreeMap, fs::File};
 use serde::Serialize;
 
 use crate::{
-    engine::{state_machine::StateMachine, tag_engine::TagEngine},
-    resource::{tag::Tag, world::CombatWorld},
+    engine::tag_engine::TagEngine,
+    resource::{prefab::combat_world::CombatWorld, tag::Tag},
 };
+
+use super::dynamic_state_machine::DynamicStateMachine;
 
 #[derive(Serialize)]
 pub struct Combat {
@@ -13,7 +15,7 @@ pub struct Combat {
     pub player: CombatEntity,
     pub enemy: CombatEntity,
     #[serde(skip_serializing)]
-    pub state_machine: StateMachine<CombatWorld<()>>,
+    pub state_machine: DynamicStateMachine<CombatWorld>,
 }
 
 #[derive(Serialize)]
@@ -43,7 +45,6 @@ pub struct Card {
     specials: Vec<Tag>,
     tags: Vec<Tag>,
 }
-
 
 #[derive(Serialize)]
 pub struct Stats {
@@ -98,49 +99,57 @@ pub enum Element {
     Radiant,
     Psychic,
     Vampiric,
-    Necrotic
+    Necrotic,
 }
 
 #[derive(Serialize)]
 pub enum Condition {
     Buff(Buff),
-    Debuff(Debuff)
+    Debuff(Debuff),
 }
 #[derive(Serialize)]
 pub enum Buff {
-    Powerful,
-    Guarding,
+    Overwhelm,
+    Guard,
+    Crush,
+    Unfalter,
 
-    Sneaking,
-    Stabbing,
+    Stab,
+    Sneak,
+    Dose,
+    Dope,
 
-    Evoking,
-    Abjuring,
+    Evoke,
+    Abjure,
+    Invoke,
+    Transmute,
 
-    Hallowed,
-    Divining,
+    Hallow,
+    Divine,
+    Bless,
+    Protect,
 }
 #[derive(Serialize)]
 pub enum Debuff {
-    Stunned,
-    Bleeding,
-    Disarmed,
-    Shattered,
+    Stun,
+    Bleed,
+    Disarm,
+    Shatter,
 
-    Poisoned,
-    Exhaused,
-    Cursed,
-    Unravelling,
+    Poison,
+    Exhaust,
+    Curse,
+    Unravel,
 
-    Frostbitten,
-    Disintegrating,
-    Shocked,
-    Burning,
+    Frostbite,
+    Corrode,
+    Shock,
+    Burn,
 
-    Hollowed,
-    Maddened,
-    Wilting,
-    Rotting,
+    Hollow,
+    Madden,
+    Wilt,
+    Rot,
 }
 
 #[derive(Serialize)]
@@ -152,7 +161,6 @@ pub enum Class {
     Rogue,
     Mage,
 }
-
 
 impl Combat {
     pub fn dump(&self) {

@@ -8,19 +8,19 @@ use crate::resource::{
     location::Location,
     predicate::Predicate,
     state::State,
+    static_world::StaticWorld,
     transition::{SideEffect, TransitionType},
-    world::World,
 };
 
 use super::tag_engine::TagEngine;
 
 #[derive(Serialize, Deserialize)]
-pub struct StateMachine<W: World> {
+pub struct StaticStateMachine<W: StaticWorld> {
     pub world: W,
     pub current: Vec<Location>,
 }
 
-impl <W: World> StateMachine<W> {
+impl<W: StaticWorld> StaticStateMachine<W> {
     pub fn handle_effect(
         &mut self,
         engine: &mut TagEngine,

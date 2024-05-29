@@ -2,10 +2,11 @@ use std::io;
 
 use pipedream::{
     engine::{
-        campaign::Campaign, daemon::Daemon, state_machine::StateMachine, tag_engine::TagEngine,
+        campaign::Campaign, daemon::Daemon, static_state_machine::StaticStateMachine,
+        tag_engine::TagEngine,
     },
     interface::app::App,
-    resource::{location::Location, world::CampaignWorld},
+    resource::{location::Location, prefab::campaign_world::CampaignWorld},
 };
 
 fn main() -> io::Result<()> {
@@ -15,7 +16,7 @@ fn main() -> io::Result<()> {
     let tag_engine = TagEngine::generate();
     let start = Location("woods:entrance".into());
 
-    let state_machine = StateMachine {
+    let state_machine = StaticStateMachine {
         world,
         current: vec![],
     };

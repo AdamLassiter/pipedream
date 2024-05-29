@@ -3,9 +3,10 @@ use std::fs::File;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    engine::{state_machine::StateMachine, tag_engine::TagEngine},
+    engine::{static_state_machine::StaticStateMachine, tag_engine::TagEngine},
     resource::{
-        commands::UiCommand, location::Location, transition::SideEffect, world::CampaignWorld,
+        commands::UiCommand, location::Location, prefab::campaign_world::CampaignWorld,
+        transition::SideEffect,
     },
 };
 
@@ -13,7 +14,7 @@ use crate::{
 pub struct Campaign {
     pub start: Location,
     pub tag_engine: TagEngine,
-    pub state_machine: StateMachine<CampaignWorld>,
+    pub state_machine: StaticStateMachine<CampaignWorld>,
 }
 
 impl Campaign {

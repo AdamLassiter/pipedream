@@ -2,31 +2,32 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    resource::action::Action,
-    resource::scene::Scene,
-    resource::{state::State, transition::SideEffect},
+use crate::resource::state::State;
+
+use crate::resource::{
+    action::Action,
+    location::Location,
+    predicate::Predicate,
+    scene::Scene,
+    static_world::StaticWorld,
+    transition::{SideEffect, TransitionType},
 };
 
-use super::{location::Location, predicate::Predicate, transition::TransitionType};
-
-pub trait World {
-    fn get_state(&self, location: &Location) -> &State;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CampaignWorld {
+    pub(crate) states: BTreeMap<Location, State>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CampaignWorld(BTreeMap<Location, State>);
-
-impl World for CampaignWorld {
+impl StaticWorld for CampaignWorld {
     fn get_state(&self, location: &Location) -> &State {
-        self.0.get(location).unwrap()
+        self.states.get(location).unwrap()
     }
 }
 
 impl CampaignWorld {
     pub fn generate_campaign() -> CampaignWorld {
-        CampaignWorld(
-            vec![
+        CampaignWorld {
+            states: vec![
                 State {
                     location: Location("woods:entrance".into()),
                     scene: Scene {
@@ -168,17 +169,6 @@ impl CampaignWorld {
             ]
             .into_iter()
             .collect(),
-        )
-    }
-}
-
-#[derive(Debug)]
-pub struct CombatWorld<CombatState> {
-    states: BTreeMap<Location, fn(CombatState) -> State>,
-}
-
-impl World for CombatWorld<()> {
-    fn get_state(&self, location: &Location) -> &State {
-        todo!()
+        }
     }
 }
