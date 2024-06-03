@@ -52,6 +52,12 @@ impl From<&str> for Tag {
     }
 }
 
+impl From<(TagKey, TagValue)> for Tag {
+    fn from((key, value): (TagKey, TagValue)) -> Self {
+        Self(key, value)
+    }
+}
+
 impl From<&Tag> for (TagKey, TagValue) {
     fn from(val: &Tag) -> Self {
         let Tag(key, val) = val;

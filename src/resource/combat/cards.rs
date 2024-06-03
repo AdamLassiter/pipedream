@@ -18,16 +18,32 @@ pub struct Card {
     pub damages: Vec<(Element, i64)>,
     pub conditions: Vec<(Condition, i64)>,
     pub manipulations: Vec<(CombatPlace, CombatPlace, u64)>,
-    pub specials: Vec<Tag>,
-    pub tags: Vec<Tag>,
+    pub applies_tags: Vec<Tag>,
+    pub has_tags: Vec<Tag>,
 }
 
-#[derive(Serialize)]
-pub struct Decklist(Class);
-#[derive(Serialize)]
-pub enum Class {
-    Barbarian,
-    Monk,
-    Rogue,
-    Mage,
-}
+// #[derive(Serialize)]
+// pub struct Decklist(Class);
+
+// #[derive(Serialize)]
+// pub enum Class {
+//     Barbarian,
+//     Warrior,
+//     Beserker,
+//     Tranced,
+
+//     Monk,
+//     Priest,
+//     Cleric,
+//     Chosen,
+
+//     Rogue,
+//     Assassin,
+//     Bladedancer,
+//     Soulknife,
+
+//     Mage,
+//     Archmage,
+//     Wizard,
+//     Weaver,
+// }

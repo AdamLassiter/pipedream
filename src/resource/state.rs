@@ -4,7 +4,7 @@ use crate::resource::choice::Choices;
 
 use super::{location::Location, scene::Scene};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct State {
     pub location: Location,
     pub scene: Scene,

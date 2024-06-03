@@ -1,7 +1,3 @@
-use std::collections::BTreeMap;
-
-use serde::{Deserialize, Serialize};
-
 use crate::resource::state::State;
 
 use crate::resource::{
@@ -9,20 +5,9 @@ use crate::resource::{
     location::Location,
     predicate::Predicate,
     scene::Scene,
-    static_world::StaticWorld,
     transition::{Transition, TransitionType},
+    world::static_world::CampaignWorld,
 };
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CampaignWorld {
-    pub(crate) states: BTreeMap<Location, State>,
-}
-
-impl StaticWorld for CampaignWorld {
-    fn get_state(&self, location: &Location) -> &State {
-        self.states.get(location).unwrap()
-    }
-}
 
 impl CampaignWorld {
     pub fn generate() -> CampaignWorld {

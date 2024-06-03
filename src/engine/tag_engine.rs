@@ -1,10 +1,12 @@
+use std::ops::Bound::Included;
+
 use log::debug;
 use serde::{Deserialize, Serialize};
 
 use crate::resource::{
     action::Action,
     predicate::Predicate,
-    tag::{Tag, TagValue, Tags},
+    tag::{Tag, TagKey, TagValue, Tags},
 };
 
 static MAX_RESOLVE_DEPTH: usize = 256;
@@ -82,6 +84,19 @@ impl TagEngine {
             }
             None => false,
         }
+    }
+
+    pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {
+        let start = Included(partial_key.clone());
+
+        let mut end_str = partial_key.clone().0;
+        end_str.push('~');
+        let end = Included(end_str.as_str().into());
+
+        self.tags
+            .range((start, end))
+            .map(|(k, v)| Tag::from((k.clone(), v.clone())))
+            .collect()
     }
 
     pub fn satisfies(&self, predicate: &Predicate) -> bool {

@@ -2,11 +2,13 @@ use std::io;
 
 use pipedream::{
     engine::{
-        campaign_coordinator::CampaignCoordinator, game_coordinator::GameCoordinator,
-        static_state_machine::StaticStateMachine, tag_engine::TagEngine,
+        coordinator::{campaign_coordinator::CampaignCoordinator, Coordinator},
+        game_coordinator::GameCoordinator,
+        state_machine::static_state_machine::StaticStateMachine,
+        tag_engine::TagEngine,
     },
     interface::app::App,
-    resource::{location::Location, prefab::campaign_world::CampaignWorld},
+    resource::{location::Location, world::static_world::CampaignWorld},
 };
 
 fn main() -> io::Result<()> {
@@ -21,17 +23,17 @@ fn main() -> io::Result<()> {
         current: vec![],
     };
 
-    let game = CampaignCoordinator {
+    let campaign = CampaignCoordinator {
         start,
         tag_engine,
         state_machine,
     };
 
     {
-        game.dump();
+        campaign.dump();
     }
 
-    let engine_thread = GameCoordinator::spawn(game, channel);
+    let engine_thread = GameCoordinator::spawn(campaign, channel);
 
     engine_thread.join().unwrap()?;
     ui_thread.join().unwrap()?;

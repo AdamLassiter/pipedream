@@ -9,7 +9,8 @@ use crate::resource::transition::Transition;
 
 use bichannel::Channel;
 
-use super::campaign_coordinator::CampaignCoordinator;
+use super::coordinator::campaign_coordinator::CampaignCoordinator;
+use super::coordinator::Coordinator;
 
 pub struct GameCoordinator {
     pub campaign: CampaignCoordinator,
@@ -21,7 +22,7 @@ impl GameCoordinator {
     pub fn handle_commands(&mut self) {
         while let Ok(ev) = self.channel.try_recv() {
             match ev {
-                EngineCommand::Choice(effect) => {
+                EngineCommand::RespondWithChoice(effect) => {
                     self.handle_effect(effect);
                 }
                 EngineCommand::Exit => self.exit = true,

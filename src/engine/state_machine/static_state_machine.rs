@@ -1,35 +1,38 @@
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::resource::{
-    choice::Choice,
-    commands::UiCommand,
-    description::Description,
-    dynamic_world::DynamicWorld,
-    location::Location,
-    predicate::Predicate,
-    state::State,
-    transition::{Transition, TransitionType},
+use crate::{
+    engine::tag_engine::TagEngine,
+    resource::{
+        choice::Choice,
+        commands::UiCommand,
+        description::Description,
+        location::Location,
+        predicate::Predicate,
+        state::State,
+        transition::{Transition, TransitionType},
+        world::static_world::StaticWorld,
+    },
 };
 
-use super::tag_engine::TagEngine;
+use super::StateMachine;
 
 #[derive(Serialize, Deserialize)]
-pub struct DynamicStateMachine<W: DynamicWorld> {
+pub struct StaticStateMachine<W: StaticWorld> {
     pub world: W,
     pub current: Vec<Location>,
 }
 
-impl<W: DynamicWorld> DynamicStateMachine<W> {
-    pub fn handle_effect(
+impl<W: StaticWorld> StateMachine for StaticStateMachine<W> {
+    fn handle_effect(
         &mut self,
-        engine: &mut TagEngine,
+        tag_engine: &mut TagEngine,
         side_effect: Transition,
     ) -> Vec<UiCommand> {
-        engine.handle_actions(&side_effect.actions);
+        tag_engine.handle_actions(&side_effect.actions);
         self.handle_transition(side_effect);
 
-        self.next_options(engine)
+        self.next_options(tag_engine)
     }
 
     fn handle_transition(&mut self, side_effect: Transition) {
@@ -52,7 +55,7 @@ impl<W: DynamicWorld> DynamicStateMachine<W> {
         debug!(target:"State/Location", "{:?}", self.current);
     }
 
-    fn next_options(&mut self, engine: &TagEngine) -> Vec<UiCommand> {
+    fn next_options(&mut self, tag_engine: &TagEngine) -> Vec<UiCommand> {
         let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();
@@ -61,7 +64,7 @@ impl<W: DynamicWorld> DynamicStateMachine<W> {
             predicate.is_none()
                 || predicate
                     .as_ref()
-                    .is_some_and(|pred| engine.satisfies(pred))
+                    .is_some_and(|pred| tag_engine.satisfies(pred))
         };
 
         scene
@@ -74,15 +77,12 @@ impl<W: DynamicWorld> DynamicStateMachine<W> {
              }| test(predicate),
         );
 
-        vec![
-            UiCommand::SceneChange(scene),
-            UiCommand::ChoicesChange(options),
-        ]
+        vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }
+}
 
-    pub fn current_state(&self) -> State {
-        let state_fn = self.world.get_state(self.current.last().unwrap());
-
-        state_fn.apply(self)
+impl<W: StaticWorld> StaticStateMachine<W> {
+    fn current_state(&self) -> State {
+        self.world.get_state(self.current.last().unwrap()).clone()
     }
 }

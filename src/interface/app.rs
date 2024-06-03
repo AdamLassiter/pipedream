@@ -71,7 +71,9 @@ impl App {
         let options = self.options.take();
         if let Some(options) = options {
             self.channel
-                .send(EngineCommand::Choice(options.current_transition()))
+                .send(EngineCommand::RespondWithChoice(
+                    options.current_transition(),
+                ))
                 .unwrap();
         }
     }
@@ -102,8 +104,8 @@ impl App {
         }
         while let Ok(ev) = self.channel.try_recv() {
             match ev {
-                UiCommand::SceneChange(scen) => self.scene = Some(scen),
-                UiCommand::ChoicesChange(opts) => self.options = Some(opts),
+                UiCommand::ShowScene(scen) => self.scene = Some(scen),
+                UiCommand::ShowChoices(opts) => self.options = Some(opts),
             }
         }
         Ok(())
