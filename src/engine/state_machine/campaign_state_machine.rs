@@ -11,20 +11,18 @@ use crate::{
         predicate::Predicate,
         state::State,
         transition::{Transition, TransitionType},
-        world::static_world::StaticWorld,
+        world::campaign_world::{CampaignWorld, StaticWorld},
     },
 };
 
-use super::StateMachine;
-
 #[derive(Serialize, Deserialize)]
-pub struct StaticStateMachine<W: StaticWorld> {
-    pub world: W,
+pub struct CampaignStateMachine {
+    pub world: CampaignWorld,
     pub current: Vec<Location>,
 }
 
-impl<W: StaticWorld> StateMachine for StaticStateMachine<W> {
-    fn handle_effect(
+impl CampaignStateMachine {
+    pub fn handle_effect(
         &mut self,
         tag_engine: &mut TagEngine,
         side_effect: Transition,
@@ -79,9 +77,7 @@ impl<W: StaticWorld> StateMachine for StaticStateMachine<W> {
 
         vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }
-}
 
-impl<W: StaticWorld> StaticStateMachine<W> {
     fn current_state(&self) -> State {
         self.world.get_state(self.current.last().unwrap()).clone()
     }

@@ -3,8 +3,8 @@ use std::fs::File;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    engine::{state_machine::{static_state_machine::StaticStateMachine, StateMachine}, tag_engine::TagEngine},
-    resource::{commands::UiCommand, location::Location, transition::Transition, world::static_world::CampaignWorld},
+    engine::{state_machine::campaign_state_machine::CampaignStateMachine, tag_engine::TagEngine},
+    resource::{commands::UiCommand, location::Location, transition::Transition},
 };
 
 use super::Coordinator;
@@ -13,7 +13,7 @@ use super::Coordinator;
 pub struct CampaignCoordinator {
     pub start: Location,
     pub tag_engine: TagEngine,
-    pub state_machine: StaticStateMachine<CampaignWorld>,
+    pub state_machine: CampaignStateMachine,
 }
 
 impl Coordinator for CampaignCoordinator {

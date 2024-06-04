@@ -1,5 +1,4 @@
 use log::debug;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     engine::tag_engine::TagEngine,
@@ -11,20 +10,17 @@ use crate::{
         predicate::Predicate,
         state::State,
         transition::{Transition, TransitionType},
-        world::dynamic_world::DynamicWorld,
+        world::combat_world::{CombatWorld, DynamicWorld},
     },
 };
 
-use super::StateMachine;
-
-#[derive(Serialize, Deserialize)]
-pub struct DynamicStateMachine<W: DynamicWorld> {
-    pub world: W,
+pub struct CombatStateMachine {
+    pub world: CombatWorld,
     pub current: Vec<Location>,
 }
 
-impl<W: DynamicWorld> StateMachine for DynamicStateMachine<W> {
-    fn handle_effect(&mut self, engine: &mut TagEngine, side_effect: Transition) -> Vec<UiCommand> {
+impl CombatStateMachine {
+    pub fn handle_effect(&mut self, engine: &mut TagEngine, side_effect: Transition) -> Vec<UiCommand> {
         engine.handle_actions(&side_effect.actions);
         self.handle_transition(side_effect);
 
@@ -75,9 +71,7 @@ impl<W: DynamicWorld> StateMachine for DynamicStateMachine<W> {
 
         vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }
-}
 
-impl<W: DynamicWorld> DynamicStateMachine<W> {
     fn current_state(&self, tag_engine: &TagEngine) -> State {
         let state_fn = self.world.get_state(self.current.last().unwrap());
 

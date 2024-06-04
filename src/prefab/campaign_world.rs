@@ -6,7 +6,7 @@ use crate::resource::{
     predicate::Predicate,
     scene::Scene,
     transition::{Transition, TransitionType},
-    world::static_world::CampaignWorld,
+    world::campaign_world::CampaignWorld,
 };
 
 impl CampaignWorld {

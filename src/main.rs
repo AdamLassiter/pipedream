@@ -4,11 +4,11 @@ use pipedream::{
     engine::{
         coordinator::{campaign_coordinator::CampaignCoordinator, Coordinator},
         game_coordinator::GameCoordinator,
-        state_machine::static_state_machine::StaticStateMachine,
+        state_machine::campaign_state_machine::CampaignStateMachine,
         tag_engine::TagEngine,
     },
     interface::app::App,
-    resource::{location::Location, world::static_world::CampaignWorld},
+    resource::{location::Location, world::campaign_world::CampaignWorld},
 };
 
 fn main() -> io::Result<()> {
@@ -18,7 +18,7 @@ fn main() -> io::Result<()> {
     let tag_engine = TagEngine::generate();
     let start = Location("woods:entrance".into());
 
-    let state_machine = StaticStateMachine {
+    let state_machine = CampaignStateMachine {
         world,
         current: vec![],
     };

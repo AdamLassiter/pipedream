@@ -3,11 +3,7 @@ use std::fs::File;
 use serde::Serialize;
 
 use crate::{
-    engine::{
-        state_machine::{dynamic_state_machine::DynamicStateMachine, StateMachine},
-        tag_engine::TagEngine,
-    },
-    prefab::combat_world::CombatWorld,
+    engine::{state_machine::combat_state_machine::CombatStateMachine, tag_engine::TagEngine},
     resource::{combat::field::CombatEntity, commands::UiCommand, transition::Transition},
 };
 
@@ -19,7 +15,7 @@ pub struct CombatCoordinator {
     pub player: CombatEntity,
     pub enemy: CombatEntity,
     #[serde(skip_serializing)]
-    pub state_machine: DynamicStateMachine<CombatWorld>,
+    pub state_machine: CombatStateMachine,
 }
 
 impl Coordinator for CombatCoordinator {

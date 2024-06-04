@@ -7,7 +7,7 @@ use crate::{
         scene::Scene,
         state::State,
         tag::Tag,
-        world::dynamic_world::{DynamicStateFn, DynamicWorld},
+        world::combat_world::{DynamicStateFn, DynamicWorld},
     },
 };
 
