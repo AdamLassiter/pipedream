@@ -5,11 +5,7 @@ use crate::{
     resource::{location::Location, state::State},
 };
 
-pub trait DynamicWorld: Sized {
-    fn get_state(&self, location: &Location) -> &DynamicStateFn;
-}
-
-type StateFn = dyn Fn(&TagEngine) -> State;
+type StateFn = dyn Fn(&TagEngine) -> State + Send + Sync;
 
 pub struct DynamicStateFn(Box<StateFn>);
 
@@ -26,11 +22,11 @@ impl DynamicStateFn {
 }
 
 pub struct CombatWorld {
-    states: BTreeMap<Location, DynamicStateFn>,
+    pub states: BTreeMap<Location, DynamicStateFn>,
 }
 
-impl DynamicWorld for CombatWorld {
-    fn get_state(&self, location: &Location) -> &DynamicStateFn {
+impl CombatWorld {
+    pub fn get_state(&self, location: &Location) -> &DynamicStateFn {
         self.states.get(location).unwrap()
     }
 }

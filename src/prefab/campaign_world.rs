@@ -44,14 +44,14 @@ impl CampaignWorld {
                         (
                             "Go into the shop".into(),
                             Transition {
-                                next: TransitionType::Push(Location("ephemeral:shop".into())),
+                                next: TransitionType::Enter(Location("ephemeral:shop".into())),
                                 actions: vec![],
                             },
                         ),
                         (
                             "Go deeper into the woods".into(),
                             Transition {
-                                next: TransitionType::Swap(Location("woods:depths".into())),
+                                next: TransitionType::Goto(Location("woods:depths".into())),
                                 actions: vec![],
                             },
                         ),
@@ -64,13 +64,24 @@ impl CampaignWorld {
                     scene: Scene {
                         descriptions: vec!["You are lost in the woods".into()],
                     },
-                    options: vec![(
-                        "Go deeper into the woods".into(),
-                        Transition {
-                            next: TransitionType::Swap(Location("woods:depths".into())),
-                            actions: vec![],
-                        },
-                    )]
+                    options: vec![
+                        (
+                            "Go deeper into the woods".into(),
+                            Transition {
+                                next: TransitionType::Goto(Location("woods:depths".into())),
+                                actions: vec![],
+                            },
+                        ),
+                        (
+                            "Battle inner demons".into(),
+                            Transition {
+                                next: TransitionType::Combat(vec![Action::Add(
+                                    "enemy:name:Dave".into(),
+                                )]),
+                                actions: vec![],
+                            },
+                        ),
+                    ]
                     .into(),
                 }
                 .into(),
@@ -90,7 +101,7 @@ impl CampaignWorld {
                         (
                             "Leave the shop".into(),
                             Transition {
-                                next: TransitionType::Pop,
+                                next: TransitionType::Leave,
                                 actions: vec![],
                             },
                         ),

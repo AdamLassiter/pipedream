@@ -39,7 +39,7 @@ impl GameCoordinator {
 
     fn init(&mut self, start: Location) {
         self.handle_effect(Transition {
-            next: crate::resource::transition::TransitionType::Push(start),
+            next: crate::resource::transition::TransitionType::Enter(start),
             actions: vec![],
         });
     }

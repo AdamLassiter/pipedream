@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{resource::action::Action, resource::location::Location};
+use super::{action::Action, location::Location};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transition {
@@ -16,7 +16,8 @@ fn none() -> TransitionType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TransitionType {
     None,
-    Pop,
-    Push(Location),
-    Swap(Location),
+    Leave,
+    Enter(Location),
+    Goto(Location),
+    Combat(Vec<Action>),
 }

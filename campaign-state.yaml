@@ -3,7 +3,7 @@ tag_engine:
   tags:
     woods:entrance:item:sword: !Number 1.0
 state_machine:
-  world:
+  campaign_world:
     states:
       ephemeral:shop:
         location: ephemeral:shop
@@ -18,7 +18,7 @@ state_machine:
         - description:
             descriptor: Leave the shop
           effect:
-            next: Pop
+            next: Leave
             actions: []
         - description:
             predicate: !Tag
@@ -82,7 +82,15 @@ state_machine:
         - description:
             descriptor: Go deeper into the woods
           effect:
-            next: !Swap woods:depths
+            next: !Goto woods:depths
+            actions: []
+        - description:
+            descriptor: Battle inner demons
+          effect:
+            next: !Combat
+            - !Add
+              - enemy:name:Dave
+              - !Number 1.0
             actions: []
       woods:entrance:
         location: woods:entrance
@@ -112,11 +120,11 @@ state_machine:
         - description:
             descriptor: Go into the shop
           effect:
-            next: !Push ephemeral:shop
+            next: !Enter ephemeral:shop
             actions: []
         - description:
             descriptor: Go deeper into the woods
           effect:
-            next: !Swap woods:depths
+            next: !Goto woods:depths
             actions: []
   current: []

@@ -3,28 +3,19 @@ use std::collections::BTreeMap;
 use crate::{
     engine::tag_engine::TagEngine,
     resource::{
-        location::Location,
-        scene::Scene,
-        state::State,
-        tag::Tag,
-        world::combat_world::{DynamicStateFn, DynamicWorld},
+        location::Location, scene::Scene, state::State, tag::Tag,
+        world::combat_world::{CombatWorld, DynamicStateFn},
     },
 };
-
-pub struct CombatWorld {
-    states: BTreeMap<Location, DynamicStateFn>,
-}
-
-impl DynamicWorld for CombatWorld {
-    fn get_state(&self, location: &Location) -> &DynamicStateFn {
-        self.states.get(location).unwrap()
-    }
-}
 
 impl CombatWorld {
     pub fn generate() -> Self {
         let states = {
             let mut states = BTreeMap::new();
+            states.insert(
+                Location("combat:init".into()),
+                DynamicStateFn::new(Self::combat_init_phase),
+            );
             states.insert(
                 Location("player:draw".into()),
                 DynamicStateFn::new(Self::player_draw_phase),
@@ -49,11 +40,21 @@ impl CombatWorld {
         }
     }
 
-    pub fn player_draw_phase(tag_engine: &TagEngine) -> State {
+    pub fn player_draw_phase(_tag_engine: &TagEngine) -> State {
+        State {
+            location: Location("player:draw".into()),
+            scene: Scene {
+                descriptions: vec![],
+            },
+            options: vec![].into(),
+        }
+    }
+
+    pub fn combat_init_phase(tag_engine: &TagEngine) -> State {
         let enemy_name_slice = tag_engine.find(&"enemy:name".into());
         let Tag(challenger, _) = enemy_name_slice.first().unwrap();
         State {
-            location: Location("player:draw".into()),
+            location: Location("combat:init".into()),
             scene: Scene {
                 descriptions: vec![
                     "A challenger appears!".into(),
