@@ -70,11 +70,11 @@ impl App {
     fn make_choice(&mut self) {
         let options = self.options.take();
         if let Some(options) = options {
-            self.channel
-                .send(EngineCommand::RespondWithChoice(
-                    options.current_transition(),
-                ))
-                .unwrap();
+            if let Some(transition) = options.current_transition() {
+                self.channel
+                    .send(EngineCommand::RespondWithChoice(transition))
+                    .unwrap();
+            }
         }
     }
 

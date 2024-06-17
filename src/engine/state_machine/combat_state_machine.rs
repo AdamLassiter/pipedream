@@ -1,7 +1,9 @@
 use log::debug;
+use serde::Serialize;
 
 use crate::{
     engine::tag_engine::TagEngine,
+    prefab::tags::*,
     resource::{
         choice::Choice,
         commands::UiCommand,
@@ -14,7 +16,9 @@ use crate::{
     },
 };
 
+#[derive(Serialize)]
 pub struct CombatStateMachine {
+    #[serde(skip_serializing)]
     pub combat_world: CombatWorld,
     pub current: Vec<Location>,
 }
@@ -25,7 +29,7 @@ impl CombatStateMachine {
             tag_engine,
             Transition {
                 next: crate::resource::transition::TransitionType::Enter(Location(
-                    "combat:init".into(),
+                    COMBAT_INIT.into(),
                 )),
                 actions: vec![],
             },

@@ -39,8 +39,8 @@ impl Choices {
         }
     }
 
-    pub fn current_transition(&self) -> Transition {
-        self.choices.get(self.cursor).unwrap().effect.clone()
+    pub fn current_transition(&self) -> Option<Transition> {
+        self.choices.get(self.cursor).map(|t| t.effect.clone())
     }
 }
 

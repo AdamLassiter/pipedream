@@ -21,7 +21,7 @@ impl CampaignWorld {
                             "There is a mysterious moss-covered shop in a small grove".into(),
                             (
                                 Predicate::Tag("woods:entrance:item:sword".into()),
-                                "You see a shiny sword lodged in a stone".into(),
+                                "You see a shiny sword lodged in a stone",
                             )
                                 .into(),
                         ],
@@ -30,7 +30,7 @@ impl CampaignWorld {
                         (
                             (
                                 Predicate::Tag("woods:entrance:item:sword".into()),
-                                "Pick up the sword".into(),
+                                "Pick up the sword",
                             )
                                 .into(),
                             Transition {
@@ -75,9 +75,11 @@ impl CampaignWorld {
                         (
                             "Battle inner demons".into(),
                             Transition {
-                                next: TransitionType::Combat(vec![Action::Add(
-                                    "enemy:name:Dave".into(),
-                                )]),
+                                next: TransitionType::Combat(vec![
+                                    Action::Add("enemy:name:Dave".into()),
+                                    Action::Add("player:card:Anathema Device".into()),
+                                    Action::Add("player:card:Bag of Endless Bags".into()),
+                                ]),
                                 actions: vec![],
                             },
                         ),
@@ -92,7 +94,7 @@ impl CampaignWorld {
                             "The shop is cozy, and staffed by a weathered crone".into(),
                             (
                                 Predicate::Tag("player:item:sword".into()),
-                                "Her eyes keep flitting to the sword at your side".into(),
+                                "Her eyes keep flitting to the sword at your side",
                             )
                                 .into(),
                         ],
@@ -108,7 +110,7 @@ impl CampaignWorld {
                         (
                             (
                                 Predicate::Tag("player:item:sword".into()),
-                                "Trade a sword for two swords".into(),
+                                "Trade a sword for two swords",
                             )
                                 .into(),
                             Transition {
@@ -122,7 +124,7 @@ impl CampaignWorld {
                         (
                             (
                                 Predicate::Tag("player:item:sword".into()),
-                                "Trade each sword for two swords".into(),
+                                "Trade each sword for two swords",
                             )
                                 .into(),
                             Transition {
@@ -133,7 +135,7 @@ impl CampaignWorld {
                         (
                             (
                                 Predicate::Tag("player:item:sword/2".into()),
-                                "Forge two swords into a cursed ring".into(),
+                                "Forge two swords into a cursed ring",
                             )
                                 .into(),
                             Transition {
@@ -147,7 +149,7 @@ impl CampaignWorld {
                         (
                             (
                                 Predicate::Tag("player:item:sword/2".into()),
-                                "Forge every other sword into a cursed ring".into(),
+                                "Forge every other sword into a cursed ring",
                             )
                                 .into(),
                             Transition {

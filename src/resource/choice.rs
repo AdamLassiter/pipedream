@@ -34,3 +34,9 @@ impl From<Vec<(Description, Transition)>> for Choices {
         }
     }
 }
+
+impl From<Transition> for Choices {
+    fn from(value: Transition) -> Self {
+        vec![("Continue".into(), value)].into()
+    }
+}

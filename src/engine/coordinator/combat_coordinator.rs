@@ -14,7 +14,6 @@ pub struct CombatCoordinator {
     pub tag_engine: TagEngine,
     pub player: CombatEntity,
     pub enemy: CombatEntity,
-    #[serde(skip_serializing)]
     pub state_machine: CombatStateMachine,
 }
 
@@ -26,6 +25,6 @@ impl Coordinator for CombatCoordinator {
 
     fn dump(&self) {
         let buffer = File::create("./combat-state.yaml").unwrap();
-        serde_yaml::to_writer(buffer, &self).unwrap();
+        serde_yml::to_writer(buffer, &self).unwrap();
     }
 }

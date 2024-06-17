@@ -1,4 +1,4 @@
-use std::{io, thread, time::Duration};
+use std::io;
 
 use pipedream::{
     engine::{
@@ -7,7 +7,7 @@ use pipedream::{
         state_machine::campaign_state_machine::CampaignStateMachine,
         tag_engine::TagEngine,
     },
-    interface::{app::App, utils},
+    interface::{app::App, utils::finish_and_panic_threads},
     resource::{location::Location, world::campaign_world::CampaignWorld},
 };
 
@@ -15,7 +15,7 @@ fn main() -> io::Result<()> {
     let (channel, ui_thread) = App::spawn();
 
     let world = CampaignWorld::generate();
-    let tag_engine = TagEngine::generate();
+    let tag_engine = TagEngine::generate_campaign();
     let start = Location("woods:entrance".into());
 
     let state_machine = CampaignStateMachine::new(world);
@@ -32,9 +32,7 @@ fn main() -> io::Result<()> {
 
     let engine_thread = GameCoordinator::spawn(campaign, channel);
 
-    while !(engine_thread.is_finished() || ui_thread.is_finished()) {
-        thread::sleep(Duration::from_millis(10))
-    }
-    let _ = utils::restore();
+    finish_and_panic_threads(vec![ui_thread, engine_thread]);
+
     Ok(())
 }

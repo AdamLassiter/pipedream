@@ -91,6 +91,12 @@ state_machine:
             - !Add
               - enemy:name:Dave
               - !Number 1.0
+            - !Add
+              - player:card:Anathema Device
+              - !Number 1.0
+            - !Add
+              - player:card:Bag of Endless Bags
+              - !Number 1.0
             actions: []
       woods:entrance:
         location: woods:entrance

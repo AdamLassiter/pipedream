@@ -1,0 +1,8 @@
+- [x] Basic threads and channels
+- [x] Campaign Text-based Adventure
+- [x] Tag Calculations
+- [ ] Auto-advancing scenes
+- [ ] Combat
+- [ ] Split resource loading
+- ...
+- [ ] Game

@@ -1,3 +1,4 @@
+#![feature(panic_update_hook)]
 extern crate log;
 
 pub mod engine;

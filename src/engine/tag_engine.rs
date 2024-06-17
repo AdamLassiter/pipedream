@@ -17,12 +17,6 @@ pub struct TagEngine {
 }
 
 impl TagEngine {
-    pub fn generate() -> Self {
-        TagEngine {
-            tags: Tags::from(["woods:entrance:item:sword".into()]),
-        }
-    }
-
     pub fn handle_actions(&mut self, actions: &Vec<Action>) {
         debug!(target:"Event/Actions", "{:?}", actions);
 

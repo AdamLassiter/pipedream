@@ -18,11 +18,23 @@ impl From<(Predicate, String)> for Description {
     }
 }
 
-impl From<&str> for Description {
-    fn from(descriptor: &str) -> Self {
+impl From<(Predicate, &str)> for Description {
+    fn from((predicate, descriptor): (Predicate, &str)) -> Self {
+        (predicate, descriptor.to_string()).into()
+    }
+}
+
+impl From<String> for Description {
+    fn from(descriptor: String) -> Self {
         Description {
             predicate: None,
-            descriptor: descriptor.to_string(),
+            descriptor,
         }
+    }
+}
+
+impl From<&str> for Description {
+    fn from(descriptor: &str) -> Self {
+        descriptor.to_string().into()
     }
 }
