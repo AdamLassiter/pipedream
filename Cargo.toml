@@ -9,6 +9,7 @@ edition = "2024"
 bichannel = "0.0.4"
 crossterm = "0.27.0"
 log = { version = "0.4.21", features = ["kv"] }
+rand = "0.8.5"
 ratatui = { version = "0.26.2", features = ["all-widgets"] }
 serde = { version = "1.0.201", features = ["derive"] }
 serde_yml = "0.0.10"

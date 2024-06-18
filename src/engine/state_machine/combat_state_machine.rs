@@ -28,9 +28,7 @@ impl CombatStateMachine {
         self.handle_effect(
             tag_engine,
             Transition {
-                next: crate::resource::transition::TransitionType::Enter(Location(
-                    COMBAT_INIT.into(),
-                )),
+                next: TransitionType::Enter(COMBAT_INIT.clone()),
                 actions: vec![],
             },
         )

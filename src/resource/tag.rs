@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, ops::Deref};
+use std::{clone::Clone, collections::BTreeMap, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +9,14 @@ pub struct Tag(pub TagKey, pub TagValue);
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct TagKey(pub String);
+
+impl Deref for TagKey {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TagValue {
@@ -49,6 +57,12 @@ impl From<&str> for Tag {
             val.map(|&v| TagValue::from(v))
                 .unwrap_or(TagValue::Number(1.)),
         )
+    }
+}
+
+impl From<String> for Tag {
+    fn from(value: String) -> Self {
+        value.as_str().into()
     }
 }
 

@@ -1,9 +1,11 @@
 use std::collections::BTreeMap;
 
+use rand::prelude::SliceRandom;
+
 use crate::{
     engine::tag_engine::TagEngine,
     resource::{
-        location::Location,
+        action::Action,
         scene::Scene,
         state::State,
         tag::Tag,
@@ -12,22 +14,22 @@ use crate::{
     },
 };
 
-use super::tags::{COMBAT_INIT, ENEMY_NAME, PLAYER_CARD, PLAYER_DRAW, PLAYER_PLAY};
+use super::tags::*;
 
 impl CombatWorld {
     pub fn generate() -> Self {
         let states = {
             let mut states = BTreeMap::new();
             states.insert(
-                Location(COMBAT_INIT.into()),
+                COMBAT_INIT.clone(),
                 DynamicStateFn::new(Self::combat_init_phase),
             );
             states.insert(
-                Location(PLAYER_DRAW.into()),
+                PLAYER_DRAW.clone(),
                 DynamicStateFn::new(Self::player_draw_phase),
             );
             states.insert(
-                Location(PLAYER_PLAY.into()),
+                PLAYER_PLAY.clone(),
                 DynamicStateFn::new(Self::player_play_phase),
             );
             states
@@ -36,35 +38,11 @@ impl CombatWorld {
         CombatWorld { states }
     }
 
-    pub fn player_play_phase(_tag_engine: &TagEngine) -> State {
-        State {
-            location: Location(PLAYER_PLAY.into()),
-            scene: Scene {
-                descriptions: vec![],
-            },
-            options: vec![].into(),
-        }
-    }
-
-    pub fn player_draw_phase(tag_engine: &TagEngine) -> State {
-        let player_cards_slice = tag_engine.find(&PLAYER_CARD.into());
-        State {
-            location: Location(PLAYER_DRAW.into()),
-            scene: Scene {
-                descriptions: player_cards_slice
-                    .iter()
-                    .map(|Tag(card, _)| format!("Play {:?}", card.0).into())
-                    .collect(),
-            },
-            options: vec![].into(),
-        }
-    }
-
     pub fn combat_init_phase(tag_engine: &TagEngine) -> State {
-        let enemy_name_slice = tag_engine.find(&ENEMY_NAME.into());
+        let enemy_name_slice = tag_engine.find(&ENEMY_NAME);
         let Tag(challenger, _) = enemy_name_slice.first().unwrap();
         State {
-            location: Location(COMBAT_INIT.into()),
+            location: COMBAT_INIT.clone(),
             scene: Scene {
                 descriptions: vec![
                     "A challenger appears!".into(),
@@ -72,10 +50,61 @@ impl CombatWorld {
                 ],
             },
             options: Transition {
-                next: TransitionType::Goto(Location(PLAYER_DRAW.into())),
+                next: TransitionType::Goto(PLAYER_DRAW.clone()),
                 actions: vec![],
             }
             .into(),
+        }
+    }
+
+    pub fn player_draw_phase(tag_engine: &TagEngine) -> State {
+        let player_deck_slice = tag_engine.find(&PLAYER_DECK);
+        let player_draw_card = player_deck_slice
+            .choose(&mut rand::thread_rng())
+            .unwrap()
+            .clone();
+        let player_hand_card = player_draw_card
+            .0
+            .replace(&PLAYER_DECK.0, &PLAYER_HAND.0)
+            .into();
+
+        State {
+            location: PLAYER_DRAW.clone(),
+            scene: Scene {
+                descriptions: vec!["Draw!".into()],
+            },
+            options: Transition {
+                next: TransitionType::Goto(PLAYER_PLAY.clone()),
+                actions: vec![
+                    Action::Remove(player_draw_card),
+                    Action::Add(player_hand_card),
+                ],
+            }
+            .into(),
+        }
+    }
+
+    pub fn player_play_phase(tag_engine: &TagEngine) -> State {
+        let player_hand_slice = tag_engine.find(&PLAYER_HAND);
+        State {
+            location: PLAYER_PLAY.clone(),
+            scene: Scene {
+                descriptions: vec![],
+            },
+
+            options: player_hand_slice
+                .iter()
+                .map(|Tag(card, _)| {
+                    (
+                        format!("Play {:?}", card.0).into(),
+                        Transition {
+                            next: TransitionType::Goto(PLAYER_RESOLVE_PLAY.clone()),
+                            actions: vec![],
+                        },
+                    )
+                })
+                .collect::<Vec<_>>()
+                .into(),
         }
     }
 }

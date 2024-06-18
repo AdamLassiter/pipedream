@@ -1,4 +1,8 @@
 #![feature(panic_update_hook)]
+#![feature(const_trait_impl)]
+#![feature(effects)]
+
+// Extern log for arbitrary provider
 extern crate log;
 
 pub mod engine;

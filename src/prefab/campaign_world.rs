@@ -77,8 +77,8 @@ impl CampaignWorld {
                             Transition {
                                 next: TransitionType::Combat(vec![
                                     Action::Add("enemy:name:Dave".into()),
-                                    Action::Add("player:card:Anathema Device".into()),
-                                    Action::Add("player:card:Bag of Endless Bags".into()),
+                                    Action::Add("player:deck:Anathema Device".into()),
+                                    Action::Add("player:deck:Bag of Endless Bags".into()),
                                 ]),
                                 actions: vec![],
                             },
