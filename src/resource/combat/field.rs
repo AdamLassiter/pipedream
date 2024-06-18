@@ -1,18 +1,30 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-use super::{cards::Cards, stats::Stats};
+use super::{card::Cards, stats::Stats};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CombatEntity {
-    pub(crate) cards: Cards,
-    pub(crate) stats: Stats,
+    pub cards: Cards,
+    pub stats: Stats,
 }
 
-#[derive(Serialize)]
-pub enum CombatPlace {
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum CombatSide {
+    Mine,
+    Yours,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum FieldPlace {
     Innate,
     Deck,
     Hand,
     Discard,
     Vanish,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CombatPlace {
+    pub side: CombatSide,
+    pub place: FieldPlace,
 }

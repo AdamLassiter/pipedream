@@ -1,22 +1,28 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fs::File};
 
 use rand::prelude::SliceRandom;
 
 use crate::{
-    engine::tag_engine::TagEngine,
-    resource::{
+    engine::{state_machine::combat_state_machine::CombatStateMachine, tag_engine::TagEngine},
+    resource::combat::card::Cards,
+    resource::core::{
         action::Action,
         scene::Scene,
         state::State,
         tag::Tag,
         transition::{Transition, TransitionType},
-        world::combat_world::{CombatWorld, DynamicStateFn},
     },
+    resource::world::combat_world::{CombatWorld, DynamicStateFn},
 };
 
 use super::tags::*;
 
 impl CombatWorld {
+    fn dump(&self) {
+        let buffer = File::create("./combat-world-state.yml").unwrap();
+        serde_yml::to_writer(buffer, &self).unwrap();
+    }
+
     pub fn generate() -> Self {
         let states = {
             let mut states = BTreeMap::new();
@@ -35,12 +41,20 @@ impl CombatWorld {
             states
         };
 
-        CombatWorld { states }
+        let world = CombatWorld {
+            states,
+            cards: Cards::generate(),
+        };
+
+        world.dump();
+        world
     }
 
-    pub fn combat_init_phase(tag_engine: &TagEngine) -> State {
+    pub fn combat_init_phase(_machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
         let enemy_name_slice = tag_engine.find(&ENEMY_NAME);
-        let Tag(challenger, _) = enemy_name_slice.first().unwrap();
+        let Tag {
+            key: challenger, ..
+        } = enemy_name_slice.first().unwrap();
         State {
             location: COMBAT_INIT.clone(),
             scene: Scene {
@@ -57,14 +71,15 @@ impl CombatWorld {
         }
     }
 
-    pub fn player_draw_phase(tag_engine: &TagEngine) -> State {
+    pub fn player_draw_phase(_machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
         let player_deck_slice = tag_engine.find(&PLAYER_DECK);
         let player_draw_card = player_deck_slice
             .choose(&mut rand::thread_rng())
             .unwrap()
             .clone();
+
         let player_hand_card = player_draw_card
-            .0
+            .key
             .replace(&PLAYER_DECK.0, &PLAYER_HAND.0)
             .into();
 
@@ -84,7 +99,7 @@ impl CombatWorld {
         }
     }
 
-    pub fn player_play_phase(tag_engine: &TagEngine) -> State {
+    pub fn player_play_phase(machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
         let player_hand_slice = tag_engine.find(&PLAYER_HAND);
         State {
             location: PLAYER_PLAY.clone(),
@@ -94,9 +109,10 @@ impl CombatWorld {
 
             options: player_hand_slice
                 .iter()
-                .map(|Tag(card, _)| {
+                .map(|Tag { key: card, .. }| {
+                    let card_data = machine.combat_world.cards.find(card);
                     (
-                        format!("Play {:?}", card.0).into(),
+                        format!("Play {:?} {:?}", card_data.name, card_data.costs).into(),
                         Transition {
                             next: TransitionType::Goto(PLAYER_RESOLVE_PLAY.clone()),
                             actions: vec![],

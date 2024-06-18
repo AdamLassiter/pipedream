@@ -4,7 +4,7 @@ use serde::Serialize;
 use crate::{
     engine::tag_engine::TagEngine,
     prefab::tags::*,
-    resource::{
+    resource::core::{
         choice::Choice,
         commands::UiCommand,
         description::Description,
@@ -12,8 +12,8 @@ use crate::{
         predicate::Predicate,
         state::State,
         transition::{Transition, TransitionType},
-        world::combat_world::CombatWorld,
     },
+    resource::world::combat_world::CombatWorld,
 };
 
 #[derive(Serialize)]
@@ -96,7 +96,7 @@ impl CombatStateMachine {
     fn current_state(&self, tag_engine: &TagEngine) -> State {
         let state_fn = self.combat_world.get_state(self.current.last().unwrap());
 
-        state_fn.apply(tag_engine)
+        state_fn.apply(self, tag_engine)
     }
 }
 

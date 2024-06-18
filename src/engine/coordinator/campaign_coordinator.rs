@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     engine::{state_machine::campaign_state_machine::CampaignStateMachine, tag_engine::TagEngine},
-    resource::{commands::UiCommand, location::Location, transition::Transition},
+    resource::core::{commands::UiCommand, location::Location, transition::Transition},
 };
 
 use super::Coordinator;
@@ -23,7 +23,7 @@ impl Coordinator for CampaignCoordinator {
     }
 
     fn dump(&self) {
-        let buffer = File::create("./campaign-state.yaml").unwrap();
+        let buffer = File::create("./campaign-coordinator-state.yaml").unwrap();
         serde_yml::to_writer(buffer, &self).unwrap();
     }
 }

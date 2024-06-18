@@ -1,6 +1,6 @@
 use std::sync::LazyLock;
 
-use crate::resource::{location::Location, tag::TagKey};
+use crate::resource::core::{location::Location, tag::TagKey};
 
 pub type Static<T> = LazyLock<T>;
 

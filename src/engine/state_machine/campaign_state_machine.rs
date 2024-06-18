@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     engine::tag_engine::TagEngine,
-    resource::{
+    resource::core::{
         choice::Choice,
         commands::UiCommand,
         description::Description,
@@ -11,8 +11,8 @@ use crate::{
         predicate::Predicate,
         state::State,
         transition::{Transition, TransitionType},
-        world::campaign_world::CampaignWorld,
     },
+    resource::world::campaign_world::CampaignWorld,
 };
 
 use super::combat_state_machine::CombatStateMachine;

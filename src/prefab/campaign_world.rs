@@ -1,17 +1,23 @@
-use crate::resource::state::State;
+use std::fs::File;
 
-use crate::resource::{
+use crate::resource::core::{
     action::Action,
     location::Location,
     predicate::Predicate,
     scene::Scene,
+    state::State,
     transition::{Transition, TransitionType},
-    world::campaign_world::CampaignWorld,
 };
+use crate::resource::world::campaign_world::CampaignWorld;
 
 impl CampaignWorld {
-    pub fn generate() -> CampaignWorld {
-        CampaignWorld {
+    fn dump(&self) {
+        let buffer = File::create("./campaign-world-state.yml").unwrap();
+        serde_yml::to_writer(buffer, &self).unwrap();
+    }
+
+    pub fn generate() -> Self {
+        let world = CampaignWorld {
             states: vec![
                 State {
                     location: Location("woods:entrance".into()),
@@ -167,6 +173,9 @@ impl CampaignWorld {
             ]
             .into_iter()
             .collect(),
-        }
+        };
+
+        world.dump();
+        world
     }
 }

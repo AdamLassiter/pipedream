@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::resource::choice::Choices;
+use super::choice::Choices;
 
 use super::{location::Location, scene::Scene};
 

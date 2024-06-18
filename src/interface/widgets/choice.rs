@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{List, ListState, StatefulWidget, Widget},
 };
 
-use crate::resource::{
+use crate::resource::core::{
     choice::{Choice, Choices},
     description::Description,
     transition::Transition,

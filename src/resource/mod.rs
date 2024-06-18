@@ -1,12 +1,3 @@
-pub mod action;
-pub mod choice;
 pub mod combat;
-pub mod commands;
-pub mod description;
-pub mod location;
-pub mod predicate;
-pub mod scene;
-pub mod state;
-pub mod tag;
-pub mod transition;
 pub mod world;
+pub mod core;

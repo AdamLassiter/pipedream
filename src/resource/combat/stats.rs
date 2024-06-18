@@ -1,20 +1,20 @@
 use std::collections::BTreeMap;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::engine::tag_engine::TagEngine;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Stats {
     pub(crate) resources: Resources,
     pub(crate) attributes: Attributes,
     pub(crate) tags: TagEngine,
 }
 
-#[derive(Serialize)]
-pub struct Resources(BTreeMap<Resource, i64>);
+#[derive(Serialize, Deserialize)]
+pub struct Resources(pub BTreeMap<Resource, i64>);
 
-#[derive(Serialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
 pub enum Resource {
     Health,
     Stamina,
@@ -22,10 +22,10 @@ pub enum Resource {
     Favour,
 }
 
-#[derive(Serialize)]
-pub struct Attributes(BTreeMap<Attribute, i64>);
+#[derive(Serialize, Deserialize)]
+pub struct Attributes(pub BTreeMap<Attribute, i64>);
 
-#[derive(Serialize)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
 pub enum Attribute {
     Strength,
     Endurance,
@@ -40,7 +40,7 @@ pub enum Attribute {
     Fortitude,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Element {
     Bludgeoning,
     Piercing,
@@ -63,13 +63,13 @@ pub enum Element {
     Necrotic,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Condition {
     Buff(Buff),
     Debuff(Debuff),
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Buff {
     Overwhelm,
     Guard,
@@ -92,7 +92,7 @@ pub enum Buff {
     Protect,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Debuff {
     Stun,
     Bleed,

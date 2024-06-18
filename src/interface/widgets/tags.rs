@@ -4,7 +4,7 @@ use ratatui::{
     widgets::{List, Widget},
 };
 
-use crate::resource::tag::Tags;
+use crate::resource::core::tag::Tags;
 
 impl Widget for &Tags {
     fn render(self, area: Rect, buf: &mut Buffer) {

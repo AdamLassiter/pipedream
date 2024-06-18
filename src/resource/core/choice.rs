@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::resource::{description::Description, transition::Transition};
+use super::{description::Description, transition::Transition};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choices {

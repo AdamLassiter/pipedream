@@ -4,7 +4,7 @@ use std::{
     time::Duration,
 };
 
-use crate::resource::{
+use crate::resource::core::{
     choice::Choices,
     commands::{EngineCommand, UiCommand},
     scene::Scene,

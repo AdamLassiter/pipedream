@@ -3,7 +3,7 @@ use std::ops::Bound::Included;
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::resource::{
+use crate::resource::core::{
     action::Action,
     predicate::Predicate,
     tag::{Tag, TagKey, TagValue, Tags},
@@ -22,25 +22,25 @@ impl TagEngine {
 
         actions.iter().for_each(|action| match action {
             Action::Insert(tag) => {
-                self.tags.insert(tag.0.clone(), tag.1.clone());
+                self.tags.insert(tag.key.clone(), tag.value.clone());
             }
             Action::Remove(tag) => {
-                self.tags.remove(&tag.0);
+                self.tags.remove(&tag.key);
             }
             Action::Add(tag) => {
-                let value = self.resolve(&tag.1);
+                let value = self.resolve(&tag.value);
                 self.compute(tag, |cur| cur + value, 0.)
             }
             Action::Subtract(tag) => {
-                let value = self.resolve(&tag.1);
+                let value = self.resolve(&tag.value);
                 self.compute(tag, |cur| cur - value, 0.)
             }
             Action::Multiply(tag) => {
-                let value = self.resolve(&tag.1);
+                let value = self.resolve(&tag.value);
                 self.compute(tag, |cur| cur * value, 1.)
             }
             Action::Divide(tag) => {
-                let value = self.resolve(&tag.1);
+                let value = self.resolve(&tag.value);
                 self.compute(tag, |cur| cur / value, 1.)
             }
             Action::None => { /* None */ }
@@ -63,18 +63,18 @@ impl TagEngine {
     }
 
     fn compute(&mut self, new: &Tag, op: impl Fn(f64) -> f64, identity: f64) {
-        let current = self.tags.get(&new.0);
+        let current = self.tags.get(&new.key);
         let cur_val = current.map(|curr| self.resolve(curr)).unwrap_or(identity);
 
         self.tags
-            .insert(new.0.clone(), TagValue::Number(op(cur_val)));
+            .insert(new.key.clone(), TagValue::Number(op(cur_val)));
     }
 
     pub fn contains(&self, tag: &Tag) -> bool {
-        match self.tags.get(&tag.0) {
-            Some(TagValue::Number(val)) => self.resolve(&tag.1) <= *val,
+        match self.tags.get(&tag.key) {
+            Some(TagValue::Number(val)) => self.resolve(&tag.value) <= *val,
             Some(TagValue::Tag(tk)) => {
-                self.resolve(&tag.1) <= self.resolve(&TagValue::Tag(tk.clone()))
+                self.resolve(&tag.value) <= self.resolve(&TagValue::Tag(tk.clone()))
             }
             None => false,
         }

@@ -4,7 +4,8 @@ use serde::Serialize;
 
 use crate::{
     engine::{state_machine::combat_state_machine::CombatStateMachine, tag_engine::TagEngine},
-    resource::{combat::field::CombatEntity, commands::UiCommand, transition::Transition},
+    resource::combat::field::CombatEntity,
+    resource::core::{commands::UiCommand, transition::Transition},
 };
 
 use super::Coordinator;
@@ -24,7 +25,7 @@ impl Coordinator for CombatCoordinator {
     }
 
     fn dump(&self) {
-        let buffer = File::create("./combat-state.yaml").unwrap();
+        let buffer = File::create("./combat-coordinator-state.yaml").unwrap();
         serde_yml::to_writer(buffer, &self).unwrap();
     }
 }

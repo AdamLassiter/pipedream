@@ -1,0 +1,129 @@
+states:
+  ephemeral:shop:
+    location: ephemeral:shop
+    scene:
+      descriptions:
+      - descriptor: The shop is cozy, and staffed by a weathered crone
+      - predicate: !Tag
+          key: player:item:sword
+          value: !Number 1.0
+        descriptor: Her eyes keep flitting to the sword at your side
+    choices:
+    - description:
+        descriptor: Leave the shop
+      effect:
+        next: Leave
+        actions: []
+    - description:
+        predicate: !Tag
+          key: player:item:sword
+          value: !Number 1.0
+        descriptor: Trade a sword for two swords
+      effect:
+        next: None
+        actions:
+        - !Subtract
+          key: player:item:sword
+          value: !Number 1.0
+        - !Add
+          key: player:item:sword
+          value: !Number 2.0
+    - description:
+        predicate: !Tag
+          key: player:item:sword
+          value: !Number 1.0
+        descriptor: Trade each sword for two swords
+      effect:
+        next: None
+        actions:
+        - !Multiply
+          key: player:item:sword
+          value: !Number 2.0
+    - description:
+        predicate: !Tag
+          key: player:item:sword
+          value: !Number 2.0
+        descriptor: Forge two swords into a cursed ring
+      effect:
+        next: None
+        actions:
+        - !Subtract
+          key: player:item:sword
+          value: !Number 2.0
+        - !Add
+          key: player:item:cursed-ring
+          value: !Number 1.0
+    - description:
+        predicate: !Tag
+          key: player:item:sword
+          value: !Number 2.0
+        descriptor: Forge every other sword into a cursed ring
+      effect:
+        next: None
+        actions:
+        - !Divide
+          key: player:item:sword
+          value: !Number 2.0
+        - !Add
+          key: player:item:cursed-ring
+          value: !Tag player:item:sword
+  woods:depths:
+    location: woods:depths
+    scene:
+      descriptions:
+      - descriptor: You are lost in the woods
+    choices:
+    - description:
+        descriptor: Go deeper into the woods
+      effect:
+        next: !Goto woods:depths
+        actions: []
+    - description:
+        descriptor: Battle inner demons
+      effect:
+        next: !Combat
+        - !Add
+          key: enemy:name:Dave
+          value: !Number 1.0
+        - !Add
+          key: player:deck:Anathema Device
+          value: !Number 1.0
+        - !Add
+          key: player:deck:Bag of Endless Bags
+          value: !Number 1.0
+        actions: []
+  woods:entrance:
+    location: woods:entrance
+    scene:
+      descriptions:
+      - descriptor: You are in the woods
+      - descriptor: There is a mysterious moss-covered shop in a small grove
+      - predicate: !Tag
+          key: woods:entrance:item:sword
+          value: !Number 1.0
+        descriptor: You see a shiny sword lodged in a stone
+    choices:
+    - description:
+        predicate: !Tag
+          key: woods:entrance:item:sword
+          value: !Number 1.0
+        descriptor: Pick up the sword
+      effect:
+        next: None
+        actions:
+        - !Insert
+          key: player:item:sword
+          value: !Number 1.0
+        - !Remove
+          key: woods:entrance:item:sword
+          value: !Number 1.0
+    - description:
+        descriptor: Go into the shop
+      effect:
+        next: !Enter ephemeral:shop
+        actions: []
+    - description:
+        descriptor: Go deeper into the woods
+      effect:
+        next: !Goto woods:depths
+        actions: []

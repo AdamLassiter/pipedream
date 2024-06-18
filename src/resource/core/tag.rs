@@ -2,10 +2,14 @@ use std::{clone::Clone, collections::BTreeMap, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
+pub static KEY_SEP: char = ':';
 pub static VAL_SEP: char = '/';
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tag(pub TagKey, pub TagValue);
+pub struct Tag {
+    pub key: TagKey,
+    pub value: TagValue,
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct TagKey(pub String);
@@ -15,6 +19,12 @@ impl Deref for TagKey {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl TagKey {
+    pub fn trailing_key(&self) -> &str {
+        self.split(KEY_SEP).last().unwrap_or("")
     }
 }
 
@@ -52,11 +62,12 @@ impl From<&str> for Tag {
         let parts = value.split(VAL_SEP).collect::<Vec<_>>();
         let (&key, val) = (parts.first().unwrap(), parts.get(1));
 
-        Self(
-            key.into(),
-            val.map(|&v| TagValue::from(v))
+        Self {
+            key: key.into(),
+            value: val
+                .map(|&v| TagValue::from(v))
                 .unwrap_or(TagValue::Number(1.)),
-        )
+        }
     }
 }
 
@@ -68,14 +79,14 @@ impl From<String> for Tag {
 
 impl From<(TagKey, TagValue)> for Tag {
     fn from((key, value): (TagKey, TagValue)) -> Self {
-        Self(key, value)
+        Self{ key, value }
     }
 }
 
 impl From<&Tag> for (TagKey, TagValue) {
-    fn from(val: &Tag) -> Self {
-        let Tag(key, val) = val;
-        (key.clone(), val.clone())
+    fn from(value: &Tag) -> Self {
+        let Tag { key, value } = value;
+        (key.clone(), value.clone())
     }
 }
 

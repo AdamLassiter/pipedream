@@ -1,4 +1,4 @@
-use crate::resource::{location::Location, state::State};
+use crate::resource::core::{location::Location, state::State};
 
 use std::collections::BTreeMap;
 
@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CampaignWorld {
-    pub(crate) states: BTreeMap<Location, State>,
+    pub states: BTreeMap<Location, State>,
 }
 
 impl CampaignWorld {

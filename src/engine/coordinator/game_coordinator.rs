@@ -2,15 +2,17 @@ use std::io;
 use std::thread;
 use std::thread::JoinHandle;
 
-use crate::resource::commands::EngineCommand;
-use crate::resource::commands::UiCommand;
-use crate::resource::location::Location;
-use crate::resource::transition::Transition;
+use crate::resource::core::transition::TransitionType;
+use crate::resource::core::{
+    commands::{EngineCommand, UiCommand},
+    location::Location,
+    transition::Transition,
+};
 
 use bichannel::Channel;
 
-use super::coordinator::campaign_coordinator::CampaignCoordinator;
-use super::coordinator::Coordinator;
+use super::campaign_coordinator::CampaignCoordinator;
+use super::Coordinator;
 
 pub struct GameCoordinator {
     pub campaign: CampaignCoordinator,
@@ -39,7 +41,7 @@ impl GameCoordinator {
 
     fn init(&mut self, start: Location) {
         self.handle_effect(Transition {
-            next: crate::resource::transition::TransitionType::Enter(start),
+            next: TransitionType::Enter(start),
             actions: vec![],
         });
     }
