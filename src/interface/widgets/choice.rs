@@ -13,7 +13,7 @@ use crate::resource::core::{
 };
 
 impl Choices {
-    pub(crate) fn cursor_down(&mut self) {
+    pub fn cursor_down(&mut self) {
         if !self.choices.is_empty() {
             self.cursor = self
                 .cursor
@@ -22,7 +22,7 @@ impl Choices {
         }
     }
 
-    pub(crate) fn cursor_up(&mut self) {
+    pub fn cursor_up(&mut self) {
         if !self.choices.is_empty() {
             self.cursor = self
                 .cursor

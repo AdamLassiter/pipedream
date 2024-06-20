@@ -6,9 +6,9 @@ use crate::engine::tag_engine::TagEngine;
 
 #[derive(Serialize, Deserialize)]
 pub struct Stats {
-    pub(crate) resources: Resources,
-    pub(crate) attributes: Attributes,
-    pub(crate) tags: TagEngine,
+    pub resources: Resources,
+    pub attributes: Attributes,
+    pub tags: TagEngine,
 }
 
 #[derive(Serialize, Deserialize)]
