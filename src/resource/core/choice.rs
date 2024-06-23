@@ -4,7 +4,7 @@ use super::{description::Description, transition::Transition};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choices {
-    pub choices: Vec<Choice>,
+    pub choices: ChoiceType,
     #[serde(default = "zero")]
     #[serde(skip_serializing)]
     pub cursor: usize,
@@ -16,20 +16,28 @@ pub struct Choice {
     pub effect: Transition,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ChoiceType {
+    Auto(Transition),
+    Manual(Vec<Choice>),
+}
+
 fn zero() -> usize {
     0
 }
 
 impl From<Vec<(Description, Transition)>> for Choices {
     fn from(value: Vec<(Description, Transition)>) -> Self {
-        Choices {
-            choices: value
-                .into_iter()
-                .map(|(description, effect)| Choice {
-                    description,
-                    effect,
-                })
-                .collect(),
+        Self {
+            choices: ChoiceType::Manual(
+                value
+                    .into_iter()
+                    .map(|(description, effect)| Choice {
+                        description,
+                        effect,
+                    })
+                    .collect(),
+            ),
             cursor: 0,
         }
     }
@@ -37,6 +45,9 @@ impl From<Vec<(Description, Transition)>> for Choices {
 
 impl From<Transition> for Choices {
     fn from(value: Transition) -> Self {
-        vec![("Continue".into(), value)].into()
+        Self {
+            choices: ChoiceType::Auto(value),
+            cursor: 0,
+        }
     }
 }

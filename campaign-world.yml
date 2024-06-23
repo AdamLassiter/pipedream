@@ -9,7 +9,7 @@ states:
           value: !Number
             bits: 65536
         descriptor: Her eyes keep flitting to the sword at your side
-    choices:
+    choices: !Manual
     - description:
         descriptor: Leave the shop
       effect:
@@ -83,7 +83,7 @@ states:
     scene:
       descriptions:
       - descriptor: You are lost in the woods
-    choices:
+    choices: !Manual
     - description:
         descriptor: Go deeper into the woods
       effect:
@@ -117,7 +117,7 @@ states:
           value: !Number
             bits: 65536
         descriptor: You see a shiny sword lodged in a stone
-    choices:
+    choices: !Manual
     - description:
         predicate: !Tag
           key: woods:entrance:item:sword

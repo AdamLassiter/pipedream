@@ -20,7 +20,7 @@ impl Npcs {
         let cards = Self(BTreeMap::from_iter(
             Self::generate_vec()
                 .into_iter()
-                .map(|card| (card.name.clone(), card)),
+                .map(|npc| (npc.name.clone(), npc)),
         ));
 
         cards.dump();
@@ -31,11 +31,11 @@ impl Npcs {
         vec![
             Npc {
                 name: "Slightly Larger Dave".into(),
-                tags: vec!["$my:name:Slightly Larger Dave".into()].into(),
+                tags: vec!["enemy:name:Slightly Larger Dave".into()].into(),
             },
             Npc {
-                name: "Slightly Larger Dave".into(),
-                tags: vec!["$my:name:Dave".into()].into(),
+                name: "Dave".into(),
+                tags: vec!["enemy:name:Dave".into()].into(),
             },
         ]
     }

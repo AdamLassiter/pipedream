@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::{
     interface::{handler::Handler, Component},
     resource::core::{
-        choice::Choices,
+        choice::{ChoiceType, Choices},
         commands::{EngineCommand, UiCommand},
         scene::Scene,
     },
@@ -92,7 +92,11 @@ impl Widget for &Campaign {
         };
 
         let [description_area, choices_area] =
-            vertical(self.options.as_ref().map(|x| x.choices.len())).areas(area);
+            vertical(self.options.as_ref().map(|x| match &x.choices {
+                ChoiceType::Manual(choices) => choices.len(),
+                ChoiceType::Auto(_) => 0,
+            }))
+            .areas(area);
 
         if let Some(scene) = self.scene.as_ref() {
             scene.render(description_area, buf);

@@ -25,3 +25,14 @@ cards:
         bits: 131072
       $your:effect:discard: !Number
         bits: 131072
+npcs:
+  Dave:
+    name: Dave
+    tags:
+      enemy:name:Dave: !Number
+        bits: 65536
+  Slightly Larger Dave:
+    name: Slightly Larger Dave
+    tags:
+      enemy:name:Slightly Larger Dave: !Number
+        bits: 65536

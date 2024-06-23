@@ -7,27 +7,27 @@ use ratatui::{
 };
 
 use crate::resource::core::{
-    choice::{Choice, Choices},
+    choice::{Choice, ChoiceType, Choices},
     description::Description,
     transition::Transition,
 };
 
 impl Choices {
     pub fn cursor_down(&mut self) {
-        if !self.choices.is_empty() {
+        if let ChoiceType::Manual(choices) = &self.choices && !choices.is_empty() {
             self.cursor = self
                 .cursor
                 .saturating_add(1)
-                .clamp(0, self.choices.len() - 1);
+                .clamp(0, choices.len() - 1);
         }
     }
 
     pub fn cursor_up(&mut self) {
-        if !self.choices.is_empty() {
+        if let ChoiceType::Manual(choices) = &self.choices && !choices.is_empty() {
             self.cursor = self
                 .cursor
                 .saturating_sub(1)
-                .clamp(0, self.choices.len() - 1);
+                .clamp(0, choices.len() - 1);
         }
     }
 
@@ -40,25 +40,33 @@ impl Choices {
     }
 
     pub fn current_transition(&self) -> Option<Transition> {
-        self.choices.get(self.cursor).map(|t| t.effect.clone())
+        match &self.choices {
+            ChoiceType::Manual(choices) => choices.get(self.cursor).map(|t| t.effect.clone()),
+            ChoiceType::Auto(transition) =>  Some(transition.clone()),
+        }
     }
 }
 
 impl Widget for &Choices {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let options = Text::from(
-            self.choices
-                .iter()
-                .map(
-                    |Choice {
-                         description: Description { descriptor, .. },
-                         ..
-                     }| { Line::from(vec![descriptor.into()]) },
-                )
-                .collect::<Vec<_>>(),
-        );
-        let mut state = ListState::default().with_selected(Some(self.cursor));
-        let opts_list = List::new(options).highlight_symbol(">> ");
-        StatefulWidget::render(opts_list, area, buf, &mut state);
+        match &self.choices {
+            ChoiceType::Manual(choices) => {
+                let options = Text::from(
+                    choices
+                        .iter()
+                        .map(
+                            |Choice {
+                                 description: Description { descriptor, .. },
+                                 ..
+                             }| { Line::from(vec![descriptor.into()]) },
+                        )
+                        .collect::<Vec<_>>(),
+                );
+                let mut state = ListState::default().with_selected(Some(self.cursor));
+                let opts_list = List::new(options).highlight_symbol(">> ");
+                StatefulWidget::render(opts_list, area, buf, &mut state);
+            }
+            ChoiceType::Auto(_) => {/* None */},
+        }
     }
 }

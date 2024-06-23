@@ -6,7 +6,7 @@ use crate::{
     prefab::tags::Static,
     resource::{
         core::{
-            choice::Choice,
+            choice::{Choice, ChoiceType},
             commands::UiCommand,
             description::Description,
             location::Location,
@@ -91,12 +91,14 @@ impl CombatStateMachine {
         scene
             .descriptions
             .retain(|Description { predicate, .. }| test(predicate));
-        options.choices.retain(
-            |Choice {
-                 description: Description { predicate, .. },
-                 ..
-             }| test(predicate),
-        );
+        if let ChoiceType::Manual(ref mut choices) = options.choices {
+            choices.retain(
+                |Choice {
+                     description: Description { predicate, .. },
+                     ..
+                 }| test(predicate),
+            );
+        }
 
         vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }

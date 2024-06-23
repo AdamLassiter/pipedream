@@ -5,7 +5,7 @@ use rand::prelude::SliceRandom;
 use crate::{
     engine::{state_machine::combat_state_machine::*, tag_engine::TagEngine},
     resource::{
-        combat::card::Cards,
+        combat::{card::Cards, npc::Npcs},
         core::{
             action::Action,
             scene::Scene,
@@ -51,23 +51,24 @@ impl CombatWorld {
         let world = CombatWorld {
             states,
             cards: Cards::generate(),
+            npcs: Npcs::generate(),
         };
 
         world.dump();
         world
     }
 
-    pub fn combat_init_phase(_machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
+    pub fn combat_init_phase(machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
         let enemy_name_slice = tag_engine.find(&ENEMY_NAME);
-        let Tag {
-            key: challenger, ..
-        } = enemy_name_slice.first().unwrap();
+        let Tag { key: enemy, .. } = enemy_name_slice.first().unwrap();
+        let enemy_data = machine.combat_world.npcs.find(enemy);
+
         State {
             location: COMBAT_INIT.clone(),
             scene: Scene {
                 descriptions: vec![
                     "A challenger appears!".into(),
-                    format!("{:?} is looking for a fight", challenger.0).into(),
+                    format!("{:?} is looking for a fight", enemy_data.name).into(),
                 ],
             },
             options: Transition {

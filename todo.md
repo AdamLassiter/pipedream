@@ -1,7 +1,7 @@
 - [x] Basic threads and channels
 - [x] Campaign Text-based Adventure
 - [x] Tag Calculations
-- [x] Auto-advancing scenes
+- [ ] Auto-advancing scenes
 - [x] UI tabs
 - [ ] Combat
 - [ ] Split resource loading

@@ -5,7 +5,7 @@ use serde::Serialize;
 use crate::{
     engine::{state_machine::combat_state_machine::CombatStateMachine, tag_engine::TagEngine},
     resource::{
-        combat::card::Cards,
+        combat::{card::Cards, npc::Npcs},
         core::{location::Location, state::State},
     },
 };
@@ -35,6 +35,7 @@ pub struct CombatWorld {
     #[serde(skip_serializing)]
     pub states: BTreeMap<Location, DynamicStateFn>,
     pub cards: Cards,
+    pub npcs: Npcs,
 }
 
 impl CombatWorld {
