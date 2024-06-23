@@ -1,18 +1,4 @@
-use std::collections::BTreeMap;
-
 use serde::{Deserialize, Serialize};
-
-use crate::engine::tag_engine::TagEngine;
-
-#[derive(Serialize, Deserialize)]
-pub struct Stats {
-    pub resources: Resources,
-    pub attributes: Attributes,
-    pub tags: TagEngine,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Resources(pub BTreeMap<Resource, i64>);
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
 pub enum Resource {
@@ -21,9 +7,6 @@ pub enum Resource {
     Mana,
     Favour,
 }
-
-#[derive(Serialize, Deserialize)]
-pub struct Attributes(pub BTreeMap<Attribute, i64>);
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
 pub enum Attribute {

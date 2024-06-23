@@ -8,13 +8,13 @@ use pipedream::{
         state_machine::campaign_state_machine::CampaignStateMachine,
         tag_engine::TagEngine,
     },
-    interface::{app::App, utils::finish_and_panic_threads},
+    interface::{tui::Tui, utils::finish_and_panic_threads},
     resource::core::location::Location,
     resource::world::campaign_world::CampaignWorld,
 };
 
 fn main() -> io::Result<()> {
-    let (channel, ui_thread) = App::spawn();
+    let (channel, ui_thread) = Tui::spawn();
 
     let world = CampaignWorld::generate();
     let tag_engine = TagEngine::generate_campaign();

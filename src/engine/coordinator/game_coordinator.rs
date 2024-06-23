@@ -22,7 +22,7 @@ pub struct GameCoordinator {
 
 impl GameCoordinator {
     pub fn handle_commands(&mut self) {
-        while let Ok(ev) = self.channel.try_recv() {
+        while let Ok(ev) = self.channel.recv() {
             match ev {
                 EngineCommand::RespondWithChoice(effect) => {
                     self.handle_effect(effect);

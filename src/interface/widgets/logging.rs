@@ -6,6 +6,8 @@ use ratatui::{
 };
 use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget, TuiWidgetState};
 
+use crate::interface::{handler::Handler, Component};
+
 pub struct Logging {
     log: TuiWidgetState,
 }
@@ -23,6 +25,33 @@ impl Default for Logging {
         Self::new()
     }
 }
+
+impl Handler for Logging {
+    fn handle_key_event(
+        &mut self,
+        _key_event: crossterm::event::KeyEvent,
+        _channel: &bichannel::Channel<
+            crate::resource::core::commands::EngineCommand,
+            crate::resource::core::commands::UiCommand,
+        >,
+    ) {
+    }
+
+    fn handle_tick_event(
+        &mut self,
+        _channel: &bichannel::Channel<
+            crate::resource::core::commands::EngineCommand,
+            crate::resource::core::commands::UiCommand,
+        >,
+    ) {
+    }
+
+    fn handle_render(&self, area: Rect, buf: &mut Buffer) {
+        self.render(area, buf)
+    }
+}
+
+impl Component for Logging {}
 
 impl Widget for &Logging {
     fn render(self, area: Rect, buf: &mut Buffer) {

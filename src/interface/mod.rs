@@ -1,6 +1,6 @@
 use handler::Handler;
 
-pub mod app;
+pub mod tui;
 pub mod handler;
 pub mod utils;
 pub mod widgets;

@@ -10,7 +10,7 @@ impl Widget for &Tags {
     fn render(self, area: Rect, buf: &mut Buffer) {
         Widget::render(
             List::new(
-                self.iter()
+                self.0.iter()
                     .map(|(key, val)| format!("{:?}/{:?}", key.0, val)),
             ),
             area,

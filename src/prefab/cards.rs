@@ -1,14 +1,13 @@
 use std::{collections::BTreeMap, fs::File};
 
-use crate::resource::combat::{
-    card::{Card, Cards},
-    field::{CombatPlace, CombatSide, FieldPlace},
-    stats::{Condition, Debuff, Element, Resource},
+use crate::resource::{
+    combat::card::{Card, Cards},
+    core::predicate::Predicate,
 };
 
 impl Cards {
     fn dump(&self) {
-        let buffer = File::create("./cards-state.yml").unwrap();
+        let buffer = File::create("./cards.yml").unwrap();
         serde_yml::to_writer(buffer, &self).unwrap();
     }
 
@@ -27,36 +26,16 @@ impl Cards {
         vec![
             Card {
                 name: "Anathema Device".into(),
-                starts: CombatPlace {
-                    side: CombatSide::Mine,
-                    place: FieldPlace::Innate,
-                },
-                costs: BTreeMap::from([(Resource::Mana, 100)]),
-                damages: BTreeMap::from([((CombatSide::Yours, Element::Force), 100)]),
-                conditions: BTreeMap::from([((CombatSide::Yours, Condition::Debuff(Debuff::Shatter)), 100)]),
-                manipulations: BTreeMap::from([((
-                    CombatPlace {
-                        side: CombatSide::Yours,
-                        place: FieldPlace::Deck,
-                    },
-                    CombatPlace {
-                        side: CombatSide::Mine,
-                        place: FieldPlace::Hand,
-                    },
-                    ), 1),
-                ]),
-                applies_tags: BTreeMap::from([(CombatSide::Yours, vec!["card:debuff:special:omen".into()])]),
-                has_tags: vec!["card:type:device".into()],
+                predicate: Predicate::Tag("$my:resource:mana/10".into()),
+                applies_tags: vec!["$my:special:anathema/0.5".into()].into(),
+                has_tags: vec!["card:type:device".into()].into(),
             },
             Card {
                 name: "Bag of Endless Bags".into(),
-                starts: CombatPlace{ side: CombatSide::Mine, place: FieldPlace::Deck },
-                costs: BTreeMap::from([(Resource::Mana, 100)]),
-                damages: BTreeMap::new(),
-                conditions: BTreeMap::new(),
-                manipulations: BTreeMap::new(),
-                applies_tags: BTreeMap::new(),
-                has_tags: vec!["card:type:bag".into()],
+                predicate: Predicate::Tag("$my:resource:stamina/10".into()),
+                applies_tags: vec!["$my:effect:draw/2".into(), "$your:effect:discard/2".into()]
+                    .into(),
+                has_tags: vec!["card:type:bag".into()].into(),
             },
         ]
     }

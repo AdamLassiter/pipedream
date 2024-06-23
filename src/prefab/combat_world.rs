@@ -3,23 +3,30 @@ use std::{collections::BTreeMap, fs::File};
 use rand::prelude::SliceRandom;
 
 use crate::{
-    engine::{state_machine::combat_state_machine::CombatStateMachine, tag_engine::TagEngine},
-    resource::combat::card::Cards,
-    resource::core::{
-        action::Action,
-        scene::Scene,
-        state::State,
-        tag::Tag,
-        transition::{Transition, TransitionType},
+    engine::{state_machine::combat_state_machine::*, tag_engine::TagEngine},
+    resource::{
+        combat::card::Cards,
+        core::{
+            action::Action,
+            scene::Scene,
+            state::State,
+            tag::{Tag, TagKey},
+            transition::{Transition, TransitionType},
+        },
+        world::combat_world::{CombatWorld, DynamicStateFn},
     },
-    resource::world::combat_world::{CombatWorld, DynamicStateFn},
 };
 
-use super::tags::*;
+use super::{npcs::ENEMY_NAME, tags::Static};
+
+pub static PLAYER_HAND: Static<TagKey> = Static::new(|| TagKey("player:hand".to_string()));
+pub static PLAYER_DECK: Static<TagKey> = Static::new(|| TagKey("player:deck".to_string()));
+pub static ENEMY_HAND: Static<TagKey> = Static::new(|| TagKey("enemy:hand".to_string()));
+pub static ENEMY_DECK: Static<TagKey> = Static::new(|| TagKey("enemy:deck".to_string()));
 
 impl CombatWorld {
     fn dump(&self) {
-        let buffer = File::create("./combat-world-state.yml").unwrap();
+        let buffer = File::create("./combat-world.yml").unwrap();
         serde_yml::to_writer(buffer, &self).unwrap();
     }
 
@@ -109,10 +116,11 @@ impl CombatWorld {
 
             options: player_hand_slice
                 .iter()
-                .map(|Tag { key: card, .. }| {
-                    let card_data = machine.combat_world.cards.find(card);
+                .map(|Tag { key: card, .. }| machine.combat_world.cards.find(card))
+                .filter(|&card_data| tag_engine.satisfies(&card_data.predicate))
+                .map(|card_data| {
                     (
-                        format!("Play {:?} {:?}", card_data.name, card_data.costs).into(),
+                        format!("Play {:?} {:?}", card_data.name, card_data.predicate).into(),
                         Transition {
                             next: TransitionType::Goto(PLAYER_RESOLVE_PLAY.clone()),
                             actions: vec![],

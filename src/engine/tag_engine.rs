@@ -6,10 +6,8 @@ use serde::{Deserialize, Serialize};
 use crate::resource::core::{
     action::Action,
     predicate::Predicate,
-    tag::{Tag, TagKey, TagValue, Tags},
+    tag::{Tag, TagKey, TagValue, Tags, FI64},
 };
-
-static MAX_RESOLVE_DEPTH: usize = 256;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TagEngine {
@@ -22,62 +20,66 @@ impl TagEngine {
 
         actions.iter().for_each(|action| match action {
             Action::Insert(tag) => {
-                self.tags.insert(tag.key.clone(), tag.value.clone());
+                self.tags.insert(&tag.key, &tag.value);
             }
             Action::Remove(tag) => {
                 self.tags.remove(&tag.key);
             }
-            Action::Add(tag) => {
-                let value = self.resolve(&tag.value);
-                self.compute(tag, |cur| cur + value, 0.)
-            }
-            Action::Subtract(tag) => {
-                let value = self.resolve(&tag.value);
-                self.compute(tag, |cur| cur - value, 0.)
-            }
-            Action::Multiply(tag) => {
-                let value = self.resolve(&tag.value);
-                self.compute(tag, |cur| cur * value, 1.)
-            }
-            Action::Divide(tag) => {
-                let value = self.resolve(&tag.value);
-                self.compute(tag, |cur| cur / value, 1.)
-            }
+            Action::Add(tag) => self.compute(tag, |cur, new| cur + new, 0.into()),
+            Action::Subtract(tag) => self.compute(tag, |cur, new| cur - new, 0.into()),
+            Action::Multiply(tag) => self.compute(tag, |cur, new| cur * new, 1.into()),
+            Action::Divide(tag) => self.compute(tag, |cur, new| cur / new, 1.into()),
             Action::None => { /* None */ }
         });
 
         debug!(target:"State/Tags", "{:?}", self.tags);
     }
 
-    fn resolve(&self, tag: &TagValue) -> f64 {
-        let mut next = tag.clone();
-        for _ in 1..MAX_RESOLVE_DEPTH {
-            match next {
-                TagValue::Tag(tk) => {
-                    next = self.tags.get(&tk).unwrap().clone();
-                }
-                TagValue::Number(val) => return val,
-            }
-        }
-        panic!("Started from {:?} and reached max depth at {:?}", tag, next);
-    }
+    fn compute(&mut self, new: &Tag, op: impl Fn(FI64, FI64) -> FI64, identity: FI64) {
+        let current = match self.tags.get(&new.key) {
+            Some(TagValue::Tag(tag)) => panic!(
+                "Expected Number value when resolving key {:?}, but was Tag {:?}",
+                new.key, tag
+            ),
+            Some(TagValue::Number(value)) => value,
+            None => &identity,
+        };
 
-    fn compute(&mut self, new: &Tag, op: impl Fn(f64) -> f64, identity: f64) {
-        let current = self.tags.get(&new.key);
-        let cur_val = current.map(|curr| self.resolve(curr)).unwrap_or(identity);
+        let new_value = match &new.value {
+            TagValue::Tag(tag) => match self.tags.get(tag) {
+                Some(TagValue::Tag(tag)) => panic!(
+                    "Expected Number value when computing key {:?}, but was Tag {:?}",
+                    new.key, tag
+                ),
+                Some(TagValue::Number(value)) => value,
+                None => &0.into(),
+            },
+            TagValue::Number(value) => value,
+        };
 
         self.tags
-            .insert(new.key.clone(), TagValue::Number(op(cur_val)));
+            .insert(&new.key, &TagValue::Number(op(*current, *new_value)));
     }
 
     pub fn contains(&self, tag: &Tag) -> bool {
-        match self.tags.get(&tag.key) {
-            Some(TagValue::Number(val)) => self.resolve(&tag.value) <= *val,
-            Some(TagValue::Tag(tk)) => {
-                self.resolve(&tag.value) <= self.resolve(&TagValue::Tag(tk.clone()))
-            }
-            None => false,
-        }
+        let stored_val = match self.tags.get(&tag.key) {
+            Some(TagValue::Number(value)) => value,
+            Some(TagValue::Tag(tk)) => panic!(
+                "Expected Number value when checking contains key {:?}, but was Tag {:?}",
+                tag.key, tk
+            ),
+            _ => &0.into(),
+        };
+
+        let request_value = match &tag.value {
+            TagValue::Tag(key) => match self.tags.get(key) {
+                Some(TagValue::Number(value)) => value,
+                _ => todo!(),
+            },
+            TagValue::Number(value) => value,
+        };
+
+        *request_value <= *stored_val
     }
 
     pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {

@@ -12,6 +12,7 @@ use ratatui::{
     symbols::border,
     widgets::{block::*, *},
 };
+use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use super::{
     utils,
@@ -19,22 +20,34 @@ use super::{
     Component,
 };
 
-pub struct App {
+#[derive(Display, FromRepr, EnumCount, VariantArray, Copy, Clone)]
+#[repr(usize)]
+enum SelectedTab {
+    Campaign = 0,
+    Logging = 1,
+}
+impl SelectedTab {
+    fn title(self) -> Line<'static> {
+        format!("  {self}  ").fg(Color::Cyan).into()
+    }
+}
+
+pub struct Tui {
+    current_tab: SelectedTab,
     tabs: Vec<Box<dyn Component>>,
     channel: Channel<EngineCommand, UiCommand>,
     exit: bool,
-    log: Logging,
 }
 
-impl App {
+impl Tui {
     fn new() -> (Self, Channel<UiCommand, EngineCommand>) {
         let (ui_chan, engine_chan) = channel();
 
         let this = Self {
-            tabs: vec![Box::new(Campaign::new())],
+            current_tab: SelectedTab::Campaign,
+            tabs: vec![Box::new(Campaign::new()), Box::new(Logging::new())],
             channel: ui_chan,
             exit: false,
-            log: Logging::new(),
         };
 
         (this, engine_chan)
@@ -44,7 +57,7 @@ impl App {
         Channel<UiCommand, EngineCommand>,
         JoinHandle<io::Result<()>>,
     ) {
-        let (mut app, chan) = App::new();
+        let (mut app, chan) = Tui::new();
 
         (
             chan,
@@ -84,25 +97,33 @@ impl App {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Esc => self.exit(),
-            KeyCode::Char('q') => todo!(),
-            KeyCode::Char('e') => todo!(),
+            KeyCode::Char('q') => {
+                self.current_tab = SelectedTab::from_repr(
+                    (self.current_tab as i32 - 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
+                )
+                .unwrap();
+            }
+            KeyCode::Char('e') => {
+                self.current_tab = SelectedTab::from_repr(
+                    (self.current_tab as i32 + 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
+                )
+                .unwrap();
+            }
             _ => {}
         }
-        if let Some(tab) = self.tabs.get_mut(0) {
-            tab.handle_key_event(key_event, &self.channel);
-        }
+        self.tabs
+            .iter_mut()
+            .for_each(|tab| tab.handle_key_event(key_event, &self.channel));
     }
 
     fn handle_tick_event(&mut self) {
-        if let Some(tab) = self.tabs.get_mut(0) {
-            tab.handle_tick_event(&self.channel);
-        }
+        self.tabs
+            .iter_mut()
+            .for_each(|tab| tab.handle_tick_event(&self.channel));
     }
 
     fn handle_render(&self, area: Rect, buf: &mut Buffer) {
         let title = Title::from(" PipeDream ".bold());
-
-        let horizontal = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]);
 
         let instructions = Title::from(Line::from(vec![
             " Up ".into(),
@@ -116,7 +137,7 @@ impl App {
             " Prev ".into(),
             "<Q>".blue().bold(),
             " Next ".into(),
-            "<e>".blue().bold(),
+            "<E>".blue().bold(),
             " Enter ".into(),
             "<X>".blue().bold(),
             " Quit ".into(),
@@ -134,19 +155,24 @@ impl App {
             .border_set(border::THICK)
             .padding(Padding::uniform(1));
 
-        let [game_area, debug_area] = horizontal.areas(block.inner(area));
+        let tabs = Tabs::new(SelectedTab::VARIANTS.iter().map(|&var| var.title()))
+            .highlight_style(Color::Blue)
+            .select(self.current_tab as usize)
+            .padding("", "")
+            .divider(" ");
 
-        if let Some(tab) = self.tabs.get(0) {
-            tab.handle_render(game_area, buf);
+        let vertical = Layout::vertical([Constraint::Length(2), Constraint::Min(0)]);
+        let [header_area, inner_area] = vertical.areas(block.inner(area));
+
+        if let Some(tab) = self.tabs.get(self.current_tab as usize) {
+            tab.handle_render(inner_area, buf);
         }
-
-        self.log.render(debug_area, buf);
-
+        tabs.render(header_area, buf);
         block.render(area, buf);
     }
 }
 
-impl Widget for &App {
+impl Widget for &Tui {
     fn render(self, area: Rect, buf: &mut Buffer) {
         self.handle_render(area, buf);
     }

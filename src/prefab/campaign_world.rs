@@ -12,7 +12,7 @@ use crate::resource::world::campaign_world::CampaignWorld;
 
 impl CampaignWorld {
     fn dump(&self) {
-        let buffer = File::create("./campaign-world-state.yml").unwrap();
+        let buffer = File::create("./campaign-world.yml").unwrap();
         serde_yml::to_writer(buffer, &self).unwrap();
     }
 

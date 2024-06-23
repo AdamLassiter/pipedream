@@ -1,0 +1,26 @@
+Anathema Device:
+  name: Anathema Device
+  predicate: !Tag
+    key: $my:resource:mana
+    value: !Number
+      bits: 655360
+  has_tags:
+    card:type:device: !Number
+      bits: 65536
+  applies_tags:
+    $my:special:anathema: !Number
+      bits: 32768
+Bag of Endless Bags:
+  name: Bag of Endless Bags
+  predicate: !Tag
+    key: $my:resource:stamina
+    value: !Number
+      bits: 655360
+  has_tags:
+    card:type:bag: !Number
+      bits: 65536
+  applies_tags:
+    $my:effect:draw: !Number
+      bits: 131072
+    $your:effect:discard: !Number
+      bits: 131072

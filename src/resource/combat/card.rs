@@ -3,11 +3,9 @@ use std::collections::BTreeMap;
 use log::error;
 use serde::{Deserialize, Serialize};
 
-use crate::resource::core::tag::{Tag, TagKey};
-
-use super::{
-    field::{CombatPlace, CombatSide},
-    stats::{Condition, Element, Resource},
+use crate::resource::core::{
+    predicate::Predicate,
+    tag::{TagKey, Tags},
 };
 
 #[derive(Serialize, Deserialize)]
@@ -25,11 +23,7 @@ impl Cards {
 #[derive(Serialize, Deserialize)]
 pub struct Card {
     pub name: String,
-    pub starts: CombatPlace,
-    pub costs: BTreeMap<Resource, i64>,
-    pub damages: BTreeMap<(CombatSide, Element), i64>,
-    pub conditions: BTreeMap<(CombatSide, Condition), i64>,
-    pub manipulations: BTreeMap<(CombatPlace, CombatPlace), u64>,
-    pub applies_tags: BTreeMap<CombatSide, Vec<Tag>>,
-    pub has_tags: Vec<Tag>,
+    pub predicate: Predicate,
+    pub has_tags: Tags,
+    pub applies_tags: Tags,
 }

@@ -23,7 +23,7 @@ impl Coordinator for CampaignCoordinator {
     }
 
     fn dump(&self) {
-        let buffer = File::create("./campaign-coordinator-state.yaml").unwrap();
+        let buffer = File::create("./campaign-coordinator.yml").unwrap();
         serde_yml::to_writer(buffer, &self).unwrap();
     }
 }

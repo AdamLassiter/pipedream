@@ -3,18 +3,26 @@ use serde::Serialize;
 
 use crate::{
     engine::tag_engine::TagEngine,
-    prefab::tags::*,
-    resource::core::{
-        choice::Choice,
-        commands::UiCommand,
-        description::Description,
-        location::Location,
-        predicate::Predicate,
-        state::State,
-        transition::{Transition, TransitionType},
+    prefab::tags::Static,
+    resource::{
+        core::{
+            choice::Choice,
+            commands::UiCommand,
+            description::Description,
+            location::Location,
+            predicate::Predicate,
+            state::State,
+            transition::{Transition, TransitionType},
+        },
+        world::combat_world::CombatWorld,
     },
-    resource::world::combat_world::CombatWorld,
 };
+
+pub static COMBAT_INIT: Static<Location> = Static::new(|| Location("combat:init".to_string()));
+pub static PLAYER_DRAW: Static<Location> = Static::new(|| Location("player:draw".to_string()));
+pub static PLAYER_PLAY: Static<Location> = Static::new(|| Location("player:play".to_string()));
+pub static PLAYER_RESOLVE_PLAY: Static<Location> =
+    Static::new(|| Location("player:play:resolve".to_string()));
 
 #[derive(Serialize)]
 pub struct CombatStateMachine {

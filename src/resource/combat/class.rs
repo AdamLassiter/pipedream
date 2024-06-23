@@ -1,14 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::card::Card;
-
-#[derive(Serialize, Deserialize)]
-pub struct Decklist {
-    pub class: Class,
-    pub deck: Vec<Card>,
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Class {
     Barbarian,
     Warrior,
