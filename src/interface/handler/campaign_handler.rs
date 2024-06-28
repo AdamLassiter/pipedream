@@ -12,12 +12,12 @@ use bichannel::Channel;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::prelude::*;
 
-pub struct Campaign {
+pub struct CampaignHandler {
     scene: Option<Scene>,
     options: Option<Choices>,
 }
 
-impl Campaign {
+impl CampaignHandler {
     pub fn new() -> Self {
         Self {
             scene: None,
@@ -37,15 +37,15 @@ impl Campaign {
     }
 }
 
-impl Default for Campaign {
+impl Default for CampaignHandler {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Component for Campaign {}
+impl Component for CampaignHandler {}
 
-impl Handler for Campaign {
+impl Handler for CampaignHandler {
     fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) {
         if event::poll(Duration::from_millis(0)).unwrap() {
             match event::read().unwrap() {
@@ -82,7 +82,7 @@ impl Handler for Campaign {
     }
 }
 
-impl Widget for &Campaign {
+impl Widget for &CampaignHandler {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let vertical = |bottom: Option<usize>| {
             Layout::vertical([

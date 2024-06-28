@@ -1,0 +1,8 @@
+Dave:
+  name: Dave
+  tags:
+    enemy:name:Dave: !Number '1'
+Slightly Larger Dave:
+  name: Slightly Larger Dave
+  tags:
+    enemy:name:Slightly Larger Dave: !Number '1'

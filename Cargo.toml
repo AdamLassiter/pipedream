@@ -7,7 +7,7 @@ edition = "2024"
 
 [dependencies]
 rand = "0.8.5"
-fixed = { version = "1.27.0", features = ["serde"]}
+fixed = { version = "1.27.0", features = ["serde", "serde-str"]}
 
 bichannel = "0.0.4"
 

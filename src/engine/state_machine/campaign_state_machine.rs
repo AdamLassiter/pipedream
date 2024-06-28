@@ -3,15 +3,18 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     engine::tag_engine::TagEngine,
-    resource::{core::{
-        choice::{Choice, ChoiceType},
-        commands::UiCommand,
-        description::Description,
-        location::Location,
-        predicate::Predicate,
-        state::State,
-        transition::{Transition, TransitionType},
-    }, world::campaign_world::CampaignWorld},
+    resource::{
+        core::{
+            choice::{Choice, ChoiceType},
+            commands::UiCommand,
+            description::Description,
+            location::Location,
+            predicate::Predicate,
+            state::State,
+            transition::{Transition, TransitionType},
+        },
+        world::campaign_world::CampaignWorld,
+    },
 };
 
 use super::combat_state_machine::CombatStateMachine;
@@ -103,12 +106,14 @@ impl CampaignStateMachine {
         if let ChoiceType::Manual(ref mut choices) = options.choices {
             choices.retain(
                 |Choice {
-                    description: Description { predicate, .. },
-                    ..
-                }| test(predicate),
+                     description: Description { predicate, .. },
+                     ..
+                 }| test(predicate),
             );
         }
 
+        debug!(target:"Event/Render", "{:?}", &scene);
+        debug!(target:"Event/Query", "{:?}", &options);
         vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }
 

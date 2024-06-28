@@ -1,3 +1,6 @@
+pub mod logging_handler;
+pub mod campaign_handler;
+
 use bichannel::Channel;
 use crossterm::event::KeyEvent;
 use ratatui::{buffer::Buffer, layout::Rect};

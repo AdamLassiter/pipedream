@@ -16,7 +16,7 @@ use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use super::{
     utils,
-    widgets::{campaign::Campaign, logging::Logging},
+    handler::{campaign_handler::CampaignHandler, logging_handler::LoggingHandler},
     Component,
 };
 
@@ -45,7 +45,10 @@ impl Tui {
 
         let this = Self {
             current_tab: SelectedTab::Campaign,
-            tabs: vec![Box::new(Campaign::new()), Box::new(Logging::new())],
+            tabs: vec![
+                Box::new(CampaignHandler::new()),
+                Box::new(LoggingHandler::new()),
+            ],
             channel: ui_chan,
             exit: false,
         };

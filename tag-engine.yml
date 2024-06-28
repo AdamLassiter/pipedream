@@ -1,3 +1,2 @@
 tags:
-  woods:entrance:item:sword: !Number
-    bits: 65536
+  woods:entrance:item:sword: !Number '1'

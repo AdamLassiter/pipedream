@@ -100,6 +100,8 @@ impl CombatStateMachine {
             );
         }
 
+        debug!(target:"Event/Render", "{:?}", &scene);
+        debug!(target:"Event/Query", "{:?}", &options);
         vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }
 

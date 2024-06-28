@@ -1,18 +1,19 @@
+use crossterm::event::KeyCode;
 use log::LevelFilter;
 use ratatui::{
     prelude::{Buffer, Rect},
     style::{Color, Style},
     widgets::Widget,
 };
-use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget, TuiWidgetState};
+use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget, TuiWidgetEvent, TuiWidgetState};
 
 use crate::interface::{handler::Handler, Component};
 
-pub struct Logging {
+pub struct LoggingHandler {
     log: TuiWidgetState,
 }
 
-impl Logging {
+impl LoggingHandler {
     pub fn new() -> Self {
         Self {
             log: TuiWidgetState::new().set_default_display_level(LevelFilter::Trace),
@@ -20,21 +21,32 @@ impl Logging {
     }
 }
 
-impl Default for Logging {
+impl Default for LoggingHandler {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Handler for Logging {
+impl Handler for LoggingHandler {
     fn handle_key_event(
         &mut self,
-        _key_event: crossterm::event::KeyEvent,
+        key_event: crossterm::event::KeyEvent,
         _channel: &bichannel::Channel<
             crate::resource::core::commands::EngineCommand,
             crate::resource::core::commands::UiCommand,
         >,
     ) {
+        match key_event.code {
+            KeyCode::PageUp => self.log.transition(TuiWidgetEvent::PrevPageKey),
+            KeyCode::PageDown => self.log.transition(TuiWidgetEvent::NextPageKey),
+            KeyCode::Up => self.log.transition(TuiWidgetEvent::UpKey),
+            KeyCode::Down => self.log.transition(TuiWidgetEvent::DownKey),
+            KeyCode::Left => self.log.transition(TuiWidgetEvent::LeftKey),
+            KeyCode::Right => self.log.transition(TuiWidgetEvent::RightKey),
+            KeyCode::Char('h') => self.log.transition(TuiWidgetEvent::HideKey),
+            KeyCode::Char('f') => self.log.transition(TuiWidgetEvent::FocusKey),
+            _ => (),
+        }
     }
 
     fn handle_tick_event(
@@ -51,11 +63,11 @@ impl Handler for Logging {
     }
 }
 
-impl Component for Logging {}
+impl Component for LoggingHandler {}
 
-impl Widget for &Logging {
+impl Widget for &LoggingHandler {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        TuiLoggerWidget::default()
+        TuiLoggerSmartWidget::default()
             .style_error(Style::default().fg(Color::Red))
             .style_debug(Style::default().fg(Color::Green))
             .style_warn(Style::default().fg(Color::Yellow))

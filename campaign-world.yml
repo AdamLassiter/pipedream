@@ -6,8 +6,7 @@ states:
       - descriptor: The shop is cozy, and staffed by a weathered crone
       - predicate: !Tag
           key: player:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         descriptor: Her eyes keep flitting to the sword at your side
     choices: !Manual
     - description:
@@ -18,63 +17,53 @@ states:
     - description:
         predicate: !Tag
           key: player:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         descriptor: Trade a sword for two swords
       effect:
         next: None
         actions:
         - !Subtract
           key: player:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         - !Add
           key: player:item:sword
-          value: !Number
-            bits: 131072
+          value: !Number '2'
     - description:
         predicate: !Tag
           key: player:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         descriptor: Trade each sword for two swords
       effect:
         next: None
         actions:
         - !Multiply
           key: player:item:sword
-          value: !Number
-            bits: 131072
+          value: !Number '2'
     - description:
         predicate: !Tag
           key: player:item:sword
-          value: !Number
-            bits: 131072
+          value: !Number '2'
         descriptor: Forge two swords into a cursed ring
       effect:
         next: None
         actions:
         - !Subtract
           key: player:item:sword
-          value: !Number
-            bits: 131072
+          value: !Number '2'
         - !Add
           key: player:item:cursed-ring
-          value: !Number
-            bits: 65536
+          value: !Number '1'
     - description:
         predicate: !Tag
           key: player:item:sword
-          value: !Number
-            bits: 131072
+          value: !Number '2'
         descriptor: Forge every other sword into a cursed ring
       effect:
         next: None
         actions:
         - !Divide
           key: player:item:sword
-          value: !Number
-            bits: 131072
+          value: !Number '2'
         - !Add
           key: player:item:cursed-ring
           value: !Tag player:item:sword
@@ -95,16 +84,13 @@ states:
         next: !Combat
         - !Add
           key: enemy:name:Dave
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         - !Add
           key: player:deck:Anathema Device
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         - !Add
           key: player:deck:Bag of Endless Bags
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         actions: []
   woods:entrance:
     location: woods:entrance
@@ -114,27 +100,23 @@ states:
       - descriptor: There is a mysterious moss-covered shop in a small grove
       - predicate: !Tag
           key: woods:entrance:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         descriptor: You see a shiny sword lodged in a stone
     choices: !Manual
     - description:
         predicate: !Tag
           key: woods:entrance:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         descriptor: Pick up the sword
       effect:
         next: None
         actions:
         - !Insert
           key: player:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
         - !Remove
           key: woods:entrance:item:sword
-          value: !Number
-            bits: 65536
+          value: !Number '1'
     - description:
         descriptor: Go into the shop
       effect:
