@@ -23,7 +23,9 @@ impl Coordinator for CampaignCoordinator {
     }
 
     fn dump(&self) {
-        let buffer = File::create("./campaign-coordinator.yml").unwrap();
-        serde_yml::to_writer(buffer, &self).unwrap();
+        let buffer = File::create("./campaign-coordinator.yml")
+            .expect("Failed to open file for writing campaign-coordinator data");
+        serde_yml::to_writer(buffer, &self)
+            .expect("Failed to write yaml campaign-coordinator data to file");
     }
 }

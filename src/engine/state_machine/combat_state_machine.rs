@@ -106,7 +106,11 @@ impl CombatStateMachine {
     }
 
     fn current_state(&self, tag_engine: &TagEngine) -> State {
-        let state_fn = self.combat_world.get_state(self.current.last().unwrap());
+        let state_fn = self.combat_world.get_state(
+            self.current
+                .last()
+                .expect("Location stack empty, cannot find current state"),
+        );
 
         state_fn.apply(self, tag_engine)
     }

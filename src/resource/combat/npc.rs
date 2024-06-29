@@ -11,7 +11,7 @@ pub struct Npcs(pub BTreeMap<String, Npc>);
 impl Npcs {
     pub fn find(&self, npc: &TagKey) -> &Npc {
         self.0.get(npc.trailing_key()).unwrap_or_else(|| {
-            error!("Failed to find npc by tag '{:?}'", npc.0);
+            error!(target:"Combat/Lookup", "Failed to find npc by tag '{:?}'", npc.0);
             panic!("Failed to find npc by tag '{:?}'", npc.0)
         })
     }

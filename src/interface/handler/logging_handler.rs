@@ -56,6 +56,7 @@ impl Handler for LoggingHandler {
             crate::resource::core::commands::UiCommand,
         >,
     ) {
+        // Do nothing
     }
 
     fn handle_render(&self, area: Rect, buf: &mut Buffer) {

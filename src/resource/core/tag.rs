@@ -48,11 +48,11 @@ impl TagKey {
 
     pub fn targets(&self) -> (Combatant, TagKey) {
         let mut split = self.split(KEY_SEP);
-        let combatant = split.next().unwrap();
-        let remainder = split.remainder().unwrap();
+        let combatant = split.next().expect("Failed to parse targeted TagKey into combatatnt");
+        let remainder = split.remainder().expect("Failed to parse targeted TagKey into remainder");
 
         (
-            Combatant::from_str(combatant).unwrap(),
+            Combatant::from_str(combatant).expect("Failed to parse targeted combatant"),
             TagKey(remainder.into()),
         )
     }
@@ -90,7 +90,7 @@ impl From<&str> for TagValue {
 impl From<&str> for Tag {
     fn from(value: &str) -> Self {
         let parts = value.split(VAL_SEP).collect::<Vec<_>>();
-        let (&key, val) = (parts.first().unwrap(), parts.get(1));
+        let (&key, val) = (parts.first().expect("Empty tag"), parts.get(1));
 
         Self {
             key: key.into(),
@@ -163,7 +163,7 @@ impl Tags {
         let mut key = key.0.clone();
         SUBSTITUTIONS.iter().for_each(|(target, reference)| {
             if key.contains(target) {
-                let substitution = match self.0.get(reference).unwrap() {
+                let substitution = match self.0.get(reference).expect("Failed to resolve reference for key") {
                     TagValue::Tag(key) => key,
                     TagValue::Number(value) => {
                         panic!(
@@ -182,7 +182,7 @@ impl Tags {
         let mut next = value.clone();
         for _ in 1..MAX_RESOLVE_DEPTH {
             match next {
-                TagValue::Tag(tk) => match self.0.get(&tk).unwrap().clone() {
+                TagValue::Tag(tk) => match self.0.get(&tk).expect("Failed to resolve reference for value").clone() {
                     TagValue::Number(val) => {
                         next = TagValue::Number(val);
                     }

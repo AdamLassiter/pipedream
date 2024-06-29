@@ -36,7 +36,7 @@ impl GameCoordinator {
         let commands = self.campaign.handle_effect(effect);
         commands
             .into_iter()
-            .for_each(|command| self.channel.send(command).unwrap())
+            .for_each(|command| self.channel.send(command).expect("Broken channel"))
     }
 
     fn init(&mut self, start: Location) {

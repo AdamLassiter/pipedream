@@ -40,6 +40,8 @@ pub struct CombatWorld {
 
 impl CombatWorld {
     pub fn get_state(&self, location: &Location) -> &DynamicStateFn {
-        self.states.get(location).unwrap()
+        self.states
+            .get(location)
+            .expect("Failed to find location in world")
     }
 }

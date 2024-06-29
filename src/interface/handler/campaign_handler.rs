@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{thread, time::Duration};
 
 use crate::{
     interface::{handler::Handler, Component},
@@ -31,7 +31,7 @@ impl CampaignHandler {
             if let Some(transition) = options.current_transition() {
                 channel
                     .send(EngineCommand::RespondWithChoice(transition))
-                    .unwrap();
+                    .expect("Broken channel");
             }
         }
     }
@@ -47,14 +47,24 @@ impl Component for CampaignHandler {}
 
 impl Handler for CampaignHandler {
     fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) {
-        if event::poll(Duration::from_millis(0)).unwrap() {
-            match event::read().unwrap() {
+        if event::poll(Duration::from_millis(0)).expect("Event polling error") {
+            match event::read().expect("Event polling error") {
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                     self.handle_key_event(key_event, channel)
                 }
                 _ => {}
             };
         }
+
+        if let Some(Choices {
+            choices: ChoiceType::Auto(..),
+            ..
+        }) = self.options.as_ref()
+        {
+            thread::sleep(Duration::from_secs(2));
+            self.make_choice(channel);
+        }
+
         while let Ok(ev) = channel.try_recv() {
             match ev {
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
@@ -70,10 +80,11 @@ impl Handler for CampaignHandler {
     ) {
         match key_event.code {
             KeyCode::Char('x') | KeyCode::Enter => self.make_choice(channel),
-            _ => {}
-        }
-        if let Some(options) = self.options.as_mut() {
-            options.handle_key_event(key_event);
+            _ => {
+                if let Some(options) = self.options.as_mut() {
+                    options.handle_key_event(key_event);
+                }
+            }
         }
     }
 

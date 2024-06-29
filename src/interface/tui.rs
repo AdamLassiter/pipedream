@@ -15,9 +15,8 @@ use ratatui::{
 use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use super::{
-    utils,
     handler::{campaign_handler::CampaignHandler, logging_handler::LoggingHandler},
-    Component,
+    utils, Component,
 };
 
 #[derive(Display, FromRepr, EnumCount, VariantArray, Copy, Clone)]
@@ -77,7 +76,9 @@ impl Tui {
     }
 
     fn exit(&mut self) {
-        self.channel.send(EngineCommand::Exit).unwrap();
+        self.channel
+            .send(EngineCommand::Exit)
+            .expect("Broken channel");
         self.exit = true;
     }
 
@@ -86,8 +87,8 @@ impl Tui {
     }
 
     fn handle_events(&mut self) {
-        if event::poll(Duration::from_millis(10)).unwrap() {
-            match event::read().unwrap() {
+        if event::poll(Duration::from_millis(10)).expect("Event pollng error") {
+            match event::read().expect("Event pollng error") {
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                     self.handle_key_event(key_event)
                 }
@@ -104,13 +105,13 @@ impl Tui {
                 self.current_tab = SelectedTab::from_repr(
                     (self.current_tab as i32 - 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
                 )
-                .unwrap();
+                .expect("Current tab index outside of bounds of SelectedTab enum repr");
             }
             KeyCode::Char('e') => {
                 self.current_tab = SelectedTab::from_repr(
                     (self.current_tab as i32 + 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
                 )
-                .unwrap();
+                .expect("Current tab index outside of bounds of SelectedTab enum repr");
             }
             _ => {}
         }

@@ -18,7 +18,7 @@ pub fn init() -> io::Result<Tui> {
 
     let tui = Terminal::new(CrosstermBackend::new(stdout()));
 
-    tui_logger::init_logger(log::LevelFilter::Trace).unwrap();
+    tui_logger::init_logger(log::LevelFilter::Trace).expect("Failed to initialise logger");
     tui_logger::set_default_level(log::LevelFilter::Trace);
 
     panic::update_hook(move |prev, info| {

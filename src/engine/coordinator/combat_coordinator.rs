@@ -22,7 +22,9 @@ impl Coordinator for CombatCoordinator {
     }
 
     fn dump(&self) {
-        let buffer = File::create("./combat-coordinator.yml").unwrap();
-        serde_yml::to_writer(buffer, &self).unwrap();
+        let buffer = File::create("./combat-coordinator.yml")
+            .expect("Failed to open file for writing combat-coordinator data");
+        serde_yml::to_writer(buffer, &self)
+            .expect("Failed to write yaml combat-coordinator data to file");
     }
 }

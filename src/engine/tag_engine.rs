@@ -89,10 +89,14 @@ impl TagEngine {
         end_str.push('~');
         let end = Included(end_str.as_str().into());
 
-        self.tags
+        let found = self
+            .tags
             .range((start, end))
             .map(|(k, v)| Tag::from((k.clone(), v.clone())))
-            .collect()
+            .collect();
+
+        debug!(target:"Tags/Find", "{:?} -> {:?}", partial_key, found);
+        found
     }
 
     pub fn satisfies(&self, predicate: &Predicate) -> bool {

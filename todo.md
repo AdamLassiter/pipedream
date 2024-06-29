@@ -1,9 +1,11 @@
 - [x] Basic threads and channels
-- [x] Campaign Text-based Adventure
-- [x] Tag Calculations
+- [x] Campaign text-based adventure
+- [x] Tag calculations
 - [ ] Auto-advancing scenes
 - [x] UI tabs
+- [ ] Split-thread UI control
 - [ ] Combat
+- [ ] Specialist system pipeline
 - [ ] Split resource loading
 - ...
 - [ ] Game

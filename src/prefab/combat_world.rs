@@ -1,5 +1,6 @@
 use std::{collections::BTreeMap, fs::File};
 
+use log::debug;
 use rand::prelude::SliceRandom;
 
 use crate::{
@@ -26,8 +27,10 @@ pub static ENEMY_DECK: Static<TagKey> = Static::new(|| TagKey("enemy:deck".to_st
 
 impl CombatWorld {
     fn dump(&self) {
-        let buffer = File::create("./combat-world.yml").unwrap();
-        serde_yml::to_writer(buffer, &self).unwrap();
+        let buffer =
+            File::create("./combat-world.yml").expect("Failed to open file for writing combat-world data");
+        serde_yml::to_writer(buffer, &self).expect("Failed to write yaml combat-world data to file");
+    }
     }
 
     pub fn generate() -> Self {
@@ -60,7 +63,7 @@ impl CombatWorld {
 
     pub fn combat_init_phase(machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
         let enemy_name_slice = tag_engine.find(&ENEMY_NAME);
-        let Tag { key: enemy, .. } = enemy_name_slice.first().unwrap();
+        let Tag { key: enemy, .. } = enemy_name_slice.first().expect("Failed to find enemy name slice");
         let enemy_data = machine.combat_world.npcs.find(enemy);
 
         State {
@@ -83,13 +86,14 @@ impl CombatWorld {
         let player_deck_slice = tag_engine.find(&PLAYER_DECK);
         let player_draw_card = player_deck_slice
             .choose(&mut rand::thread_rng())
-            .unwrap()
+            .epect("Failed to generate thread RNG")
             .clone();
 
         let player_hand_card = player_draw_card
             .key
             .replace(&PLAYER_DECK.0, &PLAYER_HAND.0)
             .into();
+        debug!(target:"Combat/Draw", "{:?}", player_draw_card);
 
         State {
             location: PLAYER_DRAW.clone(),
@@ -109,10 +113,11 @@ impl CombatWorld {
 
     pub fn player_play_phase(machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
         let player_hand_slice = tag_engine.find(&PLAYER_HAND);
-        State {
+        debug!(target:"Combat/Hand", "{:?}", player_hand_slice);
+        let state = State {
             location: PLAYER_PLAY.clone(),
             scene: Scene {
-                descriptions: vec![],
+                descriptions: vec!["Play".into()],
             },
 
             options: player_hand_slice
@@ -130,6 +135,7 @@ impl CombatWorld {
                 })
                 .collect::<Vec<_>>()
                 .into(),
-        }
+        };
+        state
     }
 }

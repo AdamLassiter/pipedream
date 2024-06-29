@@ -12,6 +12,6 @@ pub struct CampaignWorld {
 
 impl CampaignWorld {
     pub fn get_state(&self, location: &Location) -> &State {
-        self.states.get(location).unwrap()
+        self.states.get(location).expect("Failed to find location in world")
     }
 }

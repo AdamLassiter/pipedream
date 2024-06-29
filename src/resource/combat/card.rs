@@ -14,7 +14,7 @@ pub struct Cards(pub BTreeMap<String, Card>);
 impl Cards {
     pub fn find(&self, card: &TagKey) -> &Card {
         self.0.get(card.trailing_key()).unwrap_or_else(|| {
-            error!("Failed to find card by tag '{:?}'", card.0);
+            error!(target:"Combat/Lookup", "Failed to find card by tag '{:?}'", card.0);
             panic!("Failed to find card by tag '{:?}'", card.0)
         })
     }

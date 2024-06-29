@@ -119,7 +119,11 @@ impl CampaignStateMachine {
 
     fn current_state(&self) -> State {
         self.campaign_world
-            .get_state(self.current.last().unwrap())
+            .get_state(
+                self.current
+                    .last()
+                    .expect("Location stack empty, cannot find current state"),
+            )
             .clone()
     }
 }

@@ -12,8 +12,10 @@ pub static ENEMY_NAME: Static<TagKey> = Static::new(|| TagKey("enemy:name".to_st
 
 impl Npcs {
     fn dump(&self) {
-        let buffer = File::create("./npcs.yml").unwrap();
-        serde_yml::to_writer(buffer, &self).unwrap();
+        let buffer =
+            File::create("./npcs.yml").expect("Failed to open file for writing npcs data");
+        serde_yml::to_writer(buffer, &self).expect("Failed to write yaml npcs data to file");
+    }
     }
 
     pub fn generate() -> Self {
