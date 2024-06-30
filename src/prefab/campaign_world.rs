@@ -1,25 +1,18 @@
-use std::fs::File;
-
-use crate::resource::core::{
-    action::Action,
-    location::Location,
-    predicate::Predicate,
-    scene::Scene,
-    state::State,
-    transition::{Transition, TransitionType},
+use crate::engine::{
+    core::{
+        action::Action,
+        location::Location,
+        predicate::Predicate,
+        scene::Scene,
+        state::State,
+        transition::{Transition, TransitionType},
+    },
+    state::campaign_world::CampaignWorld,
 };
-use crate::resource::world::campaign_world::CampaignWorld;
 
 impl CampaignWorld {
-    fn dump(&self) {
-        let buffer = File::create("./campaign-world.yml")
-            .expect("Failed to open file for writing campaign-world data");
-        serde_yml::to_writer(buffer, &self)
-            .expect("Failed to write yaml campaign-world data to file");
-    }
-
     pub fn generate() -> Self {
-        let world = CampaignWorld {
+        Self {
             states: vec![
                 State {
                     location: Location("woods:entrance".into()),
@@ -175,9 +168,6 @@ impl CampaignWorld {
             ]
             .into_iter()
             .collect(),
-        };
-
-        world.dump();
-        world
+        }
     }
 }

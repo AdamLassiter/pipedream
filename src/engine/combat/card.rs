@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use log::error;
 use serde::{Deserialize, Serialize};
 
-use crate::resource::core::{
+use crate::engine::core::{
     predicate::Predicate,
     tag::{TagKey, Tags},
 };

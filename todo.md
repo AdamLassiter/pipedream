@@ -1,11 +1,15 @@
-- [x] Basic threads and channels
-- [x] Campaign text-based adventure
-- [x] Tag calculations
-- [ ] Auto-advancing scenes
-- [x] UI tabs
-- [ ] Split-thread UI control
-- [ ] Combat
-- [ ] Specialist system pipeline
-- [ ] Split resource loading
+- [x] 0.1.0
+  - [x] Basic threads/channels
+  - [x] Campaign text adventure
+- [x] 0.2.0
+  - [x] Tag calculations
+  - [x] Auto-advancing scenes
+  - [x] UI tabs
+  - [ ] Split-thread UI control
+  - [ ] Combat import/export
+  - [ ] Combat round
+- [ ] 0.3.0
+  - [ ] Specialist system pipeline
+  - [ ] Split/join resource loading
 - ...
 - [ ] Game

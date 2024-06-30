@@ -2,14 +2,14 @@ use std::{thread, time::Duration};
 
 use crate::{
     interface::{handler::Handler, Component},
-    resource::core::{
+    engine::core::{
         choice::{ChoiceType, Choices},
         commands::{EngineCommand, UiCommand},
         scene::Scene,
     },
 };
 use bichannel::Channel;
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::prelude::*;
 
 pub struct CampaignHandler {
@@ -26,12 +26,12 @@ impl CampaignHandler {
     }
 
     fn make_choice(&mut self, channel: &Channel<EngineCommand, UiCommand>) {
-        let options = self.options.take();
-        if let Some(options) = options {
+        if let Some(options) = self.options.as_ref() {
             if let Some(transition) = options.current_transition() {
+                let _ = self.options.take();
                 channel
                     .send(EngineCommand::RespondWithChoice(transition))
-                    .expect("Broken channel");
+                    .expect("Broken channel while responding with choice");
             }
         }
     }
@@ -47,21 +47,12 @@ impl Component for CampaignHandler {}
 
 impl Handler for CampaignHandler {
     fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) {
-        if event::poll(Duration::from_millis(0)).expect("Event polling error") {
-            match event::read().expect("Event polling error") {
-                Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                    self.handle_key_event(key_event, channel)
-                }
-                _ => {}
-            };
-        }
-
         if let Some(Choices {
             choices: ChoiceType::Auto(..),
             ..
         }) = self.options.as_ref()
         {
-            thread::sleep(Duration::from_secs(2));
+            thread::sleep(Duration::from_secs(1));
             self.make_choice(channel);
         }
 

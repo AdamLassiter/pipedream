@@ -14,6 +14,7 @@ states:
       effect:
         next: Leave
         actions: []
+      selectable: true
     - description:
         predicate: !Tag
           key: player:item:sword
@@ -28,6 +29,7 @@ states:
         - !Add
           key: player:item:sword
           value: !Number '2'
+      selectable: true
     - description:
         predicate: !Tag
           key: player:item:sword
@@ -39,6 +41,7 @@ states:
         - !Multiply
           key: player:item:sword
           value: !Number '2'
+      selectable: true
     - description:
         predicate: !Tag
           key: player:item:sword
@@ -53,6 +56,7 @@ states:
         - !Add
           key: player:item:cursed-ring
           value: !Number '1'
+      selectable: true
     - description:
         predicate: !Tag
           key: player:item:sword
@@ -67,6 +71,7 @@ states:
         - !Add
           key: player:item:cursed-ring
           value: !Tag player:item:sword
+      selectable: true
   woods:depths:
     location: woods:depths
     scene:
@@ -78,6 +83,7 @@ states:
       effect:
         next: !Goto woods:depths
         actions: []
+      selectable: true
     - description:
         descriptor: Battle inner demons
       effect:
@@ -92,6 +98,7 @@ states:
           key: player:deck:Bag of Endless Bags
           value: !Number '1'
         actions: []
+      selectable: true
   woods:entrance:
     location: woods:entrance
     scene:
@@ -117,13 +124,16 @@ states:
         - !Remove
           key: woods:entrance:item:sword
           value: !Number '1'
+      selectable: true
     - description:
         descriptor: Go into the shop
       effect:
         next: !Enter ephemeral:shop
         actions: []
+      selectable: true
     - description:
         descriptor: Go deeper into the woods
       effect:
         next: !Goto woods:depths
         actions: []
+      selectable: true

@@ -4,7 +4,7 @@ use std::{
     time::Duration,
 };
 
-use crate::resource::core::commands::{EngineCommand, UiCommand};
+use crate::engine::core::commands::{EngineCommand, UiCommand};
 use bichannel::{channel, Channel};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
@@ -78,7 +78,7 @@ impl Tui {
     fn exit(&mut self) {
         self.channel
             .send(EngineCommand::Exit)
-            .expect("Broken channel");
+            .expect("Broken channel while exiting");
         self.exit = true;
     }
 
@@ -87,8 +87,10 @@ impl Tui {
     }
 
     fn handle_events(&mut self) {
-        if event::poll(Duration::from_millis(10)).expect("Event pollng error") {
-            match event::read().expect("Event pollng error") {
+        while event::poll(Duration::from_millis(10))
+            .expect("Event pollng error while handling events")
+        {
+            match event::read().expect("Event read error while handling events") {
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                     self.handle_key_event(key_event)
                 }
@@ -105,19 +107,31 @@ impl Tui {
                 self.current_tab = SelectedTab::from_repr(
                     (self.current_tab as i32 - 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
                 )
-                .expect("Current tab index outside of bounds of SelectedTab enum repr");
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Current tab index {:?} outside of bounds of SelectedTab enum repr",
+                        self.current_tab as i32 - 1
+                    )
+                });
             }
             KeyCode::Char('e') => {
                 self.current_tab = SelectedTab::from_repr(
                     (self.current_tab as i32 + 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
                 )
-                .expect("Current tab index outside of bounds of SelectedTab enum repr");
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Current tab index {:?} outside of bounds of SelectedTab enum repr",
+                        self.current_tab as i32 + 1
+                    )
+                });
             }
             _ => {}
         }
+
         self.tabs
-            .iter_mut()
-            .for_each(|tab| tab.handle_key_event(key_event, &self.channel));
+            .get_mut(self.current_tab as usize)
+            .unwrap_or_else(|| panic!("Failed to find current tab {}", self.current_tab))
+            .handle_key_event(key_event, &self.channel);
     }
 
     fn handle_tick_event(&mut self) {

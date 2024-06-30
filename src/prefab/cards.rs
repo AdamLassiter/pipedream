@@ -1,26 +1,17 @@
-use std::{collections::BTreeMap, fs::File};
+use std::collections::BTreeMap;
 
-use crate::resource::{
+use crate::engine::{
     combat::card::{Card, Cards},
     core::predicate::Predicate,
 };
 
 impl Cards {
-    fn dump(&self) {
-        let buffer =
-            File::create("./cards.yml").expect("Failed to open file for writing cards data");
-        serde_yml::to_writer(buffer, &self).expect("Failed to write yaml cards data to file");
-    }
-
     pub fn generate() -> Self {
-        let cards = Self(BTreeMap::from_iter(
+        Self(BTreeMap::from_iter(
             Self::generate_vec()
                 .into_iter()
                 .map(|card| (card.name.clone(), card)),
-        ));
-
-        cards.dump();
-        cards
+        ))
     }
 
     fn generate_vec() -> Vec<Card> {

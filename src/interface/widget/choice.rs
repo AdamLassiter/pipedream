@@ -2,11 +2,12 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
+    style::{Style, Stylize},
     text::{Line, Text},
     widgets::{List, ListState, StatefulWidget, Widget},
 };
 
-use crate::resource::core::{
+use crate::engine::core::{
     choice::{Choice, ChoiceType, Choices},
     description::Description,
     transition::Transition,
@@ -14,20 +15,18 @@ use crate::resource::core::{
 
 impl Choices {
     pub fn cursor_down(&mut self) {
-        if let ChoiceType::Manual(choices) = &self.choices && !choices.is_empty() {
-            self.cursor = self
-                .cursor
-                .saturating_add(1)
-                .clamp(0, choices.len() - 1);
+        if let ChoiceType::Manual(choices) = &self.choices
+            && !choices.is_empty()
+        {
+            self.cursor = self.cursor.saturating_add(1).clamp(0, choices.len() - 1);
         }
     }
 
     pub fn cursor_up(&mut self) {
-        if let ChoiceType::Manual(choices) = &self.choices && !choices.is_empty() {
-            self.cursor = self
-                .cursor
-                .saturating_sub(1)
-                .clamp(0, choices.len() - 1);
+        if let ChoiceType::Manual(choices) = &self.choices
+            && !choices.is_empty()
+        {
+            self.cursor = self.cursor.saturating_sub(1).clamp(0, choices.len() - 1);
         }
     }
 
@@ -41,8 +40,11 @@ impl Choices {
 
     pub fn current_transition(&self) -> Option<Transition> {
         match &self.choices {
-            ChoiceType::Manual(choices) => choices.get(self.cursor).map(|t| t.effect.clone()),
-            ChoiceType::Auto(transition) =>  Some(transition.clone()),
+            ChoiceType::Manual(choices) => choices
+                .get(self.cursor)
+                .filter(|&c| c.selectable)
+                .map(|c| c.effect.clone()),
+            ChoiceType::Auto(transition) => Some(transition.clone()),
         }
     }
 }
@@ -57,8 +59,15 @@ impl Widget for &Choices {
                         .map(
                             |Choice {
                                  description: Description { descriptor, .. },
+                                 selectable,
                                  ..
-                             }| { Line::from(vec![descriptor.into()]) },
+                             }| {
+                                Line::from(vec![descriptor.into()]).style(if *selectable {
+                                    Style::new().white()
+                                } else {
+                                    Style::new().dark_gray()
+                                })
+                            },
                         )
                         .collect::<Vec<_>>(),
                 );
@@ -66,7 +75,7 @@ impl Widget for &Choices {
                 let opts_list = List::new(options).highlight_symbol(">> ");
                 StatefulWidget::render(opts_list, area, buf, &mut state);
             }
-            ChoiceType::Auto(_) => {/* None */},
+            ChoiceType::Auto(_) => { /* None */ }
         }
     }
 }

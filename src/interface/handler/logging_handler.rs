@@ -32,8 +32,8 @@ impl Handler for LoggingHandler {
         &mut self,
         key_event: crossterm::event::KeyEvent,
         _channel: &bichannel::Channel<
-            crate::resource::core::commands::EngineCommand,
-            crate::resource::core::commands::UiCommand,
+            crate::engine::core::commands::EngineCommand,
+            crate::engine::core::commands::UiCommand,
         >,
     ) {
         match key_event.code {
@@ -52,8 +52,8 @@ impl Handler for LoggingHandler {
     fn handle_tick_event(
         &mut self,
         _channel: &bichannel::Channel<
-            crate::resource::core::commands::EngineCommand,
-            crate::resource::core::commands::UiCommand,
+            crate::engine::core::commands::EngineCommand,
+            crate::engine::core::commands::UiCommand,
         >,
     ) {
         // Do nothing

@@ -3,7 +3,7 @@ use std::ops::Bound::Included;
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::resource::core::{
+use crate::engine::core::{
     action::Action,
     predicate::Predicate,
     tag::{Tag, TagKey, TagValue, Tags, FI64},
@@ -15,6 +15,10 @@ pub struct TagEngine {
 }
 
 impl TagEngine {
+    pub fn from_campaign(campaign_tags: &Self) -> Self {
+        todo!()
+    }
+
     pub fn handle_actions(&mut self, actions: &Vec<Action>) {
         debug!(target:"Event/Actions", "{:?}", actions);
 

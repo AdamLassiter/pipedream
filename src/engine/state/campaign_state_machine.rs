@@ -1,27 +1,24 @@
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    engine::tag_engine::TagEngine,
-    resource::{
-        core::{
-            choice::{Choice, ChoiceType},
-            commands::UiCommand,
-            description::Description,
-            location::Location,
-            predicate::Predicate,
-            state::State,
-            transition::{Transition, TransitionType},
-        },
-        world::campaign_world::CampaignWorld,
-    },
+use crate::engine::core::{
+    choice::{Choice, ChoiceType},
+    commands::UiCommand,
+    description::Description,
+    location::Location,
+    predicate::Predicate,
+    state::State,
+    transition::{Transition, TransitionType},
 };
 
-use super::combat_state_machine::CombatStateMachine;
+use super::{
+    campaign_world::CampaignWorld, combat_state_machine::CombatStateMachine, tag_engine::TagEngine,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct CampaignStateMachine {
     pub campaign_world: CampaignWorld,
+    pub tag_engine: TagEngine,
     #[serde(default = "none", skip_serializing, skip_deserializing)]
     pub combat_state_machine: Option<CombatStateMachine>,
     pub current: Vec<Location>,
@@ -32,33 +29,26 @@ fn none() -> Option<CombatStateMachine> {
 }
 
 impl CampaignStateMachine {
-    pub fn new(campaign_world: CampaignWorld) -> Self {
+    pub fn new(campaign_world: CampaignWorld, tag_engine: TagEngine, start: Location) -> Self {
         Self {
             campaign_world,
+            tag_engine,
             combat_state_machine: None,
-            current: vec![],
+            current: vec![start],
         }
     }
 
-    pub fn handle_effect(
-        &mut self,
-        tag_engine: &mut TagEngine,
-        side_effect: Transition,
-    ) -> Vec<UiCommand> {
+    pub fn handle_effect(&mut self, side_effect: Transition) -> Vec<UiCommand> {
         if let Some(combat_state_machine) = self.combat_state_machine.as_mut() {
-            return combat_state_machine.handle_effect(tag_engine, side_effect);
+            return combat_state_machine.handle_effect(side_effect);
         }
 
-        tag_engine.handle_actions(&side_effect.actions);
-        self.handle_transition(side_effect, tag_engine)
-            .unwrap_or_else(|| self.next_options(tag_engine))
+        self.tag_engine.handle_actions(&side_effect.actions);
+        self.handle_transition(side_effect)
+            .unwrap_or_else(|| self.next_options())
     }
 
-    fn handle_transition(
-        &mut self,
-        side_effect: Transition,
-        tag_engine: &mut TagEngine,
-    ) -> Option<Vec<UiCommand>> {
+    fn handle_transition(&mut self, side_effect: Transition) -> Option<Vec<UiCommand>> {
         debug!(target:"Event/Transition", "{:?}", side_effect.next);
 
         match side_effect.next {
@@ -73,12 +63,11 @@ impl CampaignStateMachine {
                 self.current.push(next);
             }
             TransitionType::Combat(init_actions) => {
-                tag_engine.handle_actions(&init_actions);
+                self.tag_engine.handle_actions(&init_actions);
                 let combat_init = self
                     .combat_state_machine
-                    .get_or_insert(CombatStateMachine::default())
-                    .init(tag_engine);
-                return Some(combat_init);
+                    .insert(CombatStateMachine::from_campaign(self));
+                return Some(combat_init.next_options());
             }
             TransitionType::None => {}
         };
@@ -87,7 +76,7 @@ impl CampaignStateMachine {
         None
     }
 
-    fn next_options(&mut self, tag_engine: &TagEngine) -> Vec<UiCommand> {
+    fn next_options(&mut self) -> Vec<UiCommand> {
         let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();
@@ -96,7 +85,7 @@ impl CampaignStateMachine {
             predicate.is_none()
                 || predicate
                     .as_ref()
-                    .is_some_and(|pred| tag_engine.satisfies(pred))
+                    .is_some_and(|pred| self.tag_engine.satisfies(pred))
         };
 
         scene

@@ -2,20 +2,16 @@ use std::io;
 use std::thread;
 use std::thread::JoinHandle;
 
-use crate::resource::core::transition::TransitionType;
-use crate::resource::core::{
+use crate::engine::core::{
     commands::{EngineCommand, UiCommand},
-    location::Location,
     transition::Transition,
 };
+use crate::engine::state::campaign_state_machine::CampaignStateMachine;
 
 use bichannel::Channel;
 
-use super::campaign_coordinator::CampaignCoordinator;
-use super::Coordinator;
-
 pub struct GameCoordinator {
-    pub campaign: CampaignCoordinator,
+    pub campaign: CampaignStateMachine,
     pub channel: Channel<UiCommand, EngineCommand>,
     pub exit: bool,
 }
@@ -34,32 +30,24 @@ impl GameCoordinator {
 
     fn handle_effect(&mut self, effect: Transition) {
         let commands = self.campaign.handle_effect(effect);
-        commands
-            .into_iter()
-            .for_each(|command| self.channel.send(command).expect("Broken channel"))
-    }
-
-    fn init(&mut self, start: Location) {
-        self.handle_effect(Transition {
-            next: TransitionType::Enter(start),
-            actions: vec![],
-        });
+        commands.into_iter().for_each(|command| {
+            self.channel
+                .send(command)
+                .expect("Broken channel while handling effect")
+        })
     }
 
     pub fn spawn(
-        game: CampaignCoordinator,
+        campaign: CampaignStateMachine,
         channel: Channel<UiCommand, EngineCommand>,
     ) -> JoinHandle<io::Result<()>> {
-        let start = game.start.clone();
-
         let mut this = GameCoordinator {
-            campaign: game,
+            campaign,
             channel,
             exit: false,
         };
 
         thread::spawn(move || {
-            this.init(start);
             while !this.exit {
                 this.handle_commands();
             }

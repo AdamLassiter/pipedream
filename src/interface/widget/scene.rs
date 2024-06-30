@@ -1,6 +1,6 @@
 use ratatui::{prelude::*, widgets::*};
 
-use crate::resource::core::{description::Description, scene::Scene};
+use crate::engine::core::{description::Description, scene::Scene};
 
 impl Widget for &Scene {
     fn render(self, area: Rect, buf: &mut Buffer) {

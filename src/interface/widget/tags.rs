@@ -11,7 +11,7 @@ impl Widget for &Tags {
         Widget::render(
             List::new(
                 self.0.iter()
-                    .map(|(key, val)| format!("{:?}/{:?}", key.0, val)),
+                    .map(|(key, val)| format!("{}/{}", key.0, val)),
             ),
             area,
             buf,

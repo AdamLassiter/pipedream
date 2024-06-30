@@ -8,13 +8,18 @@ use std::{
 use fixed::{types::extra::U16, FixedI64};
 use serde::{Deserialize, Serialize};
 
-use crate::{prefab::tags::Static, resource::combat::field::Combatant};
+use crate::engine::combat::field::Combatant;
+
+use std::sync::LazyLock;
+
+pub type Static<T> = LazyLock<T>;
 
 pub type FI64 = FixedI64<U16>;
 
 pub static KEY_SEP: char = ':';
 pub static VAL_SEP: char = '/';
 
+pub static ME: Static<TagKey> = Static::new(|| "$me".into());
 pub static SUBSTITUTIONS: Static<BTreeMap<String, TagKey>> = Static::new(|| {
     BTreeMap::from_iter([
         ("$me".into(), "combatant:ref:me".into()),
@@ -28,6 +33,12 @@ static MAX_RESOLVE_DEPTH: usize = 256;
 pub struct Tag {
     pub key: TagKey,
     pub value: TagValue,
+}
+
+impl std::fmt::Display for Tag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(format!("{}/{}", self.key.trailing_key(), self.value).as_str())
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
@@ -48,8 +59,12 @@ impl TagKey {
 
     pub fn targets(&self) -> (Combatant, TagKey) {
         let mut split = self.split(KEY_SEP);
-        let combatant = split.next().expect("Failed to parse targeted TagKey into combatatnt");
-        let remainder = split.remainder().expect("Failed to parse targeted TagKey into remainder");
+        let combatant = split
+            .next()
+            .expect("Failed to parse targeted TagKey into combatatnt");
+        let remainder = split
+            .remainder()
+            .expect("Failed to parse targeted TagKey into remainder");
 
         (
             Combatant::from_str(combatant).expect("Failed to parse targeted combatant"),
@@ -62,6 +77,18 @@ impl TagKey {
 pub enum TagValue {
     Tag(TagKey),
     Number(FI64),
+}
+
+impl std::fmt::Display for TagValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(
+            match self {
+                Self::Tag(key) => key.trailing_key().to_string(),
+                Self::Number(num) => format!("{}", num),
+            }
+            .as_str(),
+        )
+    }
 }
 
 impl From<TagValue> for String {
@@ -163,7 +190,11 @@ impl Tags {
         let mut key = key.0.clone();
         SUBSTITUTIONS.iter().for_each(|(target, reference)| {
             if key.contains(target) {
-                let substitution = match self.0.get(reference).expect("Failed to resolve reference for key") {
+                let substitution = match self
+                    .0
+                    .get(reference)
+                    .expect("Failed to resolve reference for key")
+                {
                     TagValue::Tag(key) => key,
                     TagValue::Number(value) => {
                         panic!(
@@ -182,7 +213,12 @@ impl Tags {
         let mut next = value.clone();
         for _ in 1..MAX_RESOLVE_DEPTH {
             match next {
-                TagValue::Tag(tk) => match self.0.get(&tk).expect("Failed to resolve reference for value").clone() {
+                TagValue::Tag(tk) => match self
+                    .0
+                    .get(&tk)
+                    .expect("Failed to resolve reference for value")
+                    .clone()
+                {
                     TagValue::Number(val) => {
                         next = TagValue::Number(val);
                     }

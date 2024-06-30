@@ -5,7 +5,7 @@ use bichannel::Channel;
 use crossterm::event::KeyEvent;
 use ratatui::{buffer::Buffer, layout::Rect};
 
-use crate::resource::core::commands::{EngineCommand, UiCommand};
+use crate::engine::core::commands::{EngineCommand, UiCommand};
 
 pub trait Handler {
     fn handle_key_event(

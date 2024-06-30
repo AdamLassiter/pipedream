@@ -14,6 +14,7 @@ pub struct Choices {
 pub struct Choice {
     pub description: Description,
     pub effect: Transition,
+    pub selectable: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,6 +36,25 @@ impl From<Vec<(Description, Transition)>> for Choices {
                     .map(|(description, effect)| Choice {
                         description,
                         effect,
+                        selectable: true,
+                    })
+                    .collect(),
+            ),
+            cursor: 0,
+        }
+    }
+}
+
+impl From<Vec<(Description, Transition, bool)>> for Choices {
+    fn from(value: Vec<(Description, Transition, bool)>) -> Self {
+        Self {
+            choices: ChoiceType::Manual(
+                value
+                    .into_iter()
+                    .map(|(description, effect, selectable)| Choice {
+                        description,
+                        effect,
+                        selectable,
                     })
                     .collect(),
             ),

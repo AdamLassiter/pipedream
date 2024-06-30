@@ -1,3 +1,3 @@
-pub mod tag_engine;
-pub mod coordinator;
-pub mod state_machine;
+pub mod combat;
+pub mod core;
+pub mod state;

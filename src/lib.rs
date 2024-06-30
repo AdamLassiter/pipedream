@@ -10,4 +10,4 @@ extern crate log;
 pub mod engine;
 pub mod interface;
 pub mod prefab;
-pub mod resource;
+pub mod game_coordinator;

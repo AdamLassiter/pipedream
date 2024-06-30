@@ -1,37 +1,24 @@
-use std::{collections::BTreeMap, fs::File};
+use std::collections::BTreeMap;
 
 use log::debug;
 use rand::prelude::SliceRandom;
 
-use crate::{
-    engine::{state_machine::combat_state_machine::*, tag_engine::TagEngine},
-    resource::{
-        combat::{card::Cards, npc::Npcs},
-        core::{
-            action::Action,
-            scene::Scene,
-            state::State,
-            tag::{Tag, TagKey},
-            transition::{Transition, TransitionType},
-        },
-        world::combat_world::{CombatWorld, DynamicStateFn},
+use crate::engine::{
+    combat::{
+        card::Cards,
+        npc::{Npcs, ENEMY_NAME},
     },
+    core::{
+        action::Action,
+        scene::Scene,
+        state::State,
+        tag::Tag,
+        transition::{Transition, TransitionType},
+    },
+    state::{combat_state_machine::*, combat_world::*},
 };
 
-use super::{npcs::ENEMY_NAME, tags::Static};
-
-pub static PLAYER_HAND: Static<TagKey> = Static::new(|| TagKey("player:hand".to_string()));
-pub static PLAYER_DECK: Static<TagKey> = Static::new(|| TagKey("player:deck".to_string()));
-pub static ENEMY_HAND: Static<TagKey> = Static::new(|| TagKey("enemy:hand".to_string()));
-pub static ENEMY_DECK: Static<TagKey> = Static::new(|| TagKey("enemy:deck".to_string()));
-
 impl CombatWorld {
-    fn dump(&self) {
-        let buffer =
-            File::create("./combat-world.yml").expect("Failed to open file for writing combat-world data");
-        serde_yml::to_writer(buffer, &self).expect("Failed to write yaml combat-world data to file");
-    }
-
     pub fn generate() -> Self {
         let states = {
             let mut states = BTreeMap::new();
@@ -50,19 +37,18 @@ impl CombatWorld {
             states
         };
 
-        let world = CombatWorld {
+        Self {
             states,
             cards: Cards::generate(),
             npcs: Npcs::generate(),
-        };
-
-        world.dump();
-        world
+        }
     }
 
-    pub fn combat_init_phase(machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
-        let enemy_name_slice = tag_engine.find(&ENEMY_NAME);
-        let Tag { key: enemy, .. } = enemy_name_slice.first().expect("Failed to find enemy name slice");
+    pub fn combat_init_phase(machine: &CombatStateMachine) -> State {
+        let enemy_name_slice = machine.tag_engine.find(&ENEMY_NAME);
+        let Tag { key: enemy, .. } = enemy_name_slice
+            .first()
+            .expect("Failed to find enemy name slice");
         let enemy_data = machine.combat_world.npcs.find(enemy);
 
         State {
@@ -81,8 +67,8 @@ impl CombatWorld {
         }
     }
 
-    pub fn player_draw_phase(_machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
-        let player_deck_slice = tag_engine.find(&PLAYER_DECK);
+    pub fn player_draw_phase(machine: &CombatStateMachine) -> State {
+        let player_deck_slice = machine.tag_engine.find(&PLAYER_DECK);
         let player_draw_card = player_deck_slice
             .choose(&mut rand::thread_rng())
             .expect("Failed to generate thread RNG")
@@ -110,10 +96,10 @@ impl CombatWorld {
         }
     }
 
-    pub fn player_play_phase(machine: &CombatStateMachine, tag_engine: &TagEngine) -> State {
-        let player_hand_slice = tag_engine.find(&PLAYER_HAND);
+    pub fn player_play_phase(machine: &CombatStateMachine) -> State {
+        let player_hand_slice = machine.tag_engine.find(&PLAYER_HAND);
         debug!(target:"Combat/Hand", "{:?}", player_hand_slice);
-        let state = State {
+        State {
             location: PLAYER_PLAY.clone(),
             scene: Scene {
                 descriptions: vec!["Play".into()],
@@ -122,19 +108,18 @@ impl CombatWorld {
             options: player_hand_slice
                 .iter()
                 .map(|Tag { key: card, .. }| machine.combat_world.cards.find(card))
-                .filter(|&card_data| tag_engine.satisfies(&card_data.predicate))
                 .map(|card_data| {
                     (
-                        format!("Play {:?} {:?}", card_data.name, card_data.predicate).into(),
+                        format!("Play {:?} [{}]", card_data.name, card_data.predicate).into(),
                         Transition {
                             next: TransitionType::Goto(PLAYER_RESOLVE_PLAY.clone()),
                             actions: vec![],
                         },
+                        machine.tag_engine.satisfies(&card_data.predicate),
                     )
                 })
                 .collect::<Vec<_>>()
                 .into(),
-        };
-        state
+        }
     }
 }

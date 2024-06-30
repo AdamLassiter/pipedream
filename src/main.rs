@@ -2,15 +2,14 @@ use std::io;
 
 use pipedream::{
     engine::{
-        coordinator::{
-            campaign_coordinator::CampaignCoordinator, game_coordinator::GameCoordinator,
+        core::location::Location,
+        state::{
+            campaign_state_machine::CampaignStateMachine, campaign_world::CampaignWorld,
+            tag_engine::TagEngine,
         },
-        state_machine::campaign_state_machine::CampaignStateMachine,
-        tag_engine::TagEngine,
     },
+    game_coordinator::GameCoordinator,
     interface::{tui::Tui, utils::finish_and_panic_threads},
-    resource::core::location::Location,
-    resource::world::campaign_world::CampaignWorld,
 };
 
 fn main() -> io::Result<()> {
@@ -20,14 +19,7 @@ fn main() -> io::Result<()> {
     let tag_engine = TagEngine::generate_campaign();
     let start = Location("woods:entrance".into());
 
-    let state_machine = CampaignStateMachine::new(world);
-
-    let campaign = CampaignCoordinator {
-        start,
-        tag_engine,
-        state_machine,
-    };
-
+    let campaign = CampaignStateMachine::new(world, tag_engine, start);
     let engine_thread = GameCoordinator::spawn(campaign, channel);
 
     finish_and_panic_threads(vec![ui_thread, engine_thread]);

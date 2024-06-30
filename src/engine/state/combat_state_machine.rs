@@ -1,21 +1,19 @@
 use log::debug;
 use serde::Serialize;
 
-use crate::{
-    engine::tag_engine::TagEngine,
-    prefab::tags::Static,
-    resource::{
-        core::{
-            choice::{Choice, ChoiceType},
-            commands::UiCommand,
-            description::Description,
-            location::Location,
-            predicate::Predicate,
-            state::State,
-            transition::{Transition, TransitionType},
-        },
-        world::combat_world::CombatWorld,
-    },
+use crate::engine::core::{
+    choice::{Choice, ChoiceType},
+    commands::UiCommand,
+    description::Description,
+    location::Location,
+    predicate::Predicate,
+    state::State,
+    tag::Static,
+    transition::{Transition, TransitionType},
+};
+
+use super::{
+    campaign_state_machine::CampaignStateMachine, combat_world::CombatWorld, tag_engine::TagEngine,
 };
 
 pub static COMBAT_INIT: Static<Location> = Static::new(|| Location("combat:init".to_string()));
@@ -28,29 +26,32 @@ pub static PLAYER_RESOLVE_PLAY: Static<Location> =
 pub struct CombatStateMachine {
     #[serde(skip_serializing)]
     pub combat_world: CombatWorld,
+    pub tag_engine: TagEngine,
     pub current: Vec<Location>,
 }
 
 impl CombatStateMachine {
-    pub fn init(&mut self, tag_engine: &mut TagEngine) -> Vec<UiCommand> {
-        self.handle_effect(
+    pub fn new(combat_world: CombatWorld, tag_engine: TagEngine, start: Location) -> Self {
+        Self {
+            combat_world,
             tag_engine,
-            Transition {
-                next: TransitionType::Enter(COMBAT_INIT.clone()),
-                actions: vec![],
-            },
+            current: vec![start],
+        }
+    }
+
+    pub fn from_campaign(campaign_machine: &CampaignStateMachine) -> Self {
+        Self::new(
+            CombatWorld::generate(),
+            TagEngine::from_campaign(&campaign_machine.tag_engine),
+            COMBAT_INIT.clone(),
         )
     }
 
-    pub fn handle_effect(
-        &mut self,
-        tag_engine: &mut TagEngine,
-        side_effect: Transition,
-    ) -> Vec<UiCommand> {
-        tag_engine.handle_actions(&side_effect.actions);
+    pub fn handle_effect(&mut self, side_effect: Transition) -> Vec<UiCommand> {
+        self.tag_engine.handle_actions(&side_effect.actions);
         self.handle_transition(side_effect);
 
-        self.next_options(tag_engine)
+        self.next_options()
     }
 
     fn handle_transition(&mut self, side_effect: Transition) {
@@ -76,8 +77,8 @@ impl CombatStateMachine {
         debug!(target:"State/Location", "{:?}", self.current);
     }
 
-    fn next_options(&mut self, tag_engine: &TagEngine) -> Vec<UiCommand> {
-        let State { scene, options, .. } = self.current_state(tag_engine);
+    pub fn next_options(&mut self) -> Vec<UiCommand> {
+        let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();
 
@@ -85,7 +86,7 @@ impl CombatStateMachine {
             predicate.is_none()
                 || predicate
                     .as_ref()
-                    .is_some_and(|pred| tag_engine.satisfies(pred))
+                    .is_some_and(|pred| self.tag_engine.satisfies(pred))
         };
 
         scene
@@ -105,22 +106,13 @@ impl CombatStateMachine {
         vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
     }
 
-    fn current_state(&self, tag_engine: &TagEngine) -> State {
+    fn current_state(&self) -> State {
         let state_fn = self.combat_world.get_state(
             self.current
                 .last()
                 .expect("Location stack empty, cannot find current state"),
         );
 
-        state_fn.apply(self, tag_engine)
-    }
-}
-
-impl Default for CombatStateMachine {
-    fn default() -> Self {
-        Self {
-            combat_world: CombatWorld::generate(),
-            current: vec![],
-        }
+        state_fn.apply(self)
     }
 }

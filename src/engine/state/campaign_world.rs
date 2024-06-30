@@ -1,4 +1,4 @@
-use crate::resource::core::{location::Location, state::State};
+use crate::engine::core::{location::Location, state::State};
 
 use std::collections::BTreeMap;
 

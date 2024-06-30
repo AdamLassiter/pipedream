@@ -38,7 +38,7 @@ pub fn restore() -> io::Result<()> {
 pub fn finish_and_panic_threads(threads: Vec<JoinHandle<io::Result<()>>>) {
     // wait for a thread to finish
     while !(threads.iter().any(|thread| thread.is_finished())) {
-        thread::sleep(Duration::from_millis(10))
+        thread::sleep(Duration::from_millis(100))
     }
 
     // panic first joined errored thread
