@@ -16,7 +16,6 @@ impl Npcs {
             File::create("./npcs.yml").expect("Failed to open file for writing npcs data");
         serde_yml::to_writer(buffer, &self).expect("Failed to write yaml npcs data to file");
     }
-    }
 
     pub fn generate() -> Self {
         let cards = Self(BTreeMap::from_iter(

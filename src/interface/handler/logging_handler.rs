@@ -37,14 +37,14 @@ impl Handler for LoggingHandler {
         >,
     ) {
         match key_event.code {
+            KeyCode::Char('w') | KeyCode::Up => self.log.transition(TuiWidgetEvent::UpKey),
+            KeyCode::Char('s') | KeyCode::Down => self.log.transition(TuiWidgetEvent::DownKey),
+            KeyCode::Char('a') | KeyCode::Left => self.log.transition(TuiWidgetEvent::LeftKey),
+            KeyCode::Char('d') | KeyCode::Right => self.log.transition(TuiWidgetEvent::RightKey),
+            KeyCode::Char('h') | KeyCode::Delete => self.log.transition(TuiWidgetEvent::HideKey),
+            KeyCode::Char('f') | KeyCode::Enter => self.log.transition(TuiWidgetEvent::FocusKey),
             KeyCode::PageUp => self.log.transition(TuiWidgetEvent::PrevPageKey),
             KeyCode::PageDown => self.log.transition(TuiWidgetEvent::NextPageKey),
-            KeyCode::Up => self.log.transition(TuiWidgetEvent::UpKey),
-            KeyCode::Down => self.log.transition(TuiWidgetEvent::DownKey),
-            KeyCode::Left => self.log.transition(TuiWidgetEvent::LeftKey),
-            KeyCode::Right => self.log.transition(TuiWidgetEvent::RightKey),
-            KeyCode::Char('h') => self.log.transition(TuiWidgetEvent::HideKey),
-            KeyCode::Char('f') => self.log.transition(TuiWidgetEvent::FocusKey),
             _ => (),
         }
     }

@@ -31,7 +31,6 @@ impl CombatWorld {
             File::create("./combat-world.yml").expect("Failed to open file for writing combat-world data");
         serde_yml::to_writer(buffer, &self).expect("Failed to write yaml combat-world data to file");
     }
-    }
 
     pub fn generate() -> Self {
         let states = {
@@ -86,7 +85,7 @@ impl CombatWorld {
         let player_deck_slice = tag_engine.find(&PLAYER_DECK);
         let player_draw_card = player_deck_slice
             .choose(&mut rand::thread_rng())
-            .epect("Failed to generate thread RNG")
+            .expect("Failed to generate thread RNG")
             .clone();
 
         let player_hand_card = player_draw_card
