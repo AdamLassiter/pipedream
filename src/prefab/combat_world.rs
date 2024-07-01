@@ -12,7 +12,7 @@ use crate::engine::{
         action::Action,
         scene::Scene,
         state::State,
-        tag::Tag,
+        tag::{Tag, TagKey, TagValue, ME_REF, YOU_REF},
         transition::{Transition, TransitionType},
     },
     state::{combat_state_machine::*, combat_world::*},
@@ -68,17 +68,32 @@ impl CombatWorld {
     }
 
     pub fn player_draw_phase(machine: &CombatStateMachine) -> State {
-        let player_deck_slice = machine.tag_engine.find(&PLAYER_DECK);
+        let player_deck_slice = machine.tag_engine.find(&MY_DECK);
         let player_draw_card = player_deck_slice
             .choose(&mut rand::thread_rng())
-            .expect("Failed to generate thread RNG")
+            .expect("Failed to find player deck slice")
             .clone();
 
-        let player_hand_card = player_draw_card
-            .key
-            .replace(&PLAYER_DECK.0, &PLAYER_HAND.0)
-            .into();
-        debug!(target:"Combat/Draw", "{:?}", player_draw_card);
+        let me = match machine.tag_engine.tags.get(&ME_REF) {
+            Some(TagValue::Tag(me)) => me,
+            _ => panic!("Failed to resolve :me reference in combat"),
+        };
+        let you = match machine.tag_engine.tags.get(&YOU_REF) {
+            Some(TagValue::Tag(you)) => you,
+            _ => panic!("Failed to resolve :you reference in combat"),
+        };
+
+        let player_hand_card = Tag {
+            value: player_draw_card.value,
+            key: TagKey(
+                player_draw_card
+                    .key
+                    .resolve(me, you)
+                    .0
+                    .replace(&PLAYER_DECK.0, &PLAYER_HAND.0),
+            ),
+        };
+        debug!(target:"Combat/Draw", "{:?}", player_hand_card);
 
         State {
             location: PLAYER_DRAW.clone(),
@@ -88,7 +103,10 @@ impl CombatWorld {
             options: Transition {
                 next: TransitionType::Goto(PLAYER_PLAY.clone()),
                 actions: vec![
-                    Action::Remove(player_draw_card),
+                    Action::Subtract(Tag {
+                        key: player_draw_card.key,
+                        value: TagValue::Number(1.into()),
+                    }),
                     Action::Add(player_hand_card),
                 ],
             }
@@ -97,7 +115,7 @@ impl CombatWorld {
     }
 
     pub fn player_play_phase(machine: &CombatStateMachine) -> State {
-        let player_hand_slice = machine.tag_engine.find(&PLAYER_HAND);
+        let player_hand_slice = machine.tag_engine.find(&MY_HAND);
         debug!(target:"Combat/Hand", "{:?}", player_hand_slice);
         State {
             location: PLAYER_PLAY.clone(),

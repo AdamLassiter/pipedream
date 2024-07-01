@@ -3,18 +3,27 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 
 use crate::engine::{
-        combat::{card::Cards, npc::Npcs},
-        core::{
-            location::Location,
-            state::State,
-            tag::{Static, TagKey},
-        }, state::combat_state_machine::CombatStateMachine,
-    };
+    combat::{card::Cards, npc::Npcs},
+    core::{
+        location::Location,
+        state::State,
+        tag::{Static, TagKey},
+    },
+    state::combat_state_machine::CombatStateMachine,
+};
+
+pub static PLAYER: Static<TagKey> = Static::new(|| "player".into());
+pub static ENEMY: Static<TagKey> = Static::new(|| "enemy".into());
 
 pub static PLAYER_HAND: Static<TagKey> = Static::new(|| "player:hand".into());
 pub static PLAYER_DECK: Static<TagKey> = Static::new(|| "player:deck".into());
 pub static ENEMY_HAND: Static<TagKey> = Static::new(|| "enemy:hand".into());
 pub static ENEMY_DECK: Static<TagKey> = Static::new(|| "enemy:deck".into());
+
+pub static MY_HAND: Static<TagKey> = Static::new(|| "$my:hand".into());
+pub static MY_DECK: Static<TagKey> = Static::new(|| "$my:deck".into());
+pub static YOUR_HAND: Static<TagKey> = Static::new(|| "$your:hand".into());
+pub static YOUR_DECK: Static<TagKey> = Static::new(|| "$your:deck".into());
 
 type StateFn = dyn Fn(&CombatStateMachine) -> State + Send + Sync;
 

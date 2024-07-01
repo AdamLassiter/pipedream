@@ -76,7 +76,7 @@ impl CampaignStateMachine {
         None
     }
 
-    fn next_options(&mut self) -> Vec<UiCommand> {
+    pub fn next_options(&mut self) -> Vec<UiCommand> {
         let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();

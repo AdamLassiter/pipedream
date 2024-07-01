@@ -42,7 +42,7 @@ impl CombatStateMachine {
     pub fn from_campaign(campaign_machine: &CampaignStateMachine) -> Self {
         Self::new(
             CombatWorld::generate(),
-            TagEngine::from_campaign(&campaign_machine.tag_engine),
+            TagEngine::into_combat(&campaign_machine.tag_engine),
             COMBAT_INIT.clone(),
         )
     }

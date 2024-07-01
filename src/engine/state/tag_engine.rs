@@ -1,13 +1,30 @@
-use std::ops::Bound::Included;
-
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::engine::core::{
-    action::Action,
-    predicate::Predicate,
-    tag::{Tag, TagKey, TagValue, Tags, FI64},
+use crate::engine::{
+    core::{
+        action::Action,
+        predicate::Predicate,
+        tag::{Static, Tag, TagKey, TagValue, Tags, FI64, ME_REF, YOU_REF},
+    },
+    state::combat_world::{ENEMY, PLAYER},
 };
+
+pub static ANY: Static<String> = Static::new(|| "$any".into());
+pub static ANY_SUBSTITUTIONS: Static<Vec<String>> =
+    Static::new(|| vec![PLAYER.0.clone(), ENEMY.0.clone()]);
+pub static ANY_NAME: Static<TagKey> = Static::new(|| "$any:name".into());
+pub static ANY_ATTRIBUTE: Static<TagKey> = Static::new(|| "$any:attribute".into());
+pub static ANY_RESOURCE: Static<TagKey> = Static::new(|| "$any:resource".into());
+pub static ANY_DECK: Static<TagKey> = Static::new(|| "$any:deck".into());
+pub static FROM_CAMPAIGN: Static<Vec<TagKey>> = Static::new(|| {
+    vec![
+        ANY_NAME.clone(),
+        ANY_ATTRIBUTE.clone(),
+        ANY_RESOURCE.clone(),
+        ANY_DECK.clone(),
+    ]
+});
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TagEngine {
@@ -15,8 +32,28 @@ pub struct TagEngine {
 }
 
 impl TagEngine {
-    pub fn from_campaign(campaign_tags: &Self) -> Self {
-        todo!()
+    pub fn into_combat(campaign_tags: &Self) -> Self {
+        let mut tags = vec![
+            Tag {
+                key: ME_REF.clone(),
+                value: TagValue::Tag(PLAYER.clone()),
+            },
+            Tag {
+                key: YOU_REF.clone(),
+                value: TagValue::Tag(ENEMY.clone()),
+            },
+        ];
+        let subst_target = ANY.clone();
+
+        FROM_CAMPAIGN.iter().for_each(|from_campaign| {
+            ANY_SUBSTITUTIONS.iter().for_each(|subst| {
+                let one = from_campaign.0.replace(&subst_target, subst);
+                tags.append(&mut campaign_tags.find(&TagKey(one)))
+            })
+        });
+
+        debug!(target:"Event/IntoCombat", "{:?}", tags);
+        Self { tags: tags.into() }
     }
 
     pub fn handle_actions(&mut self, actions: &Vec<Action>) {
@@ -87,15 +124,9 @@ impl TagEngine {
     }
 
     pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {
-        let start = Included(partial_key.clone());
-
-        let mut end_str = partial_key.clone().0;
-        end_str.push('~');
-        let end = Included(end_str.as_str().into());
-
         let found = self
             .tags
-            .range((start, end))
+            .find(partial_key)
             .map(|(k, v)| Tag::from((k.clone(), v.clone())))
             .collect();
 

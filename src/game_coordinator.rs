@@ -17,7 +17,18 @@ pub struct GameCoordinator {
 }
 
 impl GameCoordinator {
-    pub fn handle_commands(&mut self) {
+    fn init(&mut self) {
+        self.campaign
+            .next_options()
+            .into_iter()
+            .for_each(|command| {
+                self.channel
+                    .send(command)
+                    .expect("Broken channel while initialising first options")
+            });
+    }
+
+    fn handle_commands(&mut self) {
         while let Ok(ev) = self.channel.recv() {
             match ev {
                 EngineCommand::RespondWithChoice(effect) => {
@@ -48,6 +59,7 @@ impl GameCoordinator {
         };
 
         thread::spawn(move || {
+            this.init();
             while !this.exit {
                 this.handle_commands();
             }

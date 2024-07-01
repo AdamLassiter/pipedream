@@ -8,7 +8,7 @@ use crate::engine::core::{
     tag::{TagKey, Tags},
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Cards(pub BTreeMap<String, Card>);
 
 impl Cards {
@@ -20,7 +20,7 @@ impl Cards {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Card {
     pub name: String,
     pub predicate: Predicate,

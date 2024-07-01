@@ -1,11 +1,12 @@
 use std::{
     clone::Clone,
     collections::{btree_map::Range, BTreeMap},
-    ops::Deref,
+    ops::Bound::Included,
     str::FromStr,
 };
 
 use fixed::{types::extra::U16, FixedI64};
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 use crate::engine::combat::field::Combatant;
@@ -19,11 +20,14 @@ pub type FI64 = FixedI64<U16>;
 pub static KEY_SEP: char = ':';
 pub static VAL_SEP: char = '/';
 
-pub static ME: Static<TagKey> = Static::new(|| "$me".into());
+pub static MY: Static<String> = Static::new(|| "$my".into());
+pub static YOUR: Static<String> = Static::new(|| "$your".into());
+pub static ME_REF: Static<TagKey> = Static::new(|| "combatant:reference:me".into());
+pub static YOU_REF: Static<TagKey> = Static::new(|| "combatant:reference:you".into());
 pub static SUBSTITUTIONS: Static<BTreeMap<String, TagKey>> = Static::new(|| {
     BTreeMap::from_iter([
-        ("$me".into(), "combatant:ref:me".into()),
-        ("$you".into(), "combatant:ref:you".into()),
+        (MY.clone(), ME_REF.clone()),
+        (YOUR.clone(), YOU_REF.clone()),
     ])
 });
 
@@ -44,21 +48,17 @@ impl std::fmt::Display for Tag {
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct TagKey(pub String);
 
-impl Deref for TagKey {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 impl TagKey {
     pub fn trailing_key(&self) -> &str {
-        self.split(KEY_SEP).last().unwrap_or("")
+        self.0.split(KEY_SEP).last().unwrap_or("")
+    }
+
+    pub fn resolve(&self, me: &TagKey, you: &TagKey) -> Self {
+        Self(self.0.replace(&*MY, &me.0).replace(&*YOUR, &you.0))
     }
 
     pub fn targets(&self) -> (Combatant, TagKey) {
-        let mut split = self.split(KEY_SEP);
+        let mut split = self.0.split(KEY_SEP);
         let combatant = split
             .next()
             .expect("Failed to parse targeted TagKey into combatatnt");
@@ -176,19 +176,27 @@ impl Tags {
     }
 
     pub fn get(&self, key: &TagKey) -> Option<&TagValue> {
-        self.0.get(key)
+        let value = self.0.get(key);
+
+        debug!(target:"Tags/Get", "{:?} {:?} {:?}", key, value, self.0);
+        value
     }
 
-    pub fn range(
-        &self,
-        bounds: (std::ops::Bound<TagKey>, std::ops::Bound<TagKey>),
-    ) -> Range<'_, TagKey, TagValue> {
-        self.0.range(bounds)
+    pub fn find(&self, partial_key: &TagKey) -> Range<'_, TagKey, TagValue> {
+        let partial_key = self.resolve_key(partial_key);
+
+        let start = Included(partial_key.clone());
+        let mut end_str = partial_key.clone().0;
+        end_str.push('~');
+        let end = Included(end_str.as_str().into());
+
+        self.0.range((start, end))
     }
 
     fn resolve_key(&self, key: &TagKey) -> TagKey {
         let mut key = key.0.clone();
         SUBSTITUTIONS.iter().for_each(|(target, reference)| {
+            debug!(target:"Tags/TryResolve", "{:?} {:?} {:?}", key, target, reference);
             if key.contains(target) {
                 let substitution = match self
                     .0
@@ -203,7 +211,8 @@ impl Tags {
                         )
                     }
                 };
-                key = key.replace(target, substitution);
+                debug!(target:"Tags/Resolve", "{:?} {:?} {:?}", key, target, substitution);
+                key = key.replace(target, &substitution.0);
             }
         });
         TagKey(key)
