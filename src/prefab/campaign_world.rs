@@ -18,7 +18,7 @@ impl CampaignWorld {
                     location: Location("woods:entrance".into()),
                     scene: Scene {
                         descriptions: vec![
-                            "You are in the woods".into(),
+                            "You are in <green the woods>".into(),
                             "There is a mysterious moss-covered shop in a small grove".into(),
                             (
                                 Predicate::Tag("woods:entrance:item:sword".into()),
@@ -63,7 +63,7 @@ impl CampaignWorld {
                 State {
                     location: Location("woods:depths".into()),
                     scene: Scene {
-                        descriptions: vec!["You are lost in the woods".into()],
+                        descriptions: vec!["You are lost in <green the woods>".into()],
                     },
                     options: vec![
                         (
@@ -74,13 +74,11 @@ impl CampaignWorld {
                             },
                         ),
                         (
-                            "Battle inner demons".into(),
+                            "Battle <red inner demons>".into(),
                             Transition {
-                                next: TransitionType::Combat(vec![
-                                    Action::Add("enemy:name:Dave".into()),
-                                    Action::Add("player:deck:Anathema Device".into()),
-                                    Action::Add("player:deck:Bag of Endless Bags".into()),
-                                ]),
+                                next: TransitionType::Combat(vec![Action::Add(
+                                    "enemy:name:Dave".into(),
+                                )]),
                                 actions: vec![],
                             },
                         ),

@@ -21,6 +21,10 @@ pub static PLAYER_DRAW: Static<Location> = Static::new(|| Location("player:draw"
 pub static PLAYER_PLAY: Static<Location> = Static::new(|| Location("player:play".to_string()));
 pub static PLAYER_RESOLVE_PLAY: Static<Location> =
     Static::new(|| Location("player:play:resolve".to_string()));
+pub static ENEMY_DRAW: Static<Location> = Static::new(|| Location("enemy:draw".to_string()));
+pub static ENEMY_PLAY: Static<Location> = Static::new(|| Location("enemy:play".to_string()));
+pub static ENEMY_RESOLVE_PLAY: Static<Location> =
+    Static::new(|| Location("enemy:play:resolve".to_string()));
 
 #[derive(Serialize)]
 pub struct CombatStateMachine {

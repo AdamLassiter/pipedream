@@ -1,9 +1,15 @@
-cargo-features = ["edition2024"]
+cargo-features = ["edition2024", "codegen-backend"]
+
+[profile.dev]
+codegen-backend = "cranelift"
+panic = 'abort'
+
 
 [package]
 name = "pipedream"
 version = "0.2.0"
 edition = "2024"
+
 
 [dependencies]
 rand = "0.8.5"
@@ -16,6 +22,7 @@ tui-logger = "0.11.1"
 
 crossterm = "0.27.0"
 ratatui = { version = "0.26.2", features = ["all-widgets"] }
+tui-markup = { version = "0.4.0", features = ["ratatui"] }
 tachyonfx = "0.2.0"
 
 serde = { version = "1.0.201", features = ["derive"] }

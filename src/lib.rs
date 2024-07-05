@@ -1,6 +1,5 @@
 #![feature(panic_update_hook)]
 #![feature(const_trait_impl)]
-#![feature(effects)]
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
 

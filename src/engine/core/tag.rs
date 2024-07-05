@@ -39,9 +39,21 @@ pub struct Tag {
     pub value: TagValue,
 }
 
+static TAG_STYLES: Static<BTreeMap<&str, &str>> = Static::new(|| {
+    BTreeMap::from_iter([
+        ("health", "red"),
+        ("stamina", "green"),
+        ("mana", "blue"),
+        ("faith", "yellow"),
+    ])
+});
 impl std::fmt::Display for Tag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(format!("{}/{}", self.key.trailing_key(), self.value).as_str())
+        let style = TAG_STYLES
+            .get(self.key.trailing_key())
+            .copied()
+            .unwrap_or("");
+        f.write_str(format!("<{} {}/{}>", style, self.key.trailing_key(), self.value).as_str())
     }
 }
 
@@ -176,9 +188,10 @@ impl Tags {
     }
 
     pub fn get(&self, key: &TagKey) -> Option<&TagValue> {
+        let key = &self.resolve_key(key);
         let value = self.0.get(key);
 
-        debug!(target:"Tags/Get", "{:?} {:?} {:?}", key, value, self.0);
+        debug!(target:"Tags/Get", "{:?} {:?}", key, value);
         value
     }
 

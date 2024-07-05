@@ -4,6 +4,7 @@ use log::error;
 use serde::{Deserialize, Serialize};
 
 use crate::engine::core::{
+    action::Action,
     predicate::Predicate,
     tag::{TagKey, Tags},
 };
@@ -24,6 +25,6 @@ impl Cards {
 pub struct Card {
     pub name: String,
     pub predicate: Predicate,
-    pub has_tags: Tags,
-    pub applies_tags: Tags,
+    pub tags: Tags,
+    pub actions: Vec<Action>,
 }

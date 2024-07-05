@@ -1,12 +1,12 @@
-use std::{thread, time::Duration};
+use std::thread;
 
 use crate::{
-    interface::{handler::Handler, Component},
     engine::core::{
         choice::{ChoiceType, Choices},
         commands::{EngineCommand, UiCommand},
         scene::Scene,
     },
+    interface::{handler::Handler, Component},
 };
 use bichannel::Channel;
 use crossterm::event::{KeyCode, KeyEvent};
@@ -48,11 +48,11 @@ impl Component for CampaignHandler {}
 impl Handler for CampaignHandler {
     fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) {
         if let Some(Choices {
-            choices: ChoiceType::Auto(..),
+            choices: ChoiceType::Auto(_, duration),
             ..
         }) = self.options.as_ref()
         {
-            thread::sleep(Duration::from_secs(1));
+            thread::sleep(*duration);
             self.make_choice(channel);
         }
 
@@ -96,7 +96,7 @@ impl Widget for &CampaignHandler {
         let [description_area, choices_area] =
             vertical(self.options.as_ref().map(|x| match &x.choices {
                 ChoiceType::Manual(choices) => choices.len(),
-                ChoiceType::Auto(_) => 0,
+                ChoiceType::Auto(..) => 0,
             }))
             .areas(area);
 

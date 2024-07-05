@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 
 use super::{description::Description, transition::Transition};
@@ -19,7 +21,7 @@ pub struct Choice {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ChoiceType {
-    Auto(Transition),
+    Auto(Transition, Duration),
     Manual(Vec<Choice>),
 }
 
@@ -66,7 +68,16 @@ impl From<Vec<(Description, Transition, bool)>> for Choices {
 impl From<Transition> for Choices {
     fn from(value: Transition) -> Self {
         Self {
-            choices: ChoiceType::Auto(value),
+            choices: ChoiceType::Auto(value, Duration::from_secs(0)),
+            cursor: 0,
+        }
+    }
+}
+
+impl From<(Transition, Duration)> for Choices {
+    fn from((value, duration): (Transition, Duration)) -> Self {
+        Self {
+            choices: ChoiceType::Auto(value, duration),
             cursor: 0,
         }
     }

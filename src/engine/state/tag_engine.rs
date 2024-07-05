@@ -17,12 +17,14 @@ pub static ANY_NAME: Static<TagKey> = Static::new(|| "$any:name".into());
 pub static ANY_ATTRIBUTE: Static<TagKey> = Static::new(|| "$any:attribute".into());
 pub static ANY_RESOURCE: Static<TagKey> = Static::new(|| "$any:resource".into());
 pub static ANY_DECK: Static<TagKey> = Static::new(|| "$any:deck".into());
+pub static ANY_DRAW_COUNT: Static<TagKey> = Static::new(|| "$any:draw-count".into());
 pub static FROM_CAMPAIGN: Static<Vec<TagKey>> = Static::new(|| {
     vec![
         ANY_NAME.clone(),
         ANY_ATTRIBUTE.clone(),
         ANY_RESOURCE.clone(),
         ANY_DECK.clone(),
+        ANY_DRAW_COUNT.clone(),
     ]
 });
 

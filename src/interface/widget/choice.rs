@@ -2,10 +2,9 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::{Style, Stylize},
-    text::{Line, Text},
     widgets::{List, ListState, StatefulWidget, Widget},
 };
+use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use crate::engine::core::{
     choice::{Choice, ChoiceType, Choices},
@@ -44,7 +43,7 @@ impl Choices {
                 .get(self.cursor)
                 .filter(|&c| c.selectable)
                 .map(|c| c.effect.clone()),
-            ChoiceType::Auto(transition) => Some(transition.clone()),
+            ChoiceType::Auto(transition, _) => Some(transition.clone()),
         }
     }
 }
@@ -53,29 +52,38 @@ impl Widget for &Choices {
     fn render(self, area: Rect, buf: &mut Buffer) {
         match &self.choices {
             ChoiceType::Manual(choices) => {
-                let options = Text::from(
-                    choices
-                        .iter()
-                        .map(
-                            |Choice {
-                                 description: Description { descriptor, .. },
-                                 selectable,
-                                 ..
-                             }| {
-                                Line::from(vec![descriptor.into()]).style(if *selectable {
-                                    Style::new().white()
-                                } else {
-                                    Style::new().dark_gray()
-                                })
-                            },
-                        )
-                        .collect::<Vec<_>>(),
-                );
+                let options = choices
+                    .iter()
+                    .map(|choice| {
+                        let Choice {
+                            description,
+                            selectable,
+                            ..
+                        } = choice;
+                        if *selectable {
+                            description.clone()
+                        } else {
+                            Description {
+                                descriptor: format!("<darkgray {}>", description.descriptor),
+                                predicate: description.predicate.clone(),
+                            }
+                        }
+                    })
+                    .collect::<Vec<_>>();
+
+                let options = options
+                    .iter()
+                    .map(|Description { descriptor, .. }| {
+                        compile::<RatatuiTextGenerator>(descriptor.as_str())
+                            .expect("Failed to compile tui text markup")
+                    })
+                    .collect::<Vec<_>>();
+
                 let mut state = ListState::default().with_selected(Some(self.cursor));
                 let opts_list = List::new(options).highlight_symbol(">> ");
                 StatefulWidget::render(opts_list, area, buf, &mut state);
             }
-            ChoiceType::Auto(_) => { /* None */ }
+            ChoiceType::Auto(..) => { /* None */ }
         }
     }
 }

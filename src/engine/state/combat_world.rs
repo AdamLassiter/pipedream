@@ -22,8 +22,10 @@ pub static ENEMY_DECK: Static<TagKey> = Static::new(|| "enemy:deck".into());
 
 pub static MY_HAND: Static<TagKey> = Static::new(|| "$my:hand".into());
 pub static MY_DECK: Static<TagKey> = Static::new(|| "$my:deck".into());
+pub static MY_DRAW_COUNT: Static<TagKey> = Static::new(|| "$my:draw-count".into());
 pub static YOUR_HAND: Static<TagKey> = Static::new(|| "$your:hand".into());
 pub static YOUR_DECK: Static<TagKey> = Static::new(|| "$your:deck".into());
+pub static YOUR_DRAW_COUNT: Static<TagKey> = Static::new(|| "$your:draw-count".into());
 
 type StateFn = dyn Fn(&CombatStateMachine) -> State + Send + Sync;
 
@@ -57,6 +59,6 @@ impl CombatWorld {
     pub fn get_state(&self, location: &Location) -> &DynamicStateFn {
         self.states
             .get(location)
-            .expect("Failed to find location in world")
+            .unwrap_or_else(|| panic!("Failed to find location {:?} in combat world", location.0))
     }
 }
