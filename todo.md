@@ -5,7 +5,7 @@
   - [x] Tag calculations
   - [x] Auto-advancing scenes
   - [x] UI tabs
-  - [ ] Split-thread UI control
+  - [x] Non-blocking UI control
   - [ ] Combat import/export
   - [ ] Combat round
   - [x] Show resources

@@ -80,6 +80,7 @@ impl CampaignStateMachine {
         let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();
+        let tags = self.tag_engine.tags.clone();
 
         let test = |predicate: &Option<Predicate>| {
             predicate.is_none()
@@ -101,9 +102,14 @@ impl CampaignStateMachine {
             );
         }
 
-        debug!(target:"Event/Render", "{:?}", &scene);
-        debug!(target:"Event/Query", "{:?}", &options);
-        vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
+        debug!(target:"Event/Scene", "{:?}", &scene);
+        debug!(target:"Event/Choices", "{:?}", &options);
+        debug!(target:"Event/Tags", "{:?}", &tags);
+        vec![
+            UiCommand::ShowScene(scene),
+            UiCommand::ShowChoices(options),
+            UiCommand::ShowTags(tags),
+        ]
     }
 
     fn current_state(&self) -> State {

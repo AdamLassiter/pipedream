@@ -1,6 +1,7 @@
 use std::io;
 use std::thread;
 use std::thread::JoinHandle;
+use std::time;
 
 use crate::engine::core::{
     commands::{EngineCommand, UiCommand},
@@ -9,6 +10,7 @@ use crate::engine::core::{
 use crate::engine::state::campaign_state_machine::CampaignStateMachine;
 
 use bichannel::Channel;
+use log::debug;
 
 pub struct GameCoordinator {
     pub campaign: CampaignStateMachine,
@@ -32,6 +34,7 @@ impl GameCoordinator {
         while let Ok(ev) = self.channel.recv() {
             match ev {
                 EngineCommand::RespondWithChoice(effect) => {
+                    debug!(target:"Coordinator/Tick", "{:?}", time::Instant::now());
                     self.handle_effect(effect);
                 }
                 EngineCommand::Exit => self.exit = true,

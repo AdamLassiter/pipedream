@@ -1,9 +1,8 @@
 use std::collections::BTreeSet;
 
-use log::debug;
 use ratatui::{
     buffer::Buffer,
-    layout::Rect,
+    layout::{Alignment, Rect},
     text::Text,
     widgets::{Paragraph, Widget},
 };
@@ -22,7 +21,7 @@ static RENDERABLE_TAGS: Static<BTreeSet<TagKey>> = Static::new(|| {
 
 impl Widget for &Tags {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        debug!(target: "Render/Tags", "{:?}", self);
+        // debug!(target:"Render/Tags", "{:?}", self);
 
         let renderable = RENDERABLE_TAGS
             .clone()
@@ -40,6 +39,6 @@ impl Widget for &Tags {
             })
             .for_each(|scene_line| scene.extend(scene_line));
 
-        Widget::render(Paragraph::new(scene), area, buf);
+        Widget::render(Paragraph::new(scene).alignment(Alignment::Right), area, buf);
     }
 }

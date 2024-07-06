@@ -1,6 +1,6 @@
 use std::{
     clone::Clone,
-    collections::{btree_map::Range, BTreeMap, VecDeque},
+    collections::{BTreeMap, VecDeque},
     ops::Bound::Included,
     str::FromStr,
 };
@@ -211,21 +211,26 @@ impl Tags {
         value
     }
 
-    pub fn find(&self, partial_key: &TagKey) -> Range<'_, TagKey, TagValue> {
+    pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {
         let partial_key = self.resolve_key(partial_key);
 
         let start = Included(partial_key.clone());
         let mut end_str = partial_key.clone().0;
         end_str.push('~');
         let end = Included(end_str.as_str().into());
+        let found = self
+            .0
+            .range((start, end))
+            .map(|(k, v)| Tag::from((k.clone(), v.clone())))
+            .collect();
 
-        self.0.range((start, end))
+        debug!(target:"Tags/Find", "{:?} -> {:?}", partial_key, found);
+        found
     }
 
     fn resolve_key(&self, key: &TagKey) -> TagKey {
         let mut key = key.0.clone();
         SUBSTITUTIONS.iter().for_each(|(target, reference)| {
-            debug!(target:"Tags/TryResolve", "{:?} {:?} {:?}", key, target, reference);
             if key.contains(target) {
                 let substitution = match self
                     .0

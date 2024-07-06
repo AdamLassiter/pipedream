@@ -3,10 +3,7 @@ use log::debug;
 use crate::{
     engine::{
         core::{
-            scene::Scene,
-            state::State,
-            tag::Tag,
-            transition::{Transition, TransitionType},
+            action::Action, scene::Scene, state::State, tag::Tag, transition::{Transition, TransitionType}
         },
         state::{combat_state_machine::*, combat_world::*},
     },
@@ -32,7 +29,9 @@ impl CombatWorld {
                         format!("Play {:?} [{}]", card_data.name, card_data.predicate).into(),
                         Transition {
                             next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
-                            actions: card_data.actions.clone(),
+                            actions: card_data.actions.clone().into_iter().chain(vec![
+                                Action::Subtract(format!("{}:{}", MY_HAND.0, card_data.name).into())
+                            ]).collect(),
                         },
                         selectable,
                     )

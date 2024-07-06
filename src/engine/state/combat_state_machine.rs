@@ -1,15 +1,18 @@
 use log::debug;
 use serde::Serialize;
 
-use crate::{engine::core::{
-    choice::{Choice, ChoiceType},
-    commands::UiCommand,
-    description::Description,
-    location::Location,
-    predicate::Predicate,
-    state::State,
-    transition::{Transition, TransitionType},
-}, prefab::combat_world::COMBAT_INIT};
+use crate::{
+    engine::core::{
+        choice::{Choice, ChoiceType},
+        commands::UiCommand,
+        description::Description,
+        location::Location,
+        predicate::Predicate,
+        state::State,
+        transition::{Transition, TransitionType},
+    },
+    prefab::combat_world::COMBAT_INIT,
+};
 
 use super::{
     campaign_state_machine::CampaignStateMachine, combat_world::CombatWorld, tag_engine::TagEngine,
@@ -74,6 +77,7 @@ impl CombatStateMachine {
         let State { scene, options, .. } = self.current_state();
         let mut scene = scene.clone();
         let mut options = options.clone();
+        let tags = self.tag_engine.tags.clone();
 
         let test = |predicate: &Option<Predicate>| {
             predicate.is_none()
@@ -94,9 +98,14 @@ impl CombatStateMachine {
             );
         }
 
-        debug!(target:"Event/Render", "{:?}", &scene);
-        debug!(target:"Event/Query", "{:?}", &options);
-        vec![UiCommand::ShowScene(scene), UiCommand::ShowChoices(options)]
+        debug!(target:"Event/Scene", "{:?}", &scene);
+        debug!(target:"Event/Choices", "{:?}", &options);
+        debug!(target:"Event/Tags", "{:?}", &tags);
+        vec![
+            UiCommand::ShowScene(scene),
+            UiCommand::ShowChoices(options),
+            UiCommand::ShowTags(tags),
+        ]
     }
 
     fn current_state(&self) -> State {

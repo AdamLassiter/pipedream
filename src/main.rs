@@ -18,8 +18,8 @@ fn main() -> io::Result<()> {
     let world = CampaignWorld::generate();
     let tag_engine = TagEngine::generate_campaign();
     let start = Location("woods:entrance".into());
-
     let campaign = CampaignStateMachine::new(world, tag_engine, start);
+
     let engine_thread = GameCoordinator::spawn(campaign, channel);
 
     finish_and_panic_threads(vec![ui_thread, engine_thread]);

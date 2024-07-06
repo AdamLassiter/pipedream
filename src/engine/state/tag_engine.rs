@@ -74,8 +74,6 @@ impl TagEngine {
             Action::Divide(tag) => self.compute(tag, |cur, new| cur / new, 1.into()),
             Action::None => { /* None */ }
         });
-
-        debug!(target:"State/Tags", "{:?}", self.tags);
     }
 
     fn compute(&mut self, new: &Tag, op: impl Fn(FI64, FI64) -> FI64, identity: FI64) {
@@ -100,8 +98,14 @@ impl TagEngine {
             TagValue::Number(value) => value,
         };
 
-        self.tags
-            .insert(&new.key, &TagValue::Number(op(*current, *new_value)));
+        if new_value.is_zero() {
+            debug!(target:"Tags/Compute", "{:?} hit zero", new.key);
+            self.tags.remove(&new.key);
+        } else {
+            debug!(target:"Tags/Compute", "{:?} {}", new.key, new_value);
+            self.tags
+                .insert(&new.key, &TagValue::Number(op(*current, *new_value)));
+        }
     }
 
     pub fn contains(&self, tag: &Tag) -> bool {
@@ -126,14 +130,7 @@ impl TagEngine {
     }
 
     pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {
-        let found = self
-            .tags
-            .find(partial_key)
-            .map(|(k, v)| Tag::from((k.clone(), v.clone())))
-            .collect();
-
-        debug!(target:"Tags/Find", "{:?} -> {:?}", partial_key, found);
-        found
+        self.tags.find(partial_key)
     }
 
     pub fn satisfies(&self, predicate: &Predicate) -> bool {

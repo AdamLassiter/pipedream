@@ -55,8 +55,8 @@ impl Handler for LoggingHandler {
             crate::engine::core::commands::EngineCommand,
             crate::engine::core::commands::UiCommand,
         >,
-    ) {
-        // Do nothing
+    ) -> bool {
+        true // Always re-draw
     }
 
     fn handle_render(&self, area: Rect, buf: &mut Buffer) {

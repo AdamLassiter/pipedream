@@ -35,6 +35,7 @@ pub struct Tui {
     current_tab: SelectedTab,
     tabs: Vec<Box<dyn Component>>,
     channel: Channel<EngineCommand, UiCommand>,
+    should_redraw: bool,
     exit: bool,
 }
 
@@ -49,6 +50,7 @@ impl Tui {
                 Box::new(LoggingHandler::new()),
             ],
             channel: ui_chan,
+            should_redraw: true,
             exit: false,
         };
 
@@ -66,8 +68,11 @@ impl Tui {
             thread::spawn(move || {
                 let mut terminal = utils::init()?;
                 while !app.exit {
-                    terminal.draw(|frame| app.render_frame(frame))?;
                     app.handle_events();
+                    if app.should_redraw {
+                        terminal.draw(|frame| app.render_frame(frame))?;
+                        app.should_redraw = false;
+                    }
                 }
                 utils::restore()?;
                 Ok(())
@@ -87,7 +92,7 @@ impl Tui {
     }
 
     fn handle_events(&mut self) {
-        while event::poll(Duration::from_millis(10))
+        while event::poll(Duration::from_millis(50))
             .expect("Event pollng error while handling events")
         {
             match event::read().expect("Event read error while handling events") {
@@ -96,6 +101,7 @@ impl Tui {
                 }
                 _ => {}
             };
+            self.should_redraw = true;
         }
         self.handle_tick_event();
     }
@@ -135,9 +141,12 @@ impl Tui {
     }
 
     fn handle_tick_event(&mut self) {
-        self.tabs
-            .iter_mut()
-            .for_each(|tab| tab.handle_tick_event(&self.channel));
+        self.tabs.iter_mut().enumerate().for_each(|(index, tab)| {
+            let tab_redraw = tab.handle_tick_event(&self.channel);
+            if (self.current_tab as usize == index) && tab_redraw {
+                self.should_redraw = true;
+            }
+        });
     }
 
     fn handle_render(&self, area: Rect, buf: &mut Buffer) {

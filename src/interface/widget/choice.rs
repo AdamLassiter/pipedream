@@ -1,5 +1,4 @@
 use crossterm::event::{KeyCode, KeyEvent};
-use log::debug;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -79,7 +78,7 @@ impl Widget for &Choices {
                     })
                     .collect::<Vec<_>>();
 
-                debug!(target: "Render/Choices", "{:?}", options);
+                // debug!(target:"Render/Choices", "{:?}", options);
 
                 let options = options
                     .iter()

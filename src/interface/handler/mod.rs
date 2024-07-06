@@ -14,7 +14,7 @@ pub trait Handler {
         channel: &Channel<EngineCommand, UiCommand>,
     );
 
-    fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>);
+    fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) -> bool;
 
     fn handle_render(&self, area: Rect, buf: &mut Buffer);
 }
