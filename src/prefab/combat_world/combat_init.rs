@@ -1,0 +1,47 @@
+use std::time::Duration;
+
+use log::debug;
+
+use crate::{
+    engine::{
+        combat::npc::ENEMY_NAME,
+        core::{
+            scene::Scene,
+            state::State,
+            tag::Tag,
+            transition::{Transition, TransitionType},
+        },
+        state::{combat_state_machine::*, combat_world::*},
+    },
+    prefab::combat_world::{COMBAT_INIT, PLAYER_DRAW},
+};
+
+impl CombatWorld {
+    pub fn combat_init_phase(machine: &CombatStateMachine) -> State {
+        let enemy_name_slice = machine.tag_engine.find(&ENEMY_NAME);
+        debug!(target:"Combat/Init", "{:?}", enemy_name_slice);
+
+        let Tag { key: enemy, .. } = enemy_name_slice
+            .first()
+            .expect("Failed to find enemy name slice");
+        let enemy_data = machine.combat_world.npcs.find(enemy);
+
+        State {
+            location: COMBAT_INIT.clone(),
+            scene: Scene {
+                descriptions: vec![
+                    "A challenger appears!".into(),
+                    format!("{:?} is looking for a fight", enemy_data.name).into(),
+                ],
+            },
+            options: (
+                Transition {
+                    next: TransitionType::Goto(PLAYER_DRAW.clone()),
+                    actions: vec![],
+                },
+                Duration::from_secs(2),
+            )
+                .into(),
+        }
+    }
+}

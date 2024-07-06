@@ -1,4 +1,5 @@
 use crossterm::event::{KeyCode, KeyEvent};
+use log::debug;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -37,6 +38,13 @@ impl Choices {
         }
     }
 
+    pub fn current_choice(&self) -> Option<Choice> {
+        match &self.choices {
+            ChoiceType::Manual(choices) => choices.get(self.cursor).cloned(),
+            ChoiceType::Auto(..) => None,
+        }
+    }
+
     pub fn current_transition(&self) -> Option<Transition> {
         match &self.choices {
             ChoiceType::Manual(choices) => choices
@@ -64,12 +72,14 @@ impl Widget for &Choices {
                             description.clone()
                         } else {
                             Description {
-                                descriptor: format!("<darkgray {}>", description.descriptor),
+                                descriptor: format!("<d {}>", description.descriptor),
                                 predicate: description.predicate.clone(),
                             }
                         }
                     })
                     .collect::<Vec<_>>();
+
+                debug!(target: "Render/Choices", "{:?}", options);
 
                 let options = options
                     .iter()
@@ -81,6 +91,7 @@ impl Widget for &Choices {
 
                 let mut state = ListState::default().with_selected(Some(self.cursor));
                 let opts_list = List::new(options).highlight_symbol(">> ");
+
                 StatefulWidget::render(opts_list, area, buf, &mut state);
             }
             ChoiceType::Auto(..) => { /* None */ }

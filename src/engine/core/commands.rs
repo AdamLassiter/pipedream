@@ -1,4 +1,4 @@
-use super::{choice::Choices, scene::Scene, transition::Transition};
+use super::{choice::Choices, scene::Scene, tag::Tags, transition::Transition};
 
 #[derive(Debug)]
 pub enum EngineCommand {
@@ -10,4 +10,5 @@ pub enum EngineCommand {
 pub enum UiCommand {
     ShowScene(Scene),
     ShowChoices(Choices),
+    ShowTags(Tags),
 }

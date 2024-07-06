@@ -12,6 +12,14 @@ use crate::engine::core::{
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Cards(pub BTreeMap<String, Card>);
 
+impl From<Vec<Card>> for Cards {
+    fn from(values: Vec<Card>) -> Self {
+        Self(BTreeMap::from_iter(
+            values.into_iter().map(|card| (card.name.clone(), card)),
+        ))
+    }
+}
+
 impl Cards {
     pub fn find(&self, card: &TagKey) -> &Card {
         self.0.get(card.trailing_key()).unwrap_or_else(|| {

@@ -8,6 +8,7 @@
   - [ ] Split-thread UI control
   - [ ] Combat import/export
   - [ ] Combat round
+  - [x] Show resources
 - [ ] 0.3.0
   - [ ] Specialist system pipeline
   - [ ] Split/join resource loading

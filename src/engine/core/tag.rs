@@ -1,6 +1,6 @@
 use std::{
     clone::Clone,
-    collections::{btree_map::Range, BTreeMap},
+    collections::{btree_map::Range, BTreeMap, VecDeque},
     ops::Bound::Included,
     str::FromStr,
 };
@@ -63,6 +63,22 @@ pub struct TagKey(pub String);
 impl TagKey {
     pub fn trailing_key(&self) -> &str {
         self.0.split(KEY_SEP).last().unwrap_or("")
+    }
+
+    pub fn trailing_subpath(&self) -> Self {
+        let mut subpath = self.0.split(KEY_SEP).collect::<Vec<_>>();
+        subpath.pop();
+        Self(subpath.join(&KEY_SEP.to_string()))
+    }
+
+    pub fn leading_key(&self) -> &str {
+        self.0.split(KEY_SEP).next().unwrap_or("")
+    }
+
+    pub fn leading_subpath(&self) -> Self {
+        let mut subpath = self.0.split(KEY_SEP).collect::<VecDeque<_>>();
+        subpath.pop_front();
+        Self(Vec::from(subpath).join(&KEY_SEP.to_string()))
     }
 
     pub fn resolve(&self, me: &TagKey, you: &TagKey) -> Self {
@@ -160,7 +176,7 @@ impl From<&Tag> for (TagKey, TagValue) {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Tags(pub BTreeMap<TagKey, TagValue>);
+pub struct Tags(BTreeMap<TagKey, TagValue>);
 
 impl From<Vec<Tag>> for Tags {
     fn from(tags: Vec<Tag>) -> Self {

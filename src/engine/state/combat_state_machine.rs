@@ -1,30 +1,19 @@
 use log::debug;
 use serde::Serialize;
 
-use crate::engine::core::{
+use crate::{engine::core::{
     choice::{Choice, ChoiceType},
     commands::UiCommand,
     description::Description,
     location::Location,
     predicate::Predicate,
     state::State,
-    tag::Static,
     transition::{Transition, TransitionType},
-};
+}, prefab::combat_world::COMBAT_INIT};
 
 use super::{
     campaign_state_machine::CampaignStateMachine, combat_world::CombatWorld, tag_engine::TagEngine,
 };
-
-pub static COMBAT_INIT: Static<Location> = Static::new(|| Location("combat:init".to_string()));
-pub static PLAYER_DRAW: Static<Location> = Static::new(|| Location("player:draw".to_string()));
-pub static PLAYER_PLAY: Static<Location> = Static::new(|| Location("player:play".to_string()));
-pub static PLAYER_RESOLVE_PLAY: Static<Location> =
-    Static::new(|| Location("player:play:resolve".to_string()));
-pub static ENEMY_DRAW: Static<Location> = Static::new(|| Location("enemy:draw".to_string()));
-pub static ENEMY_PLAY: Static<Location> = Static::new(|| Location("enemy:play".to_string()));
-pub static ENEMY_RESOLVE_PLAY: Static<Location> =
-    Static::new(|| Location("enemy:play:resolve".to_string()));
 
 #[derive(Serialize)]
 pub struct CombatStateMachine {

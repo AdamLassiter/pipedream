@@ -1,14 +1,8 @@
-use std::collections::BTreeMap;
-
 use crate::engine::combat::npc::{Npc, Npcs};
 
 impl Npcs {
     pub fn generate() -> Self {
-        Self(BTreeMap::from_iter(
-            Self::generate_vec()
-                .into_iter()
-                .map(|npc| (npc.name.clone(), npc)),
-        ))
+        Self::generate_vec().into()
     }
 
     fn generate_vec() -> Vec<Npc> {

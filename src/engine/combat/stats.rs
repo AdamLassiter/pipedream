@@ -10,16 +10,23 @@ pub enum Resource {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
 pub enum Attribute {
+    Assistance(Assistance),
+    Resistance(Resistance),
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
+pub enum Assistance {
     Strength,
-    Endurance,
-
     Dexterity,
-    Vitality,
-
     Intelligence,
-    Adaptibility,
-
     Faith,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
+pub enum Resistance {
+    Endurance,
+    Vitality,
+    Adaptibility,
     Fortitude,
 }
 

@@ -11,6 +11,14 @@ pub static ENEMY_NAME: Static<TagKey> = Static::new(|| "enemy:name".into());
 #[derive(Serialize, Deserialize)]
 pub struct Npcs(pub BTreeMap<String, Npc>);
 
+impl From<Vec<Npc>> for Npcs {
+    fn from(values: Vec<Npc>) -> Self {
+        Self(BTreeMap::from_iter(
+            values.into_iter().map(|npc| (npc.name.clone(), npc)),
+        ))
+    }
+}
+
 impl Npcs {
     pub fn find(&self, npc: &TagKey) -> &Npc {
         self.0.get(npc.trailing_key()).unwrap_or_else(|| {

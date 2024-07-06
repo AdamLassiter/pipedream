@@ -9,9 +9,9 @@ impl TagEngine {
                 // Player
                 "player:draw-count/2".into(),
                 // Resources
-                "player:resource:health/2".into(),
-                "player:resource:stamina/2".into(),
-                "player:resource:mana/2".into(),
+                "player:resource:health/20".into(),
+                "player:resource:stamina/20".into(),
+                "player:resource:mana/20".into(),
                 "player:resource:faith/20".into(),
                 // Deck
                 "player:deck:Anathema Device".into(),

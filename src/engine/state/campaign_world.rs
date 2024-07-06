@@ -9,6 +9,18 @@ pub struct CampaignWorld {
     pub states: BTreeMap<Location, State>,
 }
 
+impl From<Vec<State>> for CampaignWorld {
+    fn from(values: Vec<State>) -> Self {
+        Self {
+            states: BTreeMap::from_iter(
+                values
+                    .into_iter()
+                    .map(|state| (state.location.clone(), state)),
+            ),
+        }
+    }
+}
+
 impl CampaignWorld {
     pub fn get_state(&self, location: &Location) -> &State {
         self.states

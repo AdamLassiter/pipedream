@@ -1,3 +1,4 @@
+use log::debug;
 use ratatui::{prelude::*, widgets::*};
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
@@ -5,6 +6,8 @@ use crate::engine::core::{description::Description, scene::Scene};
 
 impl Widget for &Scene {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        debug!(target: "Render/Scene", "{:?}", self.descriptions);
+
         let mut scene = Text::default();
         self.descriptions
             .iter()
