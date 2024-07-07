@@ -1,5 +1,3 @@
-use std::collections::BTreeSet;
-
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Rect},
@@ -8,15 +6,26 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use crate::engine::core::tag::{Static, Tag, TagKey, Tags};
+use crate::{
+    engine::core::tag::{Static, Tag, TagKey, Tags},
+    prefab::{tag_engine::Ent, tags::Tgt},
+};
 
-static RENDERABLE_TAGS: Static<BTreeSet<TagKey>> = Static::new(|| {
-    BTreeSet::from_iter(vec![
-        "player:resource:health".into(),
-        "player:resource:stamina".into(),
-        "player:resource:mana".into(),
-        "player:resource:faith".into(),
-    ])
+static RENDERABLE_TAGS: Static<Vec<TagKey>> = Static::new(|| {
+    vec![
+        format!("{}:{}:health", Tgt::Player, Ent::Resource)
+            .as_str()
+            .into(),
+        format!("{}:{}:stamina", Tgt::Player, Ent::Resource)
+            .as_str()
+            .into(),
+        format!("{}:{}:mana", Tgt::Player, Ent::Resource)
+            .as_str()
+            .into(),
+        format!("{}:{}:faith", Tgt::Player, Ent::Resource)
+            .as_str()
+            .into(),
+    ]
 });
 
 impl Widget for &Tags {

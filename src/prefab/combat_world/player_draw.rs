@@ -9,19 +9,23 @@ use crate::{
             action::Action,
             scene::Scene,
             state::State,
-            tag::{Tag, TagKey, TagValue, ME_REF, YOU_REF},
+            tag::{Tag, TagKey, TagValue},
             transition::{Transition, TransitionType},
         },
-        state::{combat_state_machine::*, combat_world::*},
+        state::{combat_state_machine::CombatStateMachine, combat_world::CombatWorld},
     },
-    prefab::combat_world::{PLAYER_DRAW, PLAYER_PLAY},
+    prefab::{
+        combat_world::{PLAYER_DRAW, PLAYER_PLAY},
+        tag_engine::Ent,
+        tags::Tgt,
+    },
 };
 
 impl CombatWorld {
     pub fn player_draw_phase(machine: &CombatStateMachine) -> State {
         let player_draw_count = machine
             .tag_engine
-            .find(&MY_DRAW_COUNT)
+            .find(&Tgt::Me.ent(Ent::DrawCount))
             .iter()
             .filter_map(|tag| {
                 if let TagValue::Number(n) = tag.value {
@@ -32,7 +36,8 @@ impl CombatWorld {
             })
             .next()
             .expect("Failed to find player draw count");
-        let mut player_deck_slice = machine.tag_engine.find(&MY_DECK);
+
+        let mut player_deck_slice = machine.tag_engine.find(&Tgt::Me.ent(Ent::Deck));
         player_deck_slice.shuffle(&mut rand::thread_rng());
         let player_draw_cards = player_deck_slice
             .into_iter()
@@ -40,26 +45,14 @@ impl CombatWorld {
             .collect::<Vec<_>>();
         debug!(target:"Combat/Draw", "{:?}", player_draw_cards);
 
-        let me = match machine.tag_engine.tags.get(&ME_REF) {
-            Some(TagValue::Tag(me)) => me,
-            _ => panic!("Failed to resolve $my reference in combat"),
-        };
-        let you = match machine.tag_engine.tags.get(&YOU_REF) {
-            Some(TagValue::Tag(you)) => you,
-            _ => panic!("Failed to resolve $your reference in combat"),
-        };
-
         let player_hand_cards = player_draw_cards
             .iter()
             .map(|player_draw_card| Tag {
                 value: player_draw_card.value.clone(),
-                key: TagKey(
-                    player_draw_card
-                        .key
-                        .resolve(me, you)
-                        .0
-                        .replace(&PLAYER_DECK.0, &PLAYER_HAND.0),
-                ),
+                key: TagKey(player_draw_card.key.0.replace(
+                    String::from(Ent::Deck).as_str(),
+                    String::from(Ent::Hand).as_str(),
+                )),
             })
             .collect::<Vec<_>>();
 

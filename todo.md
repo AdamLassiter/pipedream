@@ -4,13 +4,21 @@
 - [x] 0.2.0
   - [x] Tag calculations
   - [x] Auto-advancing scenes
-  - [x] UI tabs
-  - [x] Non-blocking UI control
-  - [ ] Combat import/export
-  - [ ] Combat round
+  - [x] Logging UI tab
   - [x] Show resources
+  - [x] Non-blocking UI control
+  - [x] Player combat turn
+  - [x] Combat victory checks
+  - [ ] Combat import/export
 - [ ] 0.3.0
+  - [ ] Enemy combat turn
+  - [ ] Full combat round handler
+  - [ ] Basic combat effects
+- [ ] 0.4.0
   - [ ] Specialist system pipeline
   - [ ] Split/join resource loading
+- [ ] 0.5.0
+  - [ ] Lore (description mapping)
+  - [ ] Deck management
 - ...
 - [ ] Game

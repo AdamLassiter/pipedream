@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use tui_logger;
 
 use std::{
@@ -47,4 +48,27 @@ pub fn finish_and_panic_threads(threads: Vec<JoinHandle<io::Result<()>>>) {
         .filter(|thread| thread.is_finished())
         .flat_map(|thread| thread.join().err().into_iter())
         .for_each(|err| panic::resume_unwind(err));
+}
+
+fn init_logfile() {
+    use log4rs::{
+        append::file::FileAppender,
+        config::{Appender, Root},
+        encode::pattern::PatternEncoder,
+        Config,
+    };
+
+    let logfile = FileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{l} {t} - {m}\n")))
+        .build("./log")
+        .unwrap();
+    let config = Config::builder()
+        .appender(Appender::builder().build("logfile", Box::new(logfile)))
+        .build(
+            Root::builder()
+                .appender("logfile")
+                .build(LevelFilter::Trace),
+        )
+        .unwrap();
+    log4rs::init_config(config).unwrap();
 }

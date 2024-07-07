@@ -3,16 +3,24 @@ use log::debug;
 use crate::{
     engine::{
         core::{
-            action::Action, scene::Scene, state::State, tag::Tag, transition::{Transition, TransitionType}
+            action::Action,
+            scene::Scene,
+            state::State,
+            tag::Tag,
+            transition::{Transition, TransitionType},
         },
-        state::{combat_state_machine::*, combat_world::*},
+        state::{combat_state_machine::CombatStateMachine, combat_world::CombatWorld},
     },
-    prefab::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY},
+    prefab::{
+        combat_world::{PLAYER_DAMAGE, PLAYER_PLAY},
+        tag_engine::Ent,
+        tags::Tgt,
+    },
 };
 
 impl CombatWorld {
     pub fn player_play_phase(machine: &CombatStateMachine) -> State {
-        let player_hand_slice = machine.tag_engine.find(&MY_HAND);
+        let player_hand_slice = machine.tag_engine.find(&Tgt::Me.ent(Ent::Hand));
         debug!(target:"Combat/Hand", "{:?}", player_hand_slice);
 
         State {
@@ -29,9 +37,14 @@ impl CombatWorld {
                         format!("Play {:?} [{}]", card_data.name, card_data.predicate).into(),
                         Transition {
                             next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
-                            actions: card_data.actions.clone().into_iter().chain(vec![
-                                Action::Subtract(format!("{}:{}", MY_HAND.0, card_data.name).into())
-                            ]).collect(),
+                            actions: card_data
+                                .actions
+                                .clone()
+                                .into_iter()
+                                .chain(vec![Action::Subtract(
+                                    format!("{}:{}:{}", Tgt::Me, Ent::Hand, card_data.name).into(),
+                                )])
+                                .collect(),
                         },
                         selectable,
                     )

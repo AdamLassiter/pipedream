@@ -35,7 +35,7 @@ impl CampaignWorld {
                         Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Insert("player:item:sword".into()),
+                                Action::Insert("$player:item:sword".into()),
                                 Action::Remove("woods:entrance:item:sword".into()),
                             ],
                         },
@@ -74,7 +74,7 @@ impl CampaignWorld {
                         "Battle <red inner demons>".into(),
                         Transition {
                             next: TransitionType::Combat(vec![Action::Add(
-                                "enemy:name:Dave".into(),
+                                "$enemy:name:Dave".into(),
                             )]),
                             actions: vec![],
                         },
@@ -88,7 +88,7 @@ impl CampaignWorld {
                     descriptions: vec![
                         "The shop is cozy, and staffed by a weathered crone".into(),
                         (
-                            Predicate::Tag("player:item:sword".into()),
+                            Predicate::Tag("$player:item:sword".into()),
                             "Her eyes keep flitting to the sword at your side",
                         )
                             .into(),
@@ -104,54 +104,54 @@ impl CampaignWorld {
                     ),
                     (
                         (
-                            Predicate::Tag("player:item:sword".into()),
+                            Predicate::Tag("$player:item:sword".into()),
                             "Trade a sword for two swords",
                         )
                             .into(),
                         Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Subtract("player:item:sword/1".into()),
-                                Action::Add("player:item:sword/2".into()),
+                                Action::Subtract("$player:item:sword/1".into()),
+                                Action::Add("$player:item:sword/2".into()),
                             ],
                         },
                     ),
                     (
                         (
-                            Predicate::Tag("player:item:sword".into()),
+                            Predicate::Tag("$player:item:sword".into()),
                             "Trade each sword for two swords",
                         )
                             .into(),
                         Transition {
                             next: TransitionType::None,
-                            actions: vec![Action::Multiply("player:item:sword/2".into())],
+                            actions: vec![Action::Multiply("$player:item:sword/2".into())],
                         },
                     ),
                     (
                         (
-                            Predicate::Tag("player:item:sword/2".into()),
+                            Predicate::Tag("$player:item:sword/2".into()),
                             "Forge two swords into a cursed ring",
                         )
                             .into(),
                         Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Subtract("player:item:sword/2".into()),
-                                Action::Add("player:item:cursed-ring".into()),
+                                Action::Subtract("$player:item:sword/2".into()),
+                                Action::Add("$player:item:cursed-ring".into()),
                             ],
                         },
                     ),
                     (
                         (
-                            Predicate::Tag("player:item:sword/2".into()),
+                            Predicate::Tag("$player:item:sword/2".into()),
                             "Forge every other sword into a cursed ring",
                         )
                             .into(),
                         Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Divide("player:item:sword/2".into()),
-                                Action::Add("player:item:cursed-ring/player:item:sword".into()),
+                                Action::Divide("$player:item:sword/2".into()),
+                                Action::Add("$player:item:cursed-ring/$player:item:sword".into()),
                             ],
                         },
                     ),

@@ -3,10 +3,7 @@ use std::collections::BTreeMap;
 use log::error;
 use serde::{Deserialize, Serialize};
 
-use crate::engine::core::tag::{Static, TagKey, Tags};
-
-pub static PLAYER_NAME: Static<TagKey> = Static::new(|| "player:name".into());
-pub static ENEMY_NAME: Static<TagKey> = Static::new(|| "enemy:name".into());
+use crate::engine::core::tag::{TagKey, Tags};
 
 #[derive(Serialize, Deserialize)]
 pub struct Npcs(pub BTreeMap<String, Npc>);

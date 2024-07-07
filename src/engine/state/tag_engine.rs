@@ -1,32 +1,11 @@
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::engine::{
-    core::{
-        action::Action,
-        predicate::Predicate,
-        tag::{Static, Tag, TagKey, TagValue, Tags, FI64, ME_REF, YOU_REF},
-    },
-    state::combat_world::{ENEMY, PLAYER},
+use crate::engine::core::{
+    action::Action,
+    predicate::Predicate,
+    tag::{Tag, TagKey, TagValue, Tags, FI64},
 };
-
-pub static ANY: Static<String> = Static::new(|| "$any".into());
-pub static ANY_SUBSTITUTIONS: Static<Vec<String>> =
-    Static::new(|| vec![PLAYER.0.clone(), ENEMY.0.clone()]);
-pub static ANY_NAME: Static<TagKey> = Static::new(|| "$any:name".into());
-pub static ANY_ATTRIBUTE: Static<TagKey> = Static::new(|| "$any:attribute".into());
-pub static ANY_RESOURCE: Static<TagKey> = Static::new(|| "$any:resource".into());
-pub static ANY_DECK: Static<TagKey> = Static::new(|| "$any:deck".into());
-pub static ANY_DRAW_COUNT: Static<TagKey> = Static::new(|| "$any:draw-count".into());
-pub static FROM_CAMPAIGN: Static<Vec<TagKey>> = Static::new(|| {
-    vec![
-        ANY_NAME.clone(),
-        ANY_ATTRIBUTE.clone(),
-        ANY_RESOURCE.clone(),
-        ANY_DECK.clone(),
-        ANY_DRAW_COUNT.clone(),
-    ]
-});
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TagEngine {
@@ -34,30 +13,6 @@ pub struct TagEngine {
 }
 
 impl TagEngine {
-    pub fn into_combat(campaign_tags: &Self) -> Self {
-        let mut tags = vec![
-            Tag {
-                key: ME_REF.clone(),
-                value: TagValue::Tag(PLAYER.clone()),
-            },
-            Tag {
-                key: YOU_REF.clone(),
-                value: TagValue::Tag(ENEMY.clone()),
-            },
-        ];
-        let subst_target = ANY.clone();
-
-        FROM_CAMPAIGN.iter().for_each(|from_campaign| {
-            ANY_SUBSTITUTIONS.iter().for_each(|subst| {
-                let one = from_campaign.0.replace(&subst_target, subst);
-                tags.append(&mut campaign_tags.find(&TagKey(one)))
-            })
-        });
-
-        debug!(target:"Event/IntoCombat", "{:?}", tags);
-        Self { tags: tags.into() }
-    }
-
     pub fn handle_actions(&mut self, actions: &Vec<Action>) {
         debug!(target:"Event/Actions", "{:?}", actions);
 
@@ -98,14 +53,9 @@ impl TagEngine {
             TagValue::Number(value) => value,
         };
 
-        if new_value.is_zero() {
-            debug!(target:"Tags/Compute", "{:?} hit zero", new.key);
-            self.tags.remove(&new.key);
-        } else {
-            debug!(target:"Tags/Compute", "{:?} {}", new.key, new_value);
-            self.tags
-                .insert(&new.key, &TagValue::Number(op(*current, *new_value)));
-        }
+        debug!(target:"Tags/Compute", "{:?} {}", new.key, op(*current, *new_value));
+        self.tags
+            .insert(&new.key, &TagValue::Number(op(*current, *new_value)));
     }
 
     pub fn contains(&self, tag: &Tag) -> bool {
@@ -121,7 +71,11 @@ impl TagEngine {
         let request_value = match &tag.value {
             TagValue::Tag(key) => match self.tags.get(key) {
                 Some(TagValue::Number(value)) => value,
-                _ => todo!(),
+                Some(TagValue::Tag(tk)) => panic!(
+                    "Expected Number value when checking comparison value for key {:?}, but was Tag {:?}",
+                    key, tk
+                ),
+                None => panic!()
             },
             TagValue::Number(value) => value,
         };

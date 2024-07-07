@@ -20,17 +20,6 @@ pub type FI64 = FixedI64<U16>;
 pub static KEY_SEP: char = ':';
 pub static VAL_SEP: char = '/';
 
-pub static MY: Static<String> = Static::new(|| "$my".into());
-pub static YOUR: Static<String> = Static::new(|| "$your".into());
-pub static ME_REF: Static<TagKey> = Static::new(|| "combatant:reference:me".into());
-pub static YOU_REF: Static<TagKey> = Static::new(|| "combatant:reference:you".into());
-pub static SUBSTITUTIONS: Static<BTreeMap<String, TagKey>> = Static::new(|| {
-    BTreeMap::from_iter([
-        (MY.clone(), ME_REF.clone()),
-        (YOUR.clone(), YOU_REF.clone()),
-    ])
-});
-
 static MAX_RESOLVE_DEPTH: usize = 256;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -79,10 +68,6 @@ impl TagKey {
         let mut subpath = self.0.split(KEY_SEP).collect::<VecDeque<_>>();
         subpath.pop_front();
         Self(Vec::from(subpath).join(&KEY_SEP.to_string()))
-    }
-
-    pub fn resolve(&self, me: &TagKey, you: &TagKey) -> Self {
-        Self(self.0.replace(&*MY, &me.0).replace(&*YOUR, &you.0))
     }
 
     pub fn targets(&self) -> (Combatant, TagKey) {
@@ -186,69 +171,83 @@ impl From<Vec<Tag>> for Tags {
 }
 
 impl Tags {
-    pub fn insert(&mut self, key: &TagKey, value: &TagValue) -> Option<FI64> {
-        match self
-            .0
-            .insert(self.resolve_key(key), self.resolve_value(value))
+    pub fn insert(&mut self, key: &TagKey, value: &TagValue) {
+        if let TagValue::Number(num) = value
+            && num.is_zero()
         {
-            Some(insert) => match insert {
-                TagValue::Tag(_) => panic!("Insertion returned Tag even after resolve to Number"),
-                TagValue::Number(val) => Some(val),
-            },
-            None => None,
+            self.remove(key);
+        } else {
+            self.0
+                .insert(self.concrete_key(key), self.resolve_value(value));
+            debug!(target:"Tags/Insert", "{:?} {:?}", key, value);
         }
     }
 
-    pub fn remove(&mut self, key: &TagKey) -> Option<TagValue> {
-        self.0.remove(key)
+    pub fn remove(&mut self, key: &TagKey) {
+        Self::variants(key).iter().for_each(|key| {
+            self.0.remove(&self.concrete_key(key));
+        });
+
+        debug!(target:"Tags/Remove", "{:?}", key);
     }
 
     pub fn get(&self, key: &TagKey) -> Option<&TagValue> {
-        let key = &self.resolve_key(key);
-        let value = self.0.get(key);
+        let got = Self::variants(key)
+            .iter()
+            .filter_map(|key| {
+                let key = &self.concrete_key(key);
+                self.0.get(key)
+            })
+            .next();
 
-        debug!(target:"Tags/Get", "{:?} {:?}", key, value);
-        value
+        debug!(target:"Tags/Get", "{:?} {:?}", key, got);
+        got
     }
 
     pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {
-        let partial_key = self.resolve_key(partial_key);
+        let found = Self::variants(partial_key)
+            .iter()
+            .flat_map(|partial_key| {
+                let partial_key = self.concrete_key(partial_key);
 
-        let start = Included(partial_key.clone());
-        let mut end_str = partial_key.clone().0;
-        end_str.push('~');
-        let end = Included(end_str.as_str().into());
-        let found = self
-            .0
-            .range((start, end))
-            .map(|(k, v)| Tag::from((k.clone(), v.clone())))
+                let start = Included(partial_key.clone());
+                let mut end_str = partial_key.clone().0;
+                end_str.push('~');
+                let end = Included(end_str.as_str().into());
+                self.0
+                    .range((start, end))
+                    .map(|(k, v)| Tag::from((k.clone(), v.clone())))
+            })
             .collect();
 
         debug!(target:"Tags/Find", "{:?} -> {:?}", partial_key, found);
         found
     }
 
-    fn resolve_key(&self, key: &TagKey) -> TagKey {
+    fn concrete_key(&self, key: &TagKey) -> TagKey {
         let mut key = key.0.clone();
-        SUBSTITUTIONS.iter().for_each(|(target, reference)| {
-            if key.contains(target) {
-                let substitution = match self
-                    .0
-                    .get(reference)
-                    .expect("Failed to resolve reference for key")
-                {
-                    TagValue::Tag(key) => key,
-                    TagValue::Number(value) => {
+        Self::substitutions()
+            .iter()
+            .for_each(|(target, reference)| {
+                if key.contains(target) {
+                    let substitution = match self.0.get(reference).unwrap_or_else(|| {
                         panic!(
-                            "Expected Tag reference when resolving key {:?}, but was Number {:?}",
-                            key, value
+                            "Failed to resolve reference {:?} for target {:?} and key {:?} and self {:?}",
+                            reference, target, key, self.0,
                         )
-                    }
-                };
-                debug!(target:"Tags/Resolve", "{:?} {:?} {:?}", key, target, substitution);
-                key = key.replace(target, &substitution.0);
-            }
-        });
+                    }) {
+                        TagValue::Tag(key) => key,
+                        TagValue::Number(value) => {
+                            panic!(
+                                "Expected Tag reference when resolving key {:?}, but was Number {:?}",
+                                key, value
+                            )
+                        }
+                    };
+                    debug!(target:"Tags/Resolve", "{:?} {:?} {:?}", key, target, substitution);
+                    key = key.replace(target, &substitution.0);
+                }
+            });
         TagKey(key)
     }
 
@@ -256,16 +255,12 @@ impl Tags {
         let mut next = value.clone();
         for _ in 1..MAX_RESOLVE_DEPTH {
             match next {
-                TagValue::Tag(tk) => match self
-                    .0
-                    .get(&tk)
-                    .expect("Failed to resolve reference for value")
-                    .clone()
-                {
-                    TagValue::Number(val) => {
+                TagValue::Tag(ref tk) => match self.0.get(tk).cloned() {
+                    Some(TagValue::Number(val)) => {
                         next = TagValue::Number(val);
                     }
-                    TagValue::Tag(tag) => return TagValue::Tag(tag),
+                    Some(TagValue::Tag(tag)) => return TagValue::Tag(tag),
+                    None => return next,
                 },
                 TagValue::Number(val) => return TagValue::Number(val),
             }

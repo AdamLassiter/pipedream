@@ -1,31 +1,29 @@
-pub mod combat_init;
-pub mod player_draw;
-pub mod player_play;
-pub mod player_damage;
+mod combat_end;
+mod combat_init;
+mod player_damage;
+mod player_draw;
+mod player_play;
 
 use std::collections::BTreeMap;
 
 use crate::engine::{
     combat::{card::Cards, npc::Npcs},
-    core::{
-        location::Location,
-        tag::{Static, TagKey},
-    },
-    state::combat_world::*,
+    core::{location::Location, tag::Static},
+    state::combat_world::{CombatWorld, DynamicStateFn},
 };
 
 pub static COMBAT_INIT: Static<Location> = Static::new(|| "combat:init".into());
+pub static COMBAT_END: Static<Location> = Static::new(|| "combat:end".into());
+pub static COMBAT_VICTORY: Static<Location> = Static::new(|| "combat:victory".into());
+pub static COMBAT_DEFEAT: Static<Location> = Static::new(|| "combat:defeat".into());
+
 pub static PLAYER_DRAW: Static<Location> = Static::new(|| "player:draw".into());
 pub static PLAYER_PLAY: Static<Location> = Static::new(|| "player:play".into());
 pub static PLAYER_DAMAGE: Static<Location> = Static::new(|| "player:damage".into());
+
 pub static ENEMY_DRAW: Static<Location> = Static::new(|| "enemy:draw".into());
 pub static ENEMY_PLAY: Static<Location> = Static::new(|| "enemy:play".into());
 pub static ENEMY_DAMAGE: Static<Location> = Static::new(|| "enemy:damage".into());
-
-pub static MY_ATTRIBUTE_ASSIST: Static<TagKey> = Static::new(|| "$my:attribute:assist".into());
-pub static ANY_RESOURCE_DAMAGE: Static<TagKey> = Static::new(|| "$any:damage:resource".into());
-pub static ANY_ATTRIBUTE_RESIST: Static<TagKey> = Static::new(|| "$any:attribute:resist".into());
-pub static ANY_RESOURCE: Static<TagKey> = Static::new(|| "$any:resource".into());
 
 impl CombatWorld {
     pub fn generate() -> Self {
@@ -46,6 +44,10 @@ impl CombatWorld {
                 (
                     PLAYER_DAMAGE.clone(),
                     DynamicStateFn::new(Self::player_damamge_phase),
+                ),
+                (
+                    COMBAT_END.clone(),
+                    DynamicStateFn::new(Self::combat_end_phase),
                 ),
             ])
         };

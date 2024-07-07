@@ -68,11 +68,11 @@ impl Tui {
             thread::spawn(move || {
                 let mut terminal = utils::init()?;
                 while !app.exit {
-                    app.handle_events();
                     if app.should_redraw {
                         terminal.draw(|frame| app.render_frame(frame))?;
                         app.should_redraw = false;
                     }
+                    app.handle_events();
                 }
                 utils::restore()?;
                 Ok(())

@@ -102,9 +102,9 @@ impl CampaignStateMachine {
             );
         }
 
-        debug!(target:"Event/Scene", "{:?}", &scene);
-        debug!(target:"Event/Choices", "{:?}", &options);
-        debug!(target:"Event/Tags", "{:?}", &tags);
+        debug!(target:"Show/Scene", "{:?}", &scene);
+        debug!(target:"Show/Choices", "{:?}", &options);
+        debug!(target:"Show/Tags", "{:?}", &tags);
         vec![
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(options),

@@ -6,13 +6,15 @@ use crate::{
             action::Action,
             scene::Scene,
             state::State,
-            tag::{Tag, TagKey, TagValue, Tags, FI64},
+            tag::{Tag, TagKey, TagValue, FI64},
             transition::{Transition, TransitionType},
         },
-        state::{combat_state_machine::*, combat_world::*, tag_engine::ANY_RESOURCE},
+        state::{combat_state_machine::CombatStateMachine, combat_world::CombatWorld},
     },
-    prefab::combat_world::{
-        ANY_ATTRIBUTE_RESIST, ANY_RESOURCE_DAMAGE, MY_ATTRIBUTE_ASSIST, PLAYER_DAMAGE, PLAYER_PLAY,
+    prefab::{
+        combat_world::{COMBAT_VICTORY, PLAYER_DAMAGE, PLAYER_PLAY},
+        tag_engine::Ent,
+        tags::Tgt,
     },
 };
 
@@ -22,46 +24,52 @@ impl CombatWorld {
     }
 
     pub fn player_damamge_phase(machine: &CombatStateMachine) -> State {
-        let any_resc_damage_slice = machine.tag_engine.find(&ANY_RESOURCE_DAMAGE);
+        let any_resc_damage_slice = machine.tag_engine.find(&Tgt::Any.ent(Ent::Damage));
         debug!(target:"Combat/Damage", "{:?}", any_resc_damage_slice);
-        let my_attr_assist_slice: Tags = machine.tag_engine.find(&MY_ATTRIBUTE_ASSIST).into();
-        debug!(target:"Combat/Assist", "{:?}", my_attr_assist_slice);
-        let any_attr_resist_slice: Tags = machine.tag_engine.find(&ANY_ATTRIBUTE_RESIST).into();
-        debug!(target:"Combat/Resist", "{:?}", any_attr_resist_slice);
 
         let resolved_damages = any_resc_damage_slice
             .into_iter()
             .map(|Tag { key, value }| {
                 let target = key.leading_key();
                 let dmg_type = key.trailing_key();
-                let assist_stat = match my_attr_assist_slice.get(&TagKey::from(
-                    format!("{}:{}", MY_ATTRIBUTE_ASSIST.0, dmg_type).as_ref(),
-                )) {
-                    Some(TagValue::Number(num)) => *num,
-                    _ => 0.into(),
+
+                let assist_stat = match machine
+                    .tag_engine
+                    .find(&TagKey::from(
+                        format!("{}:{}:{}", Tgt::Me, Ent::AttributeAssist, dmg_type).as_ref(),
+                    ))
+                    .first()
+                {
+                    Some(Tag {
+                        value: TagValue::Number(num),
+                        ..
+                    }) => *num,
+                    _ => 1.into(),
                 };
-                let resist_stat = match my_attr_assist_slice.get(&TagKey::from(
-                    format!(
-                        "{}:{}:{}",
-                        target,
-                        ANY_ATTRIBUTE_RESIST.leading_subpath().0,
-                        dmg_type
-                    )
-                    .as_ref(),
-                )) {
-                    Some(TagValue::Number(num)) => *num,
-                    _ => 0.into(),
+                let resist_stat = match machine
+                    .tag_engine
+                    .find(&TagKey::from(
+                        format!("{}:{}:{}", target, Ent::AttributeResist, dmg_type).as_ref(),
+                    ))
+                    .first()
+                {
+                    Some(Tag {
+                        value: TagValue::Number(num),
+                        ..
+                    }) => *num,
+                    _ => 1.into(),
                 };
                 let damage_val = match value {
                     TagValue::Number(num) => num,
                     _ => 0.into(),
                 };
+
                 let calculated_dmg = Self::calculate_damage(assist_stat, resist_stat, damage_val);
                 Action::Subtract(
                     format!(
                         "{}:{}:{}/{}",
                         target,
-                        ANY_RESOURCE.leading_subpath().0,
+                        Ent::Resource,
                         dmg_type,
                         calculated_dmg,
                     )
@@ -76,7 +84,7 @@ impl CombatWorld {
                 descriptions: vec![],
             },
             options: Transition {
-                next: TransitionType::Goto(PLAYER_PLAY.clone()),
+                next: TransitionType::Goto(COMBAT_VICTORY.clone()),
                 actions: resolved_damages,
             }
             .into(),
