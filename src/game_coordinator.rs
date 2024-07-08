@@ -3,11 +3,13 @@ use std::thread;
 use std::thread::JoinHandle;
 use std::time;
 
-use crate::engine::core::{
-    commands::{EngineCommand, UiCommand},
-    transition::Transition,
+use pipedream_engine::{
+    core::{
+        commands::{EngineCommand, UiCommand},
+        transition::Transition,
+    },
+    state::campaign_state_machine::CampaignStateMachine,
 };
-use crate::engine::state::campaign_state_machine::CampaignStateMachine;
 
 use bichannel::Channel;
 use log::debug;

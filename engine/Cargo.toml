@@ -1,0 +1,20 @@
+cargo-features = ["edition2024", "codegen-backend"]
+
+
+[package]
+name = "pipedream-engine"
+version = "0.2.0"
+edition = "2024"
+
+
+[dependencies]
+rand = "0.8.5"
+fixed = { version = "1.27.0", features = ["serde", "serde-str"]}
+bichannel = "0.0.4"
+
+log = { version = "0.4.21", features = ["kv"] }
+
+serde = { version = "1.0.201", features = ["derive"] }
+serde_yml = "0.0.10"
+strum = "0.26.2"
+strum_macros = "0.26.4"

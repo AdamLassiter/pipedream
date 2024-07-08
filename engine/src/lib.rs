@@ -3,7 +3,9 @@
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
 
-pub mod game_coordinator;
+pub mod combat;
+pub mod core;
+pub mod state;
 
 // Extern log for arbitrary provider
 extern crate log;

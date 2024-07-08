@@ -1,31 +1,15 @@
 cargo-features = ["edition2024", "codegen-backend"]
 
 
-[profile.dev]
-codegen-backend = "cranelift"
-panic = 'abort'
-
-
 [package]
-name = "pipedream"
+name = "pipedream-interface"
 version = "0.2.0"
 edition = "2024"
 
 
-[workspace]
-members = [
-    "engine",
-    "interface",
-    "prefab",
-]
-
-
 [dependencies]
-pipedream-engine = { path = "engine" }
-pipedream-interface = { path = "interface" }
-pipedream-prefab = { path = "prefab" }
+pipedream-engine = { path = "../engine" }
 
-rand = "0.8.5"
 fixed = { version = "1.27.0", features = ["serde", "serde-str"]}
 bichannel = "0.0.4"
 
@@ -37,7 +21,5 @@ crossterm = "0.27.0"
 ratatui = { version = "0.26.2", features = ["all-widgets"] }
 tui-markup = { version = "0.4.0", features = ["ratatui"] }
 
-serde = { version = "1.0.201", features = ["derive"] }
-serde_yml = "0.0.10"
 strum = "0.26.2"
 strum_macros = "0.26.4"
