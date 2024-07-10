@@ -12,7 +12,7 @@ use pipedream_engine::{
         action::Action,
         scene::Scene,
         state::State,
-        tags::Tag,
+        tags::{Tag, TagKey},
         transition::{Transition, TransitionType},
     },
     state::combat_state_machine::CombatStateMachine,
@@ -27,6 +27,15 @@ pub fn combat_init(machine: &CombatStateMachine) -> State {
         .expect("Failed to find enemy name slice");
     let enemy_data = machine.combat_world.npcs.find(enemy);
 
+    let initial_actions = vec![
+        format!("{}/{}", ME_REF.0, Tgt::Player).into(),
+        format!("{}/{}", YOU_REF.0, Tgt::Enemy).into(),
+    ]
+    .into_iter()
+    .chain(enemy_data.tags.find(&TagKey("".to_string())))
+    .map(Action::Insert)
+    .collect();
+
     State {
         location: COMBAT_INIT.clone(),
         scene: Scene {
@@ -38,10 +47,7 @@ pub fn combat_init(machine: &CombatStateMachine) -> State {
         options: (
             Transition {
                 next: TransitionType::Goto(PLAYER_DRAW.clone()),
-                actions: vec![
-                    Action::Insert(format!("{}/{}", ME_REF.0, Tgt::Player).into()),
-                    Action::Insert(format!("{}/{}", YOU_REF.0, Tgt::Enemy).into()),
-                ],
+                actions: initial_actions,
             },
             Duration::from_secs(2),
         )

@@ -2,13 +2,17 @@ use crate::Generatable;
 use pipedream_engine::{
     core::{
         action::Action,
+        location::Location,
         predicate::Predicate,
         scene::Scene,
         state::State,
+        tags::Static,
         transition::{Transition, TransitionType},
     },
     state::campaign_world::CampaignWorld,
 };
+
+pub static CAMPAIGN_DEFEAT: Static<Location> = Static::new(|| "campaign:defeat".into());
 
 impl Generatable for CampaignWorld {
     fn generate() -> Self {

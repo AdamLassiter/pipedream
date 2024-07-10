@@ -41,11 +41,13 @@ fn generate_vec() -> Vec<Card> {
             tags: Tags::build(vec!["card:type:melee".into()]),
         },
         Card {
-            name: "Consecutive Regular Punches".into(),
-            predicate: Predicate::Tag("$me:resource:stamina/5".into()),
+            name: "Immolate".into(),
+            predicate: Predicate::Tag("$me:resource:health/1".into()),
             actions: vec![
-                Action::Subtract("$me:resource:stamina/5".into()),
-                Action::Add("$you:damage:resource:health/12".into()),
+                Action::Add("$you:damage:resource:health/$me:resource:health".into()),
+                Action::Add("$you:damage:resource:stamina/$me:resource:stamina".into()),
+                Action::Subtract("$me:resource:health/$me:resource:health".into()),
+                Action::Subtract("$me:resource:stamina/$me:resource:stamina".into()),
             ],
             tags: Tags::build(vec!["card:type:melee".into()]),
         },

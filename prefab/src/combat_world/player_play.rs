@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::combat_world::{PLAYER_DAMG, PLAYER_PLAY};
+use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
     core::{
@@ -30,7 +30,7 @@ pub fn player_play(machine: &CombatStateMachine) -> State {
                 (
                     format!("Play {:?} [{}]", card_data.name, card_data.predicate).into(),
                     Transition {
-                        next: TransitionType::Goto(PLAYER_DAMG.clone()),
+                        next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
                         actions: card_data
                             .actions
                             .clone()

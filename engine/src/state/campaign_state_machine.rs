@@ -12,8 +12,7 @@ use crate::core::{
 };
 
 use super::{
-    campaign_world::CampaignWorld, combat_state_machine::CombatStateMachine,
-    tag_engine::TagEngine,
+    campaign_world::CampaignWorld, combat_state_machine::CombatStateMachine, tag_engine::TagEngine,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -48,13 +47,34 @@ impl CampaignStateMachine {
     }
 
     pub fn handle_effect(&mut self, side_effect: Transition) -> Vec<UiCommand> {
-        if let Some(combat_state_machine) = self.combat_state_machine.as_mut() {
-            return combat_state_machine.handle_effect(side_effect);
-        }
+        // If in combat, handle effect in combat
+        // This might bubble-up something for the campaign to  handle
+        let handle_combat = self
+            .combat_state_machine
+            .as_mut()
+            .map(|csm| csm.handle_effect(side_effect.clone()));
+        debug!(target:"Handle/Combat", "{:?}", handle_combat);
 
-        self.tag_engine.handle_actions(&side_effect.actions);
-        self.handle_transition(side_effect)
-            .unwrap_or_else(|| self.next_options())
+        // If combat ended, pop the combat-state-machine
+        // Otherwise, prepare to handle effect in campaign
+        let handle_end_combat = handle_combat
+            .map(|csm| {
+                csm.inspect_err(|_ended_combat| {
+                    self.combat_state_machine.take();
+                })
+            })
+            .unwrap_or_else(|| Err(side_effect));
+        debug!(target:"Handle/EndCombat", "{:?}", handle_end_combat);
+
+        // If not in combat, handle effect in campaign
+        let handle_campaign = handle_end_combat.unwrap_or_else(|side_effect| {
+            self.tag_engine.handle_actions(&side_effect.actions);
+            self.handle_transition(side_effect)
+                .unwrap_or_else(|| self.next_options())
+        });
+        debug!(target:"Handle/Campaign", "{:?}", handle_campaign);
+
+        handle_campaign
     }
 
     fn handle_transition(&mut self, side_effect: Transition) -> Option<Vec<UiCommand>> {

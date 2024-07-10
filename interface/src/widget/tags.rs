@@ -8,7 +8,7 @@ use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
-    core::tags::{Static, Tag, TagKey, Tags},
+    core::tags::{Static, Tag, TagKey, TagValue, Tags},
 };
 
 use crate::Renderable;
@@ -37,7 +37,12 @@ impl Renderable for Tags {
         let renderable = RENDERABLE_TAGS
             .clone()
             .into_iter()
-            .filter_map(|key| self.get(&key).cloned().map(|value| Tag { key, value }))
+            .map(|key| {
+                self.get(&key)
+                    .cloned()
+                    .map(|value| Tag { key: key.clone(), value })
+                    .unwrap_or(Tag { key, value: TagValue::Number(0.into()) })
+            })
             .map(|tag| format!("{}", tag))
             .collect::<Vec<_>>();
 

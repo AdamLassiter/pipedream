@@ -19,6 +19,15 @@ pub static FROM_CAMPAIGN: Static<Vec<TagKey>> = Static::new(|| {
         Tgt::Any.ent(Ent::DrawCount),
     ]
 });
+pub static FROM_COMBAT: Static<Vec<TagKey>> = Static::new(|| {
+    vec![
+        Tgt::Any.ent(Ent::Name),
+        Tgt::Any.ent(Ent::Attribute),
+        Tgt::Any.ent(Ent::Resource),
+        Tgt::Any.ent(Ent::Deck),
+        Tgt::Any.ent(Ent::DrawCount),
+    ]
+});
 
 impl Generatable for TagEngine {
     fn generate() -> Self {
@@ -37,7 +46,7 @@ impl Generatable for TagEngine {
                 "$player:deck:Anathema Device".into(),
                 "$player:deck:Bag of Endless Bags".into(),
                 "$player:deck:Regular Punch".into(),
-                "$player:deck:Consecutive Regular Punches".into(),
+                "$player:deck:Immolate".into(),
             ]),
         }
     }
@@ -49,8 +58,20 @@ pub fn into_combat(campaign_tags: &TagEngine) -> TagEngine {
         .flat_map(|from_campaign| campaign_tags.find(from_campaign))
         .collect::<Vec<_>>();
 
-    debug!(target:"Event/IntoCombat", "{:?}", from_campaign);
+    debug!(target:"State/IntoCombat", "{:?}", from_campaign);
     TagEngine {
         tags: Tags::build(from_campaign),
+    }
+}
+
+pub fn from_combat(combat_tags: &TagEngine) -> TagEngine {
+    let from_combat = FROM_COMBAT
+        .iter()
+        .flat_map(|from_combat| combat_tags.find(from_combat))
+        .collect::<Vec<_>>();
+
+    debug!(target:"State/FromCombat", "{:?}", from_combat);
+    TagEngine {
+        tags: Tags::build(from_combat),
     }
 }

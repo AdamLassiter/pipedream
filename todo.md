@@ -9,7 +9,7 @@
   - [x] Non-blocking UI control
   - [x] Player combat turn
   - [x] Combat victory checks
-  - [ ] Combat import/export
+  - [x] Combat import/export
 - [ ] 0.3.0
   - [ ] Enemy combat turn
   - [ ] Full combat round handler

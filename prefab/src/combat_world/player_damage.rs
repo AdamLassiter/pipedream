@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::combat_world::{COMBAT_END, PLAYER_DAMG};
+use crate::combat_world::{COMBAT_END, PLAYER_DAMAGE};
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
     core::{
@@ -73,7 +73,7 @@ pub fn player_damamge(machine: &CombatStateMachine) -> State {
         .collect::<Vec<_>>();
 
     State {
-        location: PLAYER_DAMG.clone(),
+        location: PLAYER_DAMAGE.clone(),
         scene: Scene {
             descriptions: vec![],
         },

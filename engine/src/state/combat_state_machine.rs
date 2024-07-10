@@ -11,16 +11,14 @@ use crate::core::{
     transition::{Transition, TransitionType},
 };
 
-use super::{
-    campaign_state_machine::CampaignStateMachine, combat_world::CombatWorld, tag_engine::TagEngine,
-};
+use super::{combat_world::CombatWorld, tag_engine::TagEngine};
 
 #[derive(Serialize)]
 pub struct CombatStateMachine {
     #[serde(skip_serializing)]
     pub combat_world: CombatWorld,
     #[serde(skip_serializing)]
-    pub importer: fn(Self, &mut CampaignStateMachine),
+    pub exporter: fn(&Self) -> Transition,
     pub tag_engine: TagEngine,
     pub current: Vec<Location>,
 }
@@ -30,21 +28,25 @@ impl CombatStateMachine {
         combat_world: CombatWorld,
         tag_engine: TagEngine,
         start: Location,
-        importer: fn(Self, &mut CampaignStateMachine),
+        exporter: fn(&Self) -> Transition,
     ) -> Self {
         Self {
             combat_world,
-            importer,
+            exporter,
             tag_engine,
             current: vec![start],
         }
     }
 
-    pub fn handle_effect(&mut self, side_effect: Transition) -> Vec<UiCommand> {
+    pub fn handle_effect(&mut self, side_effect: Transition) -> Result<Vec<UiCommand>, Transition> {
         self.tag_engine.handle_actions(&side_effect.actions);
         self.handle_transition(side_effect);
 
-        self.next_options()
+        if self.current.is_empty() {
+            Err((self.exporter)(self))
+        } else {
+            Ok(self.next_options())
+        }
     }
 
     fn handle_transition(&mut self, side_effect: Transition) {
