@@ -21,3 +21,12 @@ pub enum TransitionType {
     Goto(Location),
     Combat(Vec<Action>),
 }
+
+impl Default for Transition {
+    fn default() -> Self {
+        Self {
+            next: TransitionType::None,
+            actions: Default::default(),
+        }
+    }
+}

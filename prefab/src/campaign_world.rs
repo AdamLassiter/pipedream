@@ -2,6 +2,7 @@ use crate::Generatable;
 use pipedream_engine::{
     core::{
         action::Action,
+        choice::Choice,
         location::Location,
         predicate::Predicate,
         scene::Scene,
@@ -16,7 +17,7 @@ pub static CAMPAIGN_DEFEAT: Static<Location> = Static::new(|| "campaign:defeat".
 
 impl Generatable for CampaignWorld {
     fn generate() -> Self {
-        vec![
+        let vec = vec![
             State {
                 location: "woods:entrance".into(),
                 scene: Scene {
@@ -31,34 +32,36 @@ impl Generatable for CampaignWorld {
                     ],
                 },
                 options: vec![
-                    (
-                        (
-                            Predicate::Tag("woods:entrance:item:sword".into()),
-                            "Pick up the sword",
-                        )
+                    Choice {
+                        summary:
+                            "Pick up the sword"
                             .into(),
-                        Transition {
+                        predicate: Some(Predicate::Tag("woods:entrance:item:sword".into())),
+                        effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Insert("$player:item:sword".into()),
+                                Action::Insert("player:item:sword".into()),
                                 Action::Remove("woods:entrance:item:sword".into()),
                             ],
                         },
-                    ),
-                    (
-                        "Go into the shop".into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice {
+                        summary: "Go into the shop".into(),
+                        effect: Transition {
                             next: TransitionType::Enter("ephemeral:shop".into()),
                             actions: vec![],
                         },
-                    ),
-                    (
-                        "Go deeper into the woods".into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice {
+                        summary: "Go deeper into the woods".into(),
+                        effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],
                         },
-                    ),
+                        ..Default::default()
+                    },
                 ]
                 .into(),
             },
@@ -68,22 +71,24 @@ impl Generatable for CampaignWorld {
                     descriptions: vec!["You are lost in <green the woods>".into()],
                 },
                 options: vec![
-                    (
-                        "Go deeper into the woods".into(),
-                        Transition {
+                    Choice { 
+                        summary: "Go deeper into the woods".into(),
+                        effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],
                         },
-                    ),
-                    (
-                        "Battle <red inner demons>".into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice { 
+                        summary: "Battle <red inner demons>".into(),
+                        effect: Transition {
                             next: TransitionType::Combat(vec![Action::Add(
-                                "$enemy:name:Dave".into(),
+                                "enemy:name:Dave".into(),
                             )]),
                             actions: vec![],
                         },
-                    ),
+                        ..Default::default()
+                    },
                 ]
                 .into(),
             },
@@ -93,77 +98,71 @@ impl Generatable for CampaignWorld {
                     descriptions: vec![
                         "The shop is cozy, and staffed by a weathered crone".into(),
                         (
-                            Predicate::Tag("$player:item:sword".into()),
+                            Predicate::Tag("player:item:sword".into()),
                             "Her eyes keep flitting to the sword at your side",
                         )
                             .into(),
                     ],
                 },
                 options: vec![
-                    (
-                        "Leave the shop".into(),
-                        Transition {
+                    Choice {
+                        summary: "Leave the shop".into(),
+                        effect: Transition {
                             next: TransitionType::Leave,
                             actions: vec![],
                         },
-                    ),
-                    (
-                        (
-                            Predicate::Tag("$player:item:sword".into()),
-                            "Trade a sword for two swords",
-                        )
-                            .into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice {
+                        summary: "Trade a sword for two swords".into(),
+                        predicate: Some(Predicate::Tag("player:item:sword".into())),
+                        effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Subtract("$player:item:sword/1".into()),
-                                Action::Add("$player:item:sword/2".into()),
+                                Action::Subtract("player:item:sword/1".into()),
+                                Action::Add("player:item:sword/2".into()),
                             ],
                         },
-                    ),
-                    (
-                        (
-                            Predicate::Tag("$player:item:sword".into()),
-                            "Trade each sword for two swords",
-                        )
-                            .into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice {
+                        summary: "Trade every sword for two swords".into(),
+                        predicate: Some(Predicate::Tag("player:item:sword".into())),
+                        effect: Transition {
                             next: TransitionType::None,
-                            actions: vec![Action::Multiply("$player:item:sword/2".into())],
+                            actions: vec![Action::Multiply("player:item:sword/2".into())],
                         },
-                    ),
-                    (
-                        (
-                            Predicate::Tag("$player:item:sword/2".into()),
-                            "Forge two swords into a cursed ring",
-                        )
-                            .into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice {
+                        summary: "Forge a pair of swords into a cursed ring".into(),
+                        predicate: Some(Predicate::Tag("player:item:sword/2".into())),
+                        effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Subtract("$player:item:sword/2".into()),
-                                Action::Add("$player:item:cursed-ring".into()),
+                                Action::Subtract("player:item:sword/2".into()),
+                                Action::Add("player:item:cursed-ring".into()),
                             ],
                         },
-                    ),
-                    (
-                        (
-                            Predicate::Tag("$player:item:sword/2".into()),
-                            "Forge every other sword into a cursed ring",
-                        )
-                            .into(),
-                        Transition {
+                        ..Default::default()
+                    },
+                    Choice {
+                        summary: "Forge every pair of swords into a cursed ring".into(),
+                        predicate: Some(Predicate::Tag("player:item:sword/2".into())),
+                        effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Divide("$player:item:sword/2".into()),
-                                Action::Add("$player:item:cursed-ring/$player:item:sword".into()),
+                                Action::Divide("player:item:sword/2".into()),
+                                Action::Add("player:item:cursed-ring/player:item:sword".into()),
                             ],
                         },
-                    ),
+                        ..Default::default()
+                    },
                 ]
                 .into(),
             },
-        ]
+        ];
+        vec
         .into()
     }
 }

@@ -7,10 +7,11 @@ use std::{
 use bichannel::{channel, Channel};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use pipedream_engine::core::commands::{EngineCommand, UiCommand};
+use ratatui::{buffer::Buffer, layout::{Alignment, Constraint, Layout, Rect}, text::Line, widgets::{block::Position, Borders, Tabs, Widget}, Frame};
 use ratatui::{
-    prelude::*,
+    style::{Color, Stylize},
     symbols::border,
-    widgets::{block::*, *},
+    widgets::block::{Block, Padding, Title},
 };
 use strum::{Display, EnumCount, FromRepr, VariantArray};
 
@@ -188,8 +189,8 @@ impl Tui {
             .padding("", "")
             .divider(" ");
 
-        let vertical = Layout::vertical([Constraint::Length(2), Constraint::Min(0)]);
-        let [header_area, inner_area] = vertical.areas(block.inner(area));
+        let [header_area, inner_area] =
+            Layout::vertical([Constraint::Length(2), Constraint::Min(0)]).areas(block.inner(area));
 
         if let Some(tab) = self.tabs.get(self.current_tab as usize) {
             tab.handle_render(inner_area, buf);

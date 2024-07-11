@@ -2,9 +2,10 @@ use log::debug;
 
 use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    combat::{card::Card, entity::Ent, target::Tgt},
     core::{
         action::Action,
+        choice::Choice,
         scene::Scene,
         state::State,
         tags::Tag,
@@ -25,23 +26,25 @@ pub fn player_play(machine: &CombatStateMachine) -> State {
         options: player_hand_slice
             .iter()
             .map(|Tag { key: card, .. }| machine.combat_world.cards.find(card))
-            .map(|card_data| {
-                let selectable = machine.tag_engine.satisfies(&card_data.predicate);
-                (
-                    format!("Play {:?} [{}]", card_data.name, card_data.predicate).into(),
-                    Transition {
+            .map(|Card {name, details, cost, predicate, actions, ..}| {
+                let selectable = machine.tag_engine.satisfies(predicate);
+                Choice {
+                    summary: name.clone(),
+                    details: details.clone(),
+                    cost: Some(cost.clone()),
+                    predicate: Some(predicate.clone()),
+                    effect: Transition {
                         next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
-                        actions: card_data
-                            .actions
+                        actions: actions
                             .clone()
                             .into_iter()
                             .chain(vec![Action::Subtract(
-                                format!("{}:{}:{}", Tgt::Me, Ent::Hand, card_data.name).into(),
+                                format!("{}:{}:{}", Tgt::Me, Ent::Hand, name).into(),
                             )])
                             .collect(),
                     },
                     selectable,
-                )
+                }
             })
             .collect::<Vec<_>>()
             .into(),

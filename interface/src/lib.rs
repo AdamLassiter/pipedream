@@ -19,10 +19,6 @@ extern crate log;
 trait Component: Handler + Send {}
 
 pub trait Controllable {
-    fn cursor_down(&mut self);
-
-    fn cursor_up(&mut self);
-
     fn handle_key_event(&mut self, key_event: KeyEvent);
 
     fn current_choice(&self) -> Option<Choice>;

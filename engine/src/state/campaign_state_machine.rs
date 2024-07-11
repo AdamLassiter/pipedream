@@ -125,12 +125,7 @@ impl CampaignStateMachine {
             .retain(|Description { predicate, .. }| test(predicate));
 
         if let ChoiceType::Manual(ref mut choices) = options.choices {
-            choices.retain(
-                |Choice {
-                     description: Description { predicate, .. },
-                     ..
-                 }| test(predicate),
-            );
+            choices.retain(|Choice { predicate, .. }| test(predicate));
         }
 
         debug!(target:"Show/Scene", "{:?}", &scene);

@@ -9,14 +9,14 @@ impl Renderable for Scene {
     fn render(&self, area: Rect, buf: &mut Buffer) {
         // debug!(target:"Render/Scene", "{:?}", self.descriptions);
 
-        let mut scene = Text::default();
-        self.descriptions
+        let scene = self.descriptions
             .iter()
             .map(|Description { descriptor, .. }| {
                 compile::<RatatuiTextGenerator>(descriptor)
                     .expect("Failed to compile tui text markup")
             })
-            .for_each(|scene_line| scene.extend(scene_line));
+            .flat_map(|scene_text| scene_text.lines)
+            .collect::<Vec<_>>();
 
         Widget::render(Paragraph::new(scene), area, buf);
     }

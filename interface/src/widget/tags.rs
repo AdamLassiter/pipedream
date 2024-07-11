@@ -1,7 +1,6 @@
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Rect},
-    text::Text,
     widgets::{Paragraph, Widget},
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
@@ -40,20 +39,26 @@ impl Renderable for Tags {
             .map(|key| {
                 self.get(&key)
                     .cloned()
-                    .map(|value| Tag { key: key.clone(), value })
-                    .unwrap_or(Tag { key, value: TagValue::Number(0.into()) })
+                    .map(|value| Tag {
+                        key: key.clone(),
+                        value,
+                    })
+                    .unwrap_or(Tag {
+                        key,
+                        value: TagValue::Number(0.into()),
+                    })
             })
             .map(|tag| format!("{}", tag))
             .collect::<Vec<_>>();
 
-        let mut scene = Text::default();
-        renderable
+        let scene = renderable
             .iter()
             .map(|tag| {
                 compile::<RatatuiTextGenerator>(tag.as_str())
                     .expect("Failed to compile tui text markup")
             })
-            .for_each(|scene_line| scene.extend(scene_line));
+            .flat_map(|text| text.lines)
+            .collect::<Vec<_>>();
 
         Widget::render(Paragraph::new(scene).alignment(Alignment::Right), area, buf);
     }

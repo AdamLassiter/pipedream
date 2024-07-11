@@ -14,6 +14,8 @@ fn generate_vec() -> Vec<Card> {
     vec![
         Card {
             name: "Anathema Device".into(),
+            details: vec!["Apply <blue 0.5 anathema> [Self]".into()],
+            cost: "<blue 10 mana>".into(),
             predicate: Predicate::Tag("$me:resource:mana/10".into()),
             actions: vec![
                 Action::Subtract("$me:resource:mana/10".into()),
@@ -23,6 +25,11 @@ fn generate_vec() -> Vec<Card> {
         },
         Card {
             name: "Bag of Endless Bags".into(),
+            details: vec![
+                "Draw <yellow 2 from deck> [Self]".into(),
+                "Discard <yellow 2 from hand> [Enemy]".into(),
+            ],
+            cost: "<yellow 10 faith>".into(),
             predicate: Predicate::Tag("$me:resource:faith/10".into()),
             actions: vec![
                 Action::Subtract("$me:resource:faith/10".into()),
@@ -33,6 +40,8 @@ fn generate_vec() -> Vec<Card> {
         },
         Card {
             name: "Regular Punch".into(),
+            details: vec!["Damage <red 2 health> [Enemy]".into()],
+            cost: "<green 1 stamina>".into(),
             predicate: Predicate::Tag("$me:resource:stamina/1".into()),
             actions: vec![
                 Action::Subtract("$me:resource:stamina/1".into()),
@@ -42,6 +51,11 @@ fn generate_vec() -> Vec<Card> {
         },
         Card {
             name: "Immolate".into(),
+            details: vec![
+                "Damage <red 100% self health> [Enemy]".into(),
+                "Damage <green 100% self stamina> [Enemy]".into(),
+            ],
+            cost: "<red 100% health>, <green 100% stamina>".into(),
             predicate: Predicate::Tag("$me:resource:health/1".into()),
             actions: vec![
                 Action::Add("$you:damage:resource:health/$me:resource:health".into()),

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-use super::{description::Description, transition::Transition};
+use super::{predicate::Predicate, transition::Transition};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choices {
@@ -14,9 +14,25 @@ pub struct Choices {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
-    pub description: Description,
+    pub summary: String,
+    pub details: Vec<String>,
+    pub cost: Option<String>,
+    pub predicate: Option<Predicate>,
     pub effect: Transition,
     pub selectable: bool,
+}
+
+impl Default for Choice {
+    fn default() -> Self {
+        Self {
+            summary: Default::default(),
+            details: Default::default(),
+            cost: Default::default(),
+            predicate: Default::default(),
+            effect: Default::default(),
+            selectable: true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,37 +45,10 @@ fn zero() -> usize {
     0
 }
 
-impl From<Vec<(Description, Transition)>> for Choices {
-    fn from(value: Vec<(Description, Transition)>) -> Self {
+impl From<Vec<Choice>> for Choices {
+    fn from(value: Vec<Choice>) -> Self {
         Self {
-            choices: ChoiceType::Manual(
-                value
-                    .into_iter()
-                    .map(|(description, effect)| Choice {
-                        description,
-                        effect,
-                        selectable: true,
-                    })
-                    .collect(),
-            ),
-            cursor: 0,
-        }
-    }
-}
-
-impl From<Vec<(Description, Transition, bool)>> for Choices {
-    fn from(value: Vec<(Description, Transition, bool)>) -> Self {
-        Self {
-            choices: ChoiceType::Manual(
-                value
-                    .into_iter()
-                    .map(|(description, effect, selectable)| Choice {
-                        description,
-                        effect,
-                        selectable,
-                    })
-                    .collect(),
-            ),
+            choices: ChoiceType::Manual(value),
             cursor: 0,
         }
     }

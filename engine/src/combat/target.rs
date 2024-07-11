@@ -19,8 +19,8 @@ impl From<Tgt> for String {
             Tgt::Any => "$any",
             Tgt::Me => "$me",
             Tgt::You => "$you",
-            Tgt::Player => "$player",
-            Tgt::Enemy => "$enemy",
+            Tgt::Player => "player",
+            Tgt::Enemy => "enemy",
         }
         .to_string()
     }

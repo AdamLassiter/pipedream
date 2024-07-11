@@ -109,17 +109,8 @@ impl Handler for CampaignHandler {
 
 impl Renderable for CampaignHandler {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let choices_len = self
-            .options
-            .as_ref()
-            .map(|x| match &x.choices {
-                ChoiceType::Manual(choices) => choices.len(),
-                ChoiceType::Auto(..) => 0,
-            })
-            .unwrap_or(0) as u16;
-
         let [description_area, choices_area] =
-            Layout::vertical([Constraint::Fill(1), Constraint::Length(choices_len)]).areas(area);
+            Layout::vertical([Constraint::Fill(1), Constraint::Fill(1)]).areas(area);
 
         let [scene_area, resources_area] =
             Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).areas(description_area);
