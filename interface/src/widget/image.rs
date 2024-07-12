@@ -96,23 +96,23 @@ impl ToAsciiArt for ImageConverter {
                 let base_luminance =
                     (0.2126 * avg_r as f32 + 0.7152 * avg_g as f32 + 0.0722 * avg_b as f32) as u8;
                 let luminance = ((base_luminance as f32 / 255.0).powf(gamma) * 255.0)
-                    .mul(255.0 - avg_a as f32) as u8;
+                    .mul(avg_a as f32 / 255.0) as u8;
 
                 let color = Color::Rgb(avg_r, avg_g, avg_b);
 
-                let character = match luminance {
+                let character = match 255 - luminance {
                     0..=31 => '#',
                     32..=63 => '@',
                     64..=95 => '8',
                     96..=127 => '&',
                     128..=159 => 'o',
-                    160..=191 => ':',
-                    192..=223 => '*',
+                    160..=191 => '*',
+                    192..=223 => ':',
                     224..=250 => '.',
                     251..=255 => ' ',
                 };
 
-                line.push(Span::from(character.to_string()).style(color));
+                line.push(Span::from(format!("{}{}", character, character)).style(color));
             }
             lines.push(Line::from(line));
         }

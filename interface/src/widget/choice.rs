@@ -123,7 +123,7 @@ fn render_choice_details(cursor: usize, choices: &[Choice], area: Rect, buf: &mu
         }
 
         let image = ImageConverter::from(&PathBuf::from("resources/tile009.png"));
-        let ascii_text = image.to_ascii_art(Some(AsciiOptions::new(32, 16, 1.0)));
+        let ascii_text = image.to_ascii_art(Some(AsciiOptions::new(16, 16, 1.0)));
         Paragraph::new(ascii_text)
             .alignment(Alignment::Center)
             .render(ascii_area, buf);
