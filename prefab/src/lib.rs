@@ -2,10 +2,11 @@
 #![feature(const_trait_impl)]
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
+#![feature(iter_repeat_n)]
 
+pub mod campaign_state_machine;
 pub mod campaign_world;
 pub mod cards;
-pub mod campaign_state_machine;
 pub mod combat_world;
 pub mod npcs;
 pub mod tag_engine;

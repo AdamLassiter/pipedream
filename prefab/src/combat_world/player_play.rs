@@ -1,3 +1,5 @@
+use std::iter::repeat_n;
+
 use log::debug;
 
 use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
@@ -25,28 +27,48 @@ pub fn player_play(machine: &CombatStateMachine) -> State {
         },
         options: player_hand_slice
             .iter()
-            .map(|Tag { key: card, .. }| machine.combat_world.cards.find(card))
-            .map(|Card {name, image, details, cost, predicate, actions, ..}| {
-                let selectable = machine.tag_engine.satisfies(predicate);
-                Choice {
-                    summary: name.clone(),
-                    image: Some(image.clone()),
-                    details: details.clone(),
-                    cost: Some(cost.clone()),
-                    predicate: Some(predicate.clone()),
-                    effect: Transition {
-                        next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
-                        actions: actions
-                            .clone()
-                            .into_iter()
-                            .chain(vec![Action::Subtract(
-                                format!("{}:{}:{}", Tgt::Me, Ent::Hand, name).into(),
-                            )])
-                            .collect(),
+            .map(|Tag { key: card, value }| (machine.combat_world.cards.find(card), value))
+            .flat_map(
+                |(
+                    Card {
+                        name,
+                        image,
+                        details,
+                        cost,
+                        predicate,
+                        actions,
+                        ..
                     },
-                    selectable,
-                }
-            })
+                    value,
+                )| {
+                    let selectable = machine.tag_engine.satisfies(predicate);
+                    let choice = Choice {
+                        summary: name.clone(),
+                        image: Some(image.clone()),
+                        details: details.clone(),
+                        cost: Some(cost.clone()),
+                        predicate: Some(predicate.clone()),
+                        effect: Transition {
+                            next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
+                            actions: actions
+                                .clone()
+                                .into_iter()
+                                .chain(vec![Action::Subtract(
+                                    format!("{}:{}:{}", Tgt::Me, Ent::Hand, name).into(),
+                                )])
+                                .collect(),
+                        },
+                        selectable,
+                    };
+                    repeat_n(
+                        choice,
+                        value
+                            .number()
+                            .expect("Failed to get Number of cards in hand")
+                            .to_num(),
+                    )
+                },
+            )
             .collect::<Vec<_>>()
             .into(),
     }

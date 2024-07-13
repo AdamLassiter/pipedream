@@ -92,6 +92,22 @@ pub enum TagValue {
     Number(FI64),
 }
 
+impl TagValue {
+    pub fn tag(&self) -> Option<&TagKey> {
+        match self {
+            Self::Tag(key) => Some(key),
+            Self::Number(_) => None,
+        }
+    }
+
+    pub fn number(&self) -> Option<&FI64> {
+        match self {
+            Self::Tag(_) => None,
+            Self::Number(num) => Some(num),
+        }
+    }
+}
+
 impl std::fmt::Display for TagValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(
@@ -258,20 +274,16 @@ impl Tags {
             .iter()
             .for_each(|(target, reference)| {
                 if key.contains(target) {
-                    let substitution = match self.tags.get(reference).unwrap_or_else(|| {
+                    let substitution = self.tags.get(reference).unwrap_or_else(|| {
                         panic!(
                             "Failed to resolve reference {:?} for target {:?} and key {:?} and self {:?}",
                             reference, target, key, self.tags,
                         )
-                    }) {
-                        TagValue::Tag(key) => key,
-                        TagValue::Number(value) => {
+                    }).tag().unwrap_or_else(|| {
                             panic!(
-                                "Expected Tag reference when resolving key {:?}, but was Number {:?}",
-                                key, value
-                            )
-                        }
-                    };
+                                "Expected Tag reference when resolving key {:?}, but was Number",
+                                key)
+                        });
                     debug!(target:"Tags/Resolve", "{:?} {:?} {:?}", key, target, substitution);
                     key = key.replace(target, &substitution.0);
                 }
