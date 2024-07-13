@@ -78,18 +78,18 @@ impl Renderable for Choice {
             return;
         };
 
-        let details_size_hint = self.details.len();
+        let details_size_hint = self.details.len() as u16;
+        let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
         let mut block = Block::default()
             .borders(Borders::ALL)
             .border_set(border::ROUNDED)
             .padding(Padding::uniform(1));
 
-        let [ascii_area, details_area] = Layout::vertical(if details_size_hint > 0 {
-            [Constraint::Min(16), Constraint::Fill(1)]
-        } else {
-            [Constraint::Fill(1), Constraint::Fill(0)]
-        })
+        let [ascii_area, details_area] = Layout::vertical([
+            Constraint::Min(ascii_size_hint),
+            Constraint::Fill(details_size_hint),
+        ])
         .areas(block.inner(area));
 
         let padded_summary = format!(" {} ", self.summary);
@@ -121,8 +121,8 @@ impl Renderable for Choice {
         if let Some(image) = &self.image {
             let image = ImageConverter::from(&PathBuf::from(image));
             let ascii_text = image.to_ascii_art(Some(AsciiOptions {
-                height: ascii_area.height as u32,
-                width: 2 * ascii_area.height as u32,
+                height: ascii_area.height,
+                width: ascii_area.height,
                 ..Default::default()
             }));
             Paragraph::new(ascii_text)

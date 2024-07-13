@@ -36,7 +36,6 @@ impl Generatable for CampaignWorld {
                         summary:
                             "Pick up the sword"
                             .into(),
-                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/willow3.png".into()),
                         predicate: Some(Predicate::Tag("woods:entrance:item:sword".into())),
                         effect: Transition {
                             next: TransitionType::None,
@@ -49,6 +48,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Go into the shop".into(),
+                        image: Some("resources/objects/glade-objects-top-down-pixel-art/png/objects_separated/assets_no_shadow/house1.png".into()),
                         effect: Transition {
                             next: TransitionType::Enter("ephemeral:shop".into()),
                             actions: vec![],
@@ -57,6 +57,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Go deeper into the woods".into(),
+                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/luminous_tree3.png".into()),
                         effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],
