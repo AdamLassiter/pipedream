@@ -1,6 +1,6 @@
 use ratatui::{
     buffer::Buffer,
-    layout::{Alignment, Rect},
+    layout::Rect,
     widgets::{Paragraph, Widget},
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
@@ -60,6 +60,6 @@ impl Renderable for Tags {
             .flat_map(|text| text.lines)
             .collect::<Vec<_>>();
 
-        Widget::render(Paragraph::new(scene).alignment(Alignment::Right), area, buf);
+        Widget::render(Paragraph::new(scene), area, buf);
     }
 }

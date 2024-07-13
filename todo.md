@@ -12,7 +12,7 @@
   - [x] Combat import/export
 - [ ] 0.3.0
   - [ ] Card carousel
-  - [ ] Card images
+  - [x] Card images
   - [ ] Enemy combat turn
   - [ ] Full combat round handler
   - [ ] Basic combat effects

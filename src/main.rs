@@ -8,7 +8,7 @@ use pipedream_engine::{
         tag_engine::TagEngine,
     },
 };
-use pipedream_interface::{tui::Tui, utils::finish_and_panic_threads};
+use pipedream_interface::{tui::Tui, log_utils::finish_and_panic_threads};
 use pipedream_prefab::{campaign_state_machine::campaign_exporter, Generatable};
 
 fn main() -> io::Result<()> {

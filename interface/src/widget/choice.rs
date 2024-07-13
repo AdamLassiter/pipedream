@@ -18,15 +18,16 @@ use pipedream_engine::core::{
     transition::Transition,
 };
 
-use crate::{Controllable, Renderable};
-
-use super::image::{AsciiOptions, ImageConverter, ToAsciiArt};
+use crate::{
+    image::{AsciiOptions, ImageConverter, ToAsciiArt},
+    Controllable, Renderable,
+};
 
 fn cursor_up(this: &mut Choices) {
     if let ChoiceType::Manual(choices) = &this.choices
         && !choices.is_empty()
     {
-        this.cursor = this.cursor.saturating_sub(1).clamp(0, choices.len() - 1);
+        this.cursor = this.cursor.saturating_add(1).clamp(0, choices.len() - 1);
     }
 }
 
@@ -34,7 +35,7 @@ fn cursor_down(this: &mut Choices) {
     if let ChoiceType::Manual(choices) = &this.choices
         && !choices.is_empty()
     {
-        this.cursor = this.cursor.saturating_add(1).clamp(0, choices.len() - 1);
+        this.cursor = this.cursor.saturating_sub(1).clamp(0, choices.len() - 1);
     }
 }
 
@@ -71,32 +72,27 @@ impl Controllable for Choices {
     }
 }
 
-impl Renderable for Choices {
+impl Renderable for Choice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        match &self.choices {
-            ChoiceType::Manual(choices) => {
-                let [summary_area, details_area] =
-                    Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).areas(area);
+        if self.image.is_none() && self.details.is_empty() && self.cost.is_none() {
+            return;
+        };
 
-                render_choices(self.cursor, choices, summary_area, buf);
+        let details_size_hint = self.details.len();
 
-                render_choice_details(self.cursor, choices, details_area, buf);
-            }
-            ChoiceType::Auto(..) => { /* None */ }
-        }
-    }
-}
-
-fn render_choice_details(cursor: usize, choices: &[Choice], area: Rect, buf: &mut Buffer) {
-    if let Some(selected) = choices.get(cursor) {
         let mut block = Block::default()
             .borders(Borders::ALL)
             .border_set(border::ROUNDED)
             .padding(Padding::uniform(1));
-        let [ascii_area, details_area] =
-            Layout::vertical([Constraint::Min(16), Constraint::Fill(1)]).areas(block.inner(area));
 
-        let padded_summary = format!(" {} ", selected.summary);
+        let [ascii_area, details_area] = Layout::vertical(if details_size_hint > 0 {
+            [Constraint::Min(16), Constraint::Fill(1)]
+        } else {
+            [Constraint::Fill(1), Constraint::Fill(0)]
+        })
+        .areas(block.inner(area));
+
+        let padded_summary = format!(" {} ", self.summary);
         let mut title_text = compile::<RatatuiTextGenerator>(&padded_summary)
             .expect("Failed to compile tui text markup for summaries");
         if let Some(title_line) = title_text.lines.pop() {
@@ -108,7 +104,7 @@ fn render_choice_details(cursor: usize, choices: &[Choice], area: Rect, buf: &mu
         }
 
         let padded_cost; // Must live long enough
-        if let Some(cost) = &selected.cost {
+        if let Some(cost) = &self.cost {
             padded_cost = format!(" {} ", cost);
             let mut cost_lines = compile::<RatatuiTextGenerator>(&padded_cost)
                 .expect("Failed to compile tui text markup for cost")
@@ -122,59 +118,73 @@ fn render_choice_details(cursor: usize, choices: &[Choice], area: Rect, buf: &mu
             }
         }
 
-        let image = ImageConverter::from(&PathBuf::from("resources/tile009.png"));
-        let ascii_text = image.to_ascii_art(Some(AsciiOptions::new(16, 16, 1.0)));
-        Paragraph::new(ascii_text)
-            .alignment(Alignment::Center)
-            .render(ascii_area, buf);
+        if let Some(image) = &self.image {
+            let image = ImageConverter::from(&PathBuf::from(image));
+            let ascii_text = image.to_ascii_art(Some(AsciiOptions {
+                height: ascii_area.height as u32,
+                width: 2 * ascii_area.height as u32,
+                ..Default::default()
+            }));
+            Paragraph::new(ascii_text)
+                .alignment(Alignment::Center)
+                .render(ascii_area, buf);
 
-        let details_lines = selected
-            .details
-            .iter()
-            .flat_map(|details| {
-                compile::<RatatuiTextGenerator>(details)
-                    .into_iter()
-                    .flat_map(|text| text.lines)
-                    .collect::<Vec<_>>()
-            })
-            .collect::<Vec<_>>();
-        Paragraph::new(details_lines)
-            .alignment(Alignment::Center)
-            .render(details_area, buf);
+            let details_lines = self
+                .details
+                .iter()
+                .flat_map(|details| {
+                    compile::<RatatuiTextGenerator>(details)
+                        .into_iter()
+                        .flat_map(|text| text.lines)
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>();
+            Paragraph::new(details_lines)
+                .alignment(Alignment::Center)
+                .render(details_area, buf);
+        }
 
         block.render(area, buf);
     }
 }
 
-fn render_choices(cursor: usize, choices: &[Choice], summary_area: Rect, buf: &mut Buffer) {
-    let mut state = ListState::default().with_selected(Some(cursor));
+impl Renderable for (&[Choice], usize) {
+    fn render(&self, summary_area: Rect, buf: &mut Buffer) {
+        let (choices, cursor) = self;
+        let mut state = ListState::default().with_selected(Some(*cursor));
 
-    let summary_descriptions = choices
-        .iter()
-        .map(|choice| {
-            let Choice {
-                summary: description,
-                selectable,
-                ..
-            } = choice;
-            if *selectable {
-                description.clone()
-            } else {
-                format!("<d {}>", description)
-            }
-        })
-        .collect::<Vec<_>>();
+        let summary_descriptions = choices
+            .iter()
+            .map(|choice| {
+                let Choice {
+                    summary,
+                    selectable,
+                    ..
+                } = choice;
+                let description = if let Some(pred) = &choice.predicate {
+                    format!("{} [{}]", summary, pred)
+                } else {
+                    summary.to_string()
+                };
+                if *selectable {
+                    description
+                } else {
+                    format!("<d {}>", description)
+                }
+            })
+            .collect::<Vec<_>>();
 
-    // debug!(target:"Render/Choices", "{:?}", options);
+        let summary_text = summary_descriptions
+            .iter()
+            .map(|description| {
+                compile::<RatatuiTextGenerator>(description)
+                    .expect("Failed to compile tui text markup for summaries")
+            })
+            .collect::<Vec<_>>();
 
-    let summary_text = summary_descriptions
-        .iter()
-        .map(|description| {
-            compile::<RatatuiTextGenerator>(description)
-                .expect("Failed to compile tui text markup for summaries")
-        })
-        .collect::<Vec<_>>();
-
-    let summary_list = List::new(summary_text).highlight_symbol(">> ");
-    StatefulWidget::render(summary_list, summary_area, buf, &mut state);
+        let summary_list = List::new(summary_text)
+            .direction(ratatui::widgets::ListDirection::BottomToTop)
+            .highlight_symbol(">> ");
+        StatefulWidget::render(summary_list, summary_area, buf, &mut state);
+    }
 }

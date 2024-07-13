@@ -32,6 +32,7 @@ impl Cards {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Card {
     pub name: String,
+    pub image: String,
     pub details: Vec<String>,
     pub cost: String,
     pub tags: Tags,

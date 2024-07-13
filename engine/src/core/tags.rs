@@ -41,7 +41,7 @@ impl std::fmt::Display for Tag {
         let style = TAG_STYLES
             .get(self.key.trailing_key())
             .copied()
-            .unwrap_or("");
+            .unwrap_or("x");
         f.write_str(format!("<{} {}/{}>", style, self.key.trailing_key(), self.value).as_str())
     }
 }

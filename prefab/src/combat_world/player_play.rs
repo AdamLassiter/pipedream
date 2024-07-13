@@ -26,10 +26,11 @@ pub fn player_play(machine: &CombatStateMachine) -> State {
         options: player_hand_slice
             .iter()
             .map(|Tag { key: card, .. }| machine.combat_world.cards.find(card))
-            .map(|Card {name, details, cost, predicate, actions, ..}| {
+            .map(|Card {name, image, details, cost, predicate, actions, ..}| {
                 let selectable = machine.tag_engine.satisfies(predicate);
                 Choice {
                     summary: name.clone(),
+                    image: Some(image.clone()),
                     details: details.clone(),
                     cost: Some(cost.clone()),
                     predicate: Some(predicate.clone()),

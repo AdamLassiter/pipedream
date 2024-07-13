@@ -14,6 +14,7 @@ fn generate_vec() -> Vec<Card> {
     vec![
         Card {
             name: "Anathema Device".into(),
+            image: "resources/legacy/tile269.png".into(),
             details: vec!["Apply <blue 0.5 anathema> [Self]".into()],
             cost: "<blue 10 mana>".into(),
             predicate: Predicate::Tag("$me:resource:mana/10".into()),
@@ -25,6 +26,7 @@ fn generate_vec() -> Vec<Card> {
         },
         Card {
             name: "Bag of Endless Bags".into(),
+            image: "resources/legacy/tile198.png".into(),
             details: vec![
                 "Draw <yellow 2 from deck> [Self]".into(),
                 "Discard <yellow 2 from hand> [Enemy]".into(),
@@ -40,6 +42,7 @@ fn generate_vec() -> Vec<Card> {
         },
         Card {
             name: "Regular Punch".into(),
+            image: "resources/legacy/tile095.png".into(),
             details: vec!["Damage <red 2 health> [Enemy]".into()],
             cost: "<green 1 stamina>".into(),
             predicate: Predicate::Tag("$me:resource:stamina/1".into()),
@@ -51,6 +54,7 @@ fn generate_vec() -> Vec<Card> {
         },
         Card {
             name: "Immolate".into(),
+            image: "resources/legacy/tile009.png".into(),
             details: vec![
                 "Damage <red 100% self health> [Enemy]".into(),
                 "Damage <green 100% self stamina> [Enemy]".into(),

@@ -7,7 +7,13 @@ use std::{
 use bichannel::{channel, Channel};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use pipedream_engine::core::commands::{EngineCommand, UiCommand};
-use ratatui::{buffer::Buffer, layout::{Alignment, Constraint, Layout, Rect}, text::Line, widgets::{block::Position, Borders, Tabs, Widget}, Frame};
+use ratatui::{
+    buffer::Buffer,
+    layout::{Alignment, Constraint, Layout, Rect},
+    text::Line,
+    widgets::{block::Position, Borders, Tabs, Widget},
+    Frame,
+};
 use ratatui::{
     style::{Color, Stylize},
     symbols::border,
@@ -16,15 +22,20 @@ use ratatui::{
 use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use crate::{
-    handler::{campaign_handler::CampaignHandler, logging_handler::LoggingHandler},
-    utils, Component,
+    component::{
+        campaign::CampaignComponent, inventory::InventoryComponent, logging::LoggingComponent,
+        Component,
+    },
+    log_utils,
+    widget::instructions::instructions,
 };
 
 #[derive(Display, FromRepr, EnumCount, VariantArray, Copy, Clone)]
 #[repr(usize)]
 enum SelectedTab {
     Campaign = 0,
-    Logging = 1,
+    Inventory = 1,
+    Logging = 2,
 }
 impl SelectedTab {
     fn title(self) -> Line<'static> {
@@ -47,8 +58,9 @@ impl Tui {
         let this = Self {
             current_tab: SelectedTab::Campaign,
             tabs: vec![
-                Box::new(CampaignHandler::new()),
-                Box::new(LoggingHandler::new()),
+                Box::new(CampaignComponent::new()),
+                Box::new(InventoryComponent::new()),
+                Box::new(LoggingComponent::new()),
             ],
             channel: ui_chan,
             should_redraw: true,
@@ -67,7 +79,7 @@ impl Tui {
         (
             chan,
             thread::spawn(move || {
-                let mut terminal = utils::init()?;
+                let mut terminal = log_utils::init()?;
                 while !app.exit {
                     if app.should_redraw {
                         terminal.draw(|frame| app.render_frame(frame))?;
@@ -75,7 +87,7 @@ impl Tui {
                     }
                     app.handle_events();
                 }
-                utils::restore()?;
+                log_utils::restore()?;
                 Ok(())
             }),
         )
@@ -152,26 +164,7 @@ impl Tui {
 
     fn handle_render(&self, area: Rect, buf: &mut Buffer) {
         let title = Title::from(" PipeDream ".bold());
-
-        let instructions = Title::from(Line::from(vec![
-            " Up ".into(),
-            "<W>".blue().bold(),
-            " Down ".into(),
-            "<S>".blue().bold(),
-            " Left ".into(),
-            "<A>".blue().bold(),
-            " Right ".into(),
-            "<D>".blue().bold(),
-            " Prev ".into(),
-            "<Q>".blue().bold(),
-            " Next ".into(),
-            "<E>".blue().bold(),
-            " Enter ".into(),
-            "<X>".blue().bold(),
-            " Quit ".into(),
-            "<Esc> ".blue().bold(),
-        ]));
-
+        let instructions = instructions();
         let block = Block::default()
             .title(title.alignment(Alignment::Center))
             .title(
@@ -193,9 +186,11 @@ impl Tui {
             Layout::vertical([Constraint::Length(2), Constraint::Min(0)]).areas(block.inner(area));
 
         if let Some(tab) = self.tabs.get(self.current_tab as usize) {
-            tab.handle_render(inner_area, buf);
+            tab.render(inner_area, buf);
         }
+
         tabs.render(header_area, buf);
+
         block.render(area, buf);
     }
 }

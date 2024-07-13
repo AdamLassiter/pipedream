@@ -3,20 +3,19 @@
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
 
+use bichannel::Channel;
 use crossterm::event::KeyEvent;
-use handler::Handler;
-use pipedream_engine::core::{choice::Choice, transition::Transition};
+use pipedream_engine::core::{choice::Choice, commands::{EngineCommand, UiCommand}, transition::Transition};
 use ratatui::{buffer::Buffer, layout::Rect};
 
-pub mod handler;
+pub mod component;
+pub mod image;
 pub mod tui;
-pub mod utils;
+pub mod log_utils;
 pub mod widget;
 
 // Extern log for arbitrary provider
 extern crate log;
-
-trait Component: Handler + Send {}
 
 pub trait Controllable {
     fn handle_key_event(&mut self, key_event: KeyEvent);
@@ -28,4 +27,14 @@ pub trait Controllable {
 
 pub trait Renderable {
     fn render(&self, area: Rect, buf: &mut Buffer);
+}
+
+pub trait Handler {
+    fn handle_key_event(
+        &mut self,
+        key_event: KeyEvent,
+        channel: &Channel<EngineCommand, UiCommand>,
+    );
+
+    fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) -> bool;
 }

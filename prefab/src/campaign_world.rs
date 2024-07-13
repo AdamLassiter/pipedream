@@ -36,6 +36,7 @@ impl Generatable for CampaignWorld {
                         summary:
                             "Pick up the sword"
                             .into(),
+                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/willow3.png".into()),
                         predicate: Some(Predicate::Tag("woods:entrance:item:sword".into())),
                         effect: Transition {
                             next: TransitionType::None,

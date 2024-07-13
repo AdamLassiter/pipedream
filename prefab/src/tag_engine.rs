@@ -36,7 +36,7 @@ impl Generatable for TagEngine {
                 // World
                 "woods:entrance:item:sword".into(),
                 // Player
-                "player:draw:count/2".into(),
+                "player:draw:count/4".into(),
                 // Resources
                 "player:resource:health/20".into(),
                 "player:resource:stamina/20".into(),
@@ -45,7 +45,7 @@ impl Generatable for TagEngine {
                 // Deck
                 "player:deck:Anathema Device".into(),
                 "player:deck:Bag of Endless Bags".into(),
-                "player:deck:Regular Punch".into(),
+                "player:deck:Regular Punch/3".into(),
                 "player:deck:Immolate".into(),
             ]),
         }

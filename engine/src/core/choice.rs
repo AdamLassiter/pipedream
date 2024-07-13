@@ -15,6 +15,7 @@ pub struct Choices {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
     pub summary: String,
+    pub image: Option<String>,
     pub details: Vec<String>,
     pub cost: Option<String>,
     pub predicate: Option<Predicate>,
@@ -26,6 +27,7 @@ impl Default for Choice {
     fn default() -> Self {
         Self {
             summary: Default::default(),
+            image: Default::default(),
             details: Default::default(),
             cost: Default::default(),
             predicate: Default::default(),
