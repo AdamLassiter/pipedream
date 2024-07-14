@@ -57,7 +57,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Go deeper into the woods".into(),
-                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/luminous_tree3.png".into()),
+                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/luminous_tree2.png".into()),
                         effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],
@@ -75,6 +75,7 @@ impl Generatable for CampaignWorld {
                 options: vec![
                     Choice { 
                         summary: "Go deeper into the woods".into(),
+                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/luminous_tree2.png".into()),
                         effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],
@@ -83,6 +84,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice { 
                         summary: "Battle <red inner demons>".into(),
+                        image: Some("resources/rpg/demon-avatar-icons-pixel-art-64x64/png/transperent/icon42.png".into()),
                         effect: Transition {
                             next: TransitionType::Combat(vec![Action::Add(
                                 "enemy:name:Dave".into(),
@@ -109,6 +111,7 @@ impl Generatable for CampaignWorld {
                 options: vec![
                     Choice {
                         summary: "Leave the shop".into(),
+                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face1.png".into()),
                         effect: Transition {
                             next: TransitionType::Leave,
                             actions: vec![],
@@ -117,6 +120,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Trade a sword for two swords".into(),
+                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face2.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword".into())),
                         effect: Transition {
                             next: TransitionType::None,
@@ -129,6 +133,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Trade every sword for two swords".into(),
+                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face2.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword".into())),
                         effect: Transition {
                             next: TransitionType::None,
@@ -138,6 +143,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Forge a pair of swords into a cursed ring".into(),
+                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face3.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword/2".into())),
                         effect: Transition {
                             next: TransitionType::None,
@@ -150,6 +156,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Forge every pair of swords into a cursed ring".into(),
+                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face4.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword/2".into())),
                         effect: Transition {
                             next: TransitionType::None,

@@ -8,7 +8,7 @@ use ratatui::{
     symbols::border,
     widgets::{
         block::{Position, Title},
-        Block, Borders, List, ListState, Padding, Paragraph, StatefulWidget, Widget,
+        Block, Borders, List, ListState, Paragraph, StatefulWidget, Widget,
     },
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
@@ -83,8 +83,7 @@ impl Renderable for Choice {
 
         let mut block = Block::default()
             .borders(Borders::ALL)
-            .border_set(border::ROUNDED)
-            .padding(Padding::uniform(1));
+            .border_set(border::ROUNDED);
 
         let [ascii_area, details_area] = Layout::vertical([
             Constraint::Min(ascii_size_hint),

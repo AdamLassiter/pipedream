@@ -11,7 +11,6 @@
   - [x] Combat victory checks
   - [x] Combat import/export
 - [ ] 0.3.0
-  - [ ] Card carousel
   - [x] Card images
   - [ ] Enemy combat turn
   - [ ] Full combat round handler
@@ -24,3 +23,4 @@
   - [ ] Deck management
 - ...
 - [ ] Game
+
