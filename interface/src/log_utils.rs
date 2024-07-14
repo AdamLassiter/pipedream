@@ -40,7 +40,7 @@ pub fn restore() -> io::Result<()> {
     Ok(())
 }
 
-pub fn finish_and_panic_threads(threads: Vec<JoinHandle<io::Result<()>>>) {
+pub fn finish_and_panic_threads(threads: Vec<JoinHandle<()>>) {
     // wait for a thread to finish
     while !(threads.iter().any(|thread| thread.is_finished())) {
         thread::sleep(Duration::from_millis(100))

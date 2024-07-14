@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use crate::{Controllable, Handler, Renderable};
 use crossterm::event::{KeyCode, KeyEvent};
+use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
     core::{
         choice::{ChoiceType, Choices},
@@ -10,13 +11,13 @@ use pipedream_engine::{
         tags::Tags,
     },
     log::debug,
-    bichannel::Channel,
 };
 use ratatui::prelude::*;
 
 use super::Component;
 
 pub struct InventoryComponent {
+    channel: Bichannel<EngineCommand, UiCommand>,
     scene: Option<Scene>,
     options: Option<Choices>,
     tags: Option<Tags>,
@@ -24,8 +25,9 @@ pub struct InventoryComponent {
 }
 
 impl InventoryComponent {
-    pub fn new() -> Self {
+    pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
+            channel,
             scene: None,
             options: None,
             tags: None,
@@ -33,14 +35,14 @@ impl InventoryComponent {
         }
     }
 
-    fn make_choice(&mut self, channel: &Channel<EngineCommand, UiCommand>) {
+    fn make_choice(&mut self) {
         if let Some(options) = self.options.as_ref() {
             if let Some(current) = options.current_choice() {
                 debug!(target:"Interface/Choice", "{:?}", current);
             }
             if let Some(transition) = options.current_transition() {
                 let _ = self.options.take();
-                channel
+                self.channel
                     .send(EngineCommand::RespondWithChoice(transition))
                     .expect("Broken channel while responding with choice");
             }
@@ -48,14 +50,8 @@ impl InventoryComponent {
     }
 }
 
-impl Default for InventoryComponent {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Handler for InventoryComponent {
-    fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) -> bool {
+    fn handle_tick_event(&mut self) -> bool {
         let mut should_redraw = false;
 
         if let Some(Choices {
@@ -73,11 +69,11 @@ impl Handler for InventoryComponent {
             && Instant::now() >= wake_time
         {
             self.wake_time.take();
-            self.make_choice(channel);
+            self.make_choice();
             should_redraw = true;
         }
 
-        while let Ok(ev) = channel.try_recv() {
+        while let Ok(ev) = self.channel.try_recv() {
             match ev {
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowChoices(opts) => self.options = Some(opts),
@@ -89,13 +85,9 @@ impl Handler for InventoryComponent {
         should_redraw
     }
 
-    fn handle_key_event(
-        &mut self,
-        key_event: KeyEvent,
-        channel: &Channel<EngineCommand, UiCommand>,
-    ) {
+    fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
-            KeyCode::Char('x') | KeyCode::Enter => self.make_choice(channel),
+            KeyCode::Char('x') | KeyCode::Enter => self.make_choice(),
             _ => {
                 if let Some(options) = self.options.as_mut() {
                     options.handle_key_event(key_event);

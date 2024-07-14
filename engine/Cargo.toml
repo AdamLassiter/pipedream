@@ -10,7 +10,6 @@ edition = "2024"
 [dependencies]
 rand = "0.8.5"
 fixed = { version = "1.27.0", features = ["serde", "serde-str"]}
-crossbeam = "0.8.1"
 
 log = { version = "0.4.21", features = ["kv"] }
 

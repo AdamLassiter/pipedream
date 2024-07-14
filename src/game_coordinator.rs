@@ -1,10 +1,9 @@
-use std::io;
 use std::thread;
 use std::thread::JoinHandle;
 use std::time;
 
+use pipedream_bichannel::{Bichannel, BichannelMonitor};
 use pipedream_engine::{
-    bichannel::Channel,
     core::{
         commands::{EngineCommand, UiCommand},
         transition::Transition,
@@ -15,7 +14,7 @@ use pipedream_engine::{
 
 pub struct GameCoordinator {
     pub campaign: CampaignStateMachine,
-    pub channel: Channel<UiCommand, EngineCommand>,
+    pub channel: Bichannel<UiCommand, EngineCommand>,
     pub exit: bool,
 }
 
@@ -53,12 +52,12 @@ impl GameCoordinator {
     }
 
     pub fn spawn(
+        monitor: &mut BichannelMonitor<EngineCommand, UiCommand>,
         campaign: CampaignStateMachine,
-        channel: Channel<UiCommand, EngineCommand>,
-    ) -> JoinHandle<io::Result<()>> {
+    ) -> JoinHandle<()> {
         let mut this = GameCoordinator {
             campaign,
-            channel,
+            channel: monitor.new_right(),
             exit: false,
         };
 
@@ -67,7 +66,6 @@ impl GameCoordinator {
             while !this.exit {
                 this.handle_commands();
             }
-            Ok(())
         })
     }
 }

@@ -1,0 +1,11 @@
+cargo-features = ["edition2024", "codegen-backend"]
+
+
+[package]
+name = "pipedream-bichannel"
+version = "0.3.0"
+edition = "2024"
+
+
+[dependencies]
+crossbeam = "0.8.1"

@@ -8,6 +8,7 @@ edition = "2024"
 
 
 [dependencies]
+pipedream-bichannel = { path = "../bichannel" }
 pipedream-engine = { path = "../engine" }
 
 tui-logger = "0.11.1"

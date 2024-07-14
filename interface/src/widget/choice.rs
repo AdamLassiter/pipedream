@@ -119,11 +119,12 @@ impl Renderable for Choice {
 
         if let Some(image) = &self.image {
             let image = ImageConverter::from(&PathBuf::from(image));
-            let ascii_text = image.to_ascii_art(Some(AsciiOptions {
+            let options = AsciiOptions {
                 height: ascii_area.height,
-                width: ascii_area.height,
+                width: ascii_area.width,
                 ..Default::default()
-            }));
+            };
+            let ascii_text = image.to_ascii_art(Some(options));
             Paragraph::new(ascii_text)
                 .alignment(Alignment::Center)
                 .render(ascii_area, buf);

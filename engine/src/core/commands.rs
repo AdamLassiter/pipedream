@@ -1,12 +1,12 @@
 use super::{choice::Choices, scene::Scene, tags::Tags, transition::Transition};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum EngineCommand {
     RespondWithChoice(Transition),
     Exit,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum UiCommand {
     ShowScene(Scene),
     ShowChoices(Choices),

@@ -14,6 +14,7 @@ edition = "2024"
 
 [workspace]
 members = [
+    "bichannel",
     "engine",
     "interface",
     "prefab",
@@ -21,6 +22,7 @@ members = [
 
 
 [dependencies]
+pipedream-bichannel = { path = "bichannel" }
 pipedream-engine = { path = "engine" }
 pipedream-interface = { path = "interface" }
 pipedream-prefab = { path = "prefab" }

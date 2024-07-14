@@ -6,10 +6,8 @@
 pub mod combat;
 pub mod core;
 pub mod state;
-pub mod bichannel;
 
 // Extern log for arbitrary provider
-pub extern crate crossbeam;
 pub extern crate fixed;
 pub extern crate log;
 pub extern crate rand;

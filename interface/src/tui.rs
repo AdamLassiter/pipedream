@@ -1,14 +1,11 @@
 use std::{
-    io,
     thread::{self, JoinHandle},
     time::Duration,
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
-use pipedream_engine::{
-    core::commands::{EngineCommand, UiCommand},
-    bichannel::{Channel, bichannel},
-};
+use pipedream_bichannel::{Bichannel, BichannelMonitor};
+use pipedream_engine::core::commands::{EngineCommand, UiCommand};
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
@@ -48,51 +45,44 @@ impl SelectedTab {
 pub struct Tui {
     current_tab: SelectedTab,
     tabs: Vec<Box<dyn Component>>,
-    channel: Channel<EngineCommand, UiCommand>,
+    channel: Bichannel<EngineCommand, UiCommand>,
     should_redraw: bool,
     exit: bool,
 }
 
 impl Tui {
-    fn new() -> (Self, Channel<UiCommand, EngineCommand>) {
-        let (ui_chan, engine_chan) = bichannel();
+    fn new(monitor: &mut BichannelMonitor<EngineCommand, UiCommand>) -> Self {
+        let channel = monitor.new_left();
 
-        let this = Self {
+        Self {
             current_tab: SelectedTab::Campaign,
             tabs: vec![
-                Box::new(CampaignComponent::new()),
-                Box::new(InventoryComponent::new()),
+                Box::new(CampaignComponent::new(monitor.new_left())),
+                Box::new(InventoryComponent::new(monitor.new_left())),
                 Box::new(LoggingComponent::new()),
             ],
-            channel: ui_chan,
+            channel,
             should_redraw: true,
             exit: false,
-        };
-
-        (this, engine_chan)
+        }
     }
 
-    pub fn spawn() -> (
-        Channel<UiCommand, EngineCommand>,
-        JoinHandle<io::Result<()>>,
-    ) {
-        let (mut app, chan) = Tui::new();
+    pub fn spawn(monitor: &mut BichannelMonitor<EngineCommand, UiCommand>) -> JoinHandle<()> {
+        let mut app = Tui::new(monitor);
 
-        (
-            chan,
-            thread::spawn(move || {
-                let mut terminal = log_utils::init()?;
-                while !app.exit {
-                    if app.should_redraw {
-                        terminal.draw(|frame| app.render_frame(frame))?;
-                        app.should_redraw = false;
-                    }
-                    app.handle_events();
+        thread::spawn(move || {
+            let mut terminal = log_utils::init().expect("Failed to init terminal state");
+            while !app.exit {
+                if app.should_redraw {
+                    terminal
+                        .draw(|frame| app.render_frame(frame))
+                        .expect("Failed to render terminal frame");
+                    app.should_redraw = false;
                 }
-                log_utils::restore()?;
-                Ok(())
-            }),
-        )
+                app.handle_events();
+            }
+            log_utils::restore().expect("Failed to restore terminal state");
+        })
     }
 
     fn exit(&mut self) {
@@ -152,12 +142,12 @@ impl Tui {
         self.tabs
             .get_mut(self.current_tab as usize)
             .unwrap_or_else(|| panic!("Failed to find current tab {}", self.current_tab))
-            .handle_key_event(key_event, &self.channel);
+            .handle_key_event(key_event);
     }
 
     fn handle_tick_event(&mut self) {
         self.tabs.iter_mut().enumerate().for_each(|(index, tab)| {
-            let tab_redraw = tab.handle_tick_event(&self.channel);
+            let tab_redraw = tab.handle_tick_event();
             if (self.current_tab as usize == index) && tab_redraw {
                 self.should_redraw = true;
             }

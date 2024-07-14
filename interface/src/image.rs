@@ -50,12 +50,8 @@ impl ImageConverter {
             self.downscale_sample(width_ratio, height_ratio, start_x, start_y);
 
         if height_ratio < 2. || width_ratio < 2. {
-            (total_channels, count) = self.upscale_interpolate(
-                width_ratio,
-                height_ratio,
-                total_channels,
-                count,
-            );
+            (total_channels, count) =
+                self.upscale_interpolate(width_ratio, height_ratio, total_channels, count);
         }
 
         (total_channels, count)
@@ -254,8 +250,6 @@ impl ToAsciiArt for ImageConverter {
             width,
             gamma,
         } = options;
-        // Superpixel aliasing
-        let width = width * 2;
 
         let width_ratio = self.image.width() as f32 / width as f32;
         let height_ratio = self.image.height() as f32 / height as f32;

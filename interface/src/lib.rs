@@ -4,13 +4,13 @@
 #![feature(let_chains)]
 
 use crossterm::event::KeyEvent;
-use pipedream_engine::{core::{choice::Choice, commands::{EngineCommand, UiCommand}, transition::Transition}, bichannel::Channel};
+use pipedream_engine::core::{choice::Choice, transition::Transition};
 use ratatui::{buffer::Buffer, layout::Rect};
 
 pub mod component;
 pub mod image;
-pub mod tui;
 pub mod log_utils;
+pub mod tui;
 pub mod widget;
 
 pub trait Controllable {
@@ -26,11 +26,7 @@ pub trait Renderable {
 }
 
 pub trait Handler {
-    fn handle_key_event(
-        &mut self,
-        key_event: KeyEvent,
-        channel: &Channel<EngineCommand, UiCommand>,
-    );
+    fn handle_key_event(&mut self, key_event: KeyEvent);
 
-    fn handle_tick_event(&mut self, channel: &Channel<EngineCommand, UiCommand>) -> bool;
+    fn handle_tick_event(&mut self) -> bool;
 }
