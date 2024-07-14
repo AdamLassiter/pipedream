@@ -12,9 +12,6 @@ pub mod npcs;
 pub mod tag_engine;
 pub mod tags;
 
-// Extern log for arbitrary provider
-extern crate log;
-
 pub trait Generatable {
     fn generate() -> Self;
 }

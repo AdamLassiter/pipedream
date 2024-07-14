@@ -1,6 +1,7 @@
-use crossterm::event::KeyCode;
-use log::LevelFilter;
+use crossterm::event::{KeyCode, KeyEvent};
 use pipedream_engine::core::commands::{EngineCommand, UiCommand};
+use pipedream_engine::log::LevelFilter;
+use pipedream_engine::bichannel::Channel;
 use ratatui::{
     prelude::{Buffer, Rect},
     style::{Color, Style},
@@ -31,8 +32,8 @@ impl Default for LoggingComponent {
 impl Handler for LoggingComponent {
     fn handle_key_event(
         &mut self,
-        key_event: crossterm::event::KeyEvent,
-        _channel: &bichannel::Channel<EngineCommand, UiCommand>,
+        key_event: KeyEvent,
+        _channel: &Channel<EngineCommand, UiCommand>,
     ) {
         match key_event.code {
             KeyCode::Char('w') | KeyCode::Up => self.log.transition(TuiWidgetEvent::UpKey),
@@ -47,10 +48,7 @@ impl Handler for LoggingComponent {
         }
     }
 
-    fn handle_tick_event(
-        &mut self,
-        _channel: &bichannel::Channel<EngineCommand, UiCommand>,
-    ) -> bool {
+    fn handle_tick_event(&mut self, _channel: &Channel<EngineCommand, UiCommand>) -> bool {
         true // Always re-draw
     }
 }

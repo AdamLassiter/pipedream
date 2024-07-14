@@ -5,7 +5,7 @@ use std::path::Path;
 
 use image::io::Reader;
 use image::{DynamicImage, GenericImageView, Pixel};
-use log::debug;
+use pipedream_engine::log::debug;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span, Text};
 

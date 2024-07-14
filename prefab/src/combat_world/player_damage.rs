@@ -1,4 +1,4 @@
-use log::debug;
+use pipedream_engine::log::debug;
 
 use crate::combat_world::{COMBAT_END, PLAYER_DAMAGE};
 use pipedream_engine::{
@@ -61,7 +61,7 @@ pub fn player_damamge(machine: &CombatStateMachine) -> State {
             let calculated_dmg = calculate_damage(assist_stat, resist_stat, damage_val);
             Action::Subtract(
                 format!(
-                    "{}:{}:{}/{}",
+                    "{}:{}:{}={}",
                     target,
                     Ent::Resource,
                     dmg_type,

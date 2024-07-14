@@ -24,6 +24,3 @@ members = [
 pipedream-engine = { path = "engine" }
 pipedream-interface = { path = "interface" }
 pipedream-prefab = { path = "prefab" }
-
-bichannel = "0.0.4"
-log = { version = "0.4.21", features = ["kv"] }

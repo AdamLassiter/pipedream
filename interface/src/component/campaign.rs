@@ -1,14 +1,15 @@
 use std::time::Instant;
 
 use crate::{component::Component, Controllable, Handler, Renderable};
-use bichannel::Channel;
 use crossterm::event::{KeyCode, KeyEvent};
-use log::debug;
-use pipedream_engine::core::{
-    choice::{ChoiceType, Choices},
-    commands::{EngineCommand, UiCommand},
-    scene::Scene,
-    tags::Tags,
+use pipedream_engine::{
+    core::{
+        choice::{ChoiceType, Choices},
+        commands::{EngineCommand, UiCommand},
+        scene::Scene,
+        tags::Tags,
+    },
+    log::debug, bichannel::Channel,
 };
 use ratatui::prelude::*;
 

@@ -125,8 +125,8 @@ impl Generatable for CampaignWorld {
                         effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Subtract("player:item:sword/1".into()),
-                                Action::Add("player:item:sword/2".into()),
+                                Action::Subtract("player:item:sword=1".into()),
+                                Action::Add("player:item:sword=2".into()),
                             ],
                         },
                         ..Default::default()
@@ -137,18 +137,18 @@ impl Generatable for CampaignWorld {
                         predicate: Some(Predicate::Tag("player:item:sword".into())),
                         effect: Transition {
                             next: TransitionType::None,
-                            actions: vec![Action::Multiply("player:item:sword/2".into())],
+                            actions: vec![Action::Multiply("player:item:sword=2".into())],
                         },
                         ..Default::default()
                     },
                     Choice {
                         summary: "Forge a pair of swords into a cursed ring".into(),
                         image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face3.png".into()),
-                        predicate: Some(Predicate::Tag("player:item:sword/2".into())),
+                        predicate: Some(Predicate::Tag("player:item:sword=2".into())),
                         effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Subtract("player:item:sword/2".into()),
+                                Action::Subtract("player:item:sword=2".into()),
                                 Action::Add("player:item:cursed-ring".into()),
                             ],
                         },
@@ -157,12 +157,12 @@ impl Generatable for CampaignWorld {
                     Choice {
                         summary: "Forge every pair of swords into a cursed ring".into(),
                         image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face4.png".into()),
-                        predicate: Some(Predicate::Tag("player:item:sword/2".into())),
+                        predicate: Some(Predicate::Tag("player:item:sword=2".into())),
                         effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Divide("player:item:sword/2".into()),
-                                Action::Add("player:item:cursed-ring/player:item:sword".into()),
+                                Action::Divide("player:item:sword=2".into()),
+                                Action::Add("player:item:cursed-ring=player:item:sword".into()),
                             ],
                         },
                         ..Default::default()

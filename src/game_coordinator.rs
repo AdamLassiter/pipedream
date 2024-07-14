@@ -4,15 +4,14 @@ use std::thread::JoinHandle;
 use std::time;
 
 use pipedream_engine::{
+    bichannel::Channel,
     core::{
         commands::{EngineCommand, UiCommand},
         transition::Transition,
     },
+    log::debug,
     state::campaign_state_machine::CampaignStateMachine,
 };
-
-use bichannel::Channel;
-use log::debug;
 
 pub struct GameCoordinator {
     pub campaign: CampaignStateMachine,

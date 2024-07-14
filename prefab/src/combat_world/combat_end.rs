@@ -1,4 +1,4 @@
-use log::debug;
+use pipedream_engine::log::debug;
 
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},

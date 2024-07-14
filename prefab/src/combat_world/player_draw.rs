@@ -1,8 +1,5 @@
 use std::{iter::repeat_n, time::Duration};
 
-use log::debug;
-use rand::prelude::SliceRandom;
-
 use crate::combat_world::{PLAYER_DRAW, PLAYER_PLAY};
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
@@ -13,6 +10,8 @@ use pipedream_engine::{
         tags::{Tag, TagKey, TagValue, FI64},
         transition::{Transition, TransitionType},
     },
+    log::debug,
+    rand::{prelude::SliceRandom, thread_rng},
     state::combat_state_machine::CombatStateMachine,
 };
 
@@ -82,7 +81,7 @@ fn draw_cards(player_deck_slice: Vec<Tag>, player_draw_count: FI64) -> Vec<TagKe
         })
         .collect::<Vec<_>>();
 
-    player_deck_slice.shuffle(&mut rand::thread_rng());
+    player_deck_slice.shuffle(&mut thread_rng());
 
     let player_draw_cards = player_deck_slice
         .into_iter()

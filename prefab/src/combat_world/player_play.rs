@@ -1,6 +1,6 @@
 use std::iter::repeat_n;
 
-use log::debug;
+use pipedream_engine::log::debug;
 
 use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
 use pipedream_engine::{

@@ -1,4 +1,4 @@
-use log::LevelFilter;
+use pipedream_engine::log::LevelFilter;
 use tui_logger;
 
 use std::{
@@ -20,8 +20,8 @@ pub fn init() -> io::Result<Tui> {
     let tui = Terminal::new(CrosstermBackend::new(stdout()));
 
     if true {
-        tui_logger::init_logger(log::LevelFilter::Trace).expect("Failed to initialise logger");
-        tui_logger::set_default_level(log::LevelFilter::Trace);
+        tui_logger::init_logger(LevelFilter::Trace).expect("Failed to initialise logger");
+        tui_logger::set_default_level(LevelFilter::Trace);
     } else {
         init_logfile();
     }

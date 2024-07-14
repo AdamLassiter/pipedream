@@ -3,9 +3,8 @@
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
 
-use bichannel::Channel;
 use crossterm::event::KeyEvent;
-use pipedream_engine::core::{choice::Choice, commands::{EngineCommand, UiCommand}, transition::Transition};
+use pipedream_engine::{core::{choice::Choice, commands::{EngineCommand, UiCommand}, transition::Transition}, bichannel::Channel};
 use ratatui::{buffer::Buffer, layout::Rect};
 
 pub mod component;
@@ -13,9 +12,6 @@ pub mod image;
 pub mod tui;
 pub mod log_utils;
 pub mod widget;
-
-// Extern log for arbitrary provider
-extern crate log;
 
 pub trait Controllable {
     fn handle_key_event(&mut self, key_event: KeyEvent);

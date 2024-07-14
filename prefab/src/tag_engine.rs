@@ -1,7 +1,7 @@
-use log::debug;
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
     core::tags::{Static, TagKey, Tags},
+    log::debug,
     state::tag_engine::TagEngine,
 };
 
@@ -36,16 +36,18 @@ impl Generatable for TagEngine {
                 // World
                 "woods:entrance:item:sword".into(),
                 // Player
-                "player:draw:count/4".into(),
+                "player:name:Plae-Yerr".into(),
+                "player:image:resources/rpg/fairy-avatar-icons-32x32-pixel-art/png/transperent/icon24.png".into(),
+                "player:draw:count=4".into(),
                 // Resources
-                "player:resource:health/20".into(),
-                "player:resource:stamina/20".into(),
-                "player:resource:mana/20".into(),
-                "player:resource:faith/20".into(),
+                "player:resource:health=20".into(),
+                "player:resource:stamina=20".into(),
+                "player:resource:mana=20".into(),
+                "player:resource:faith=20".into(),
                 // Deck
                 "player:deck:Anathema Device".into(),
                 "player:deck:Bag of Endless Bags".into(),
-                "player:deck:Regular Punch/3".into(),
+                "player:deck:Regular Punch=3".into(),
                 "player:deck:Immolate".into(),
             ]),
         }

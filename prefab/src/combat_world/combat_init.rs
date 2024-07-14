@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use log::debug;
+use pipedream_engine::log::debug;
 
 use crate::{
     combat_world::{COMBAT_INIT, PLAYER_DRAW},
@@ -28,8 +28,8 @@ pub fn combat_init(machine: &CombatStateMachine) -> State {
     let enemy_data = machine.combat_world.npcs.find(enemy);
 
     let initial_actions = vec![
-        format!("{}/{}", ME_REF.0, Tgt::Player).into(),
-        format!("{}/{}", YOU_REF.0, Tgt::Enemy).into(),
+        format!("{}={}", ME_REF.0, Tgt::Player).into(),
+        format!("{}={}", YOU_REF.0, Tgt::Enemy).into(),
     ]
     .into_iter()
     .chain(enemy_data.tags.find(&TagKey("".to_string())))

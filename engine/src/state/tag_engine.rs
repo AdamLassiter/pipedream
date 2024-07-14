@@ -75,7 +75,7 @@ impl TagEngine {
                     "Expected Number value when checking comparison value for key {:?}, but was Tag {:?}",
                     key, tk
                 ),
-                None => panic!()
+                None => panic!("Expecting value for key {:?} but was None", key)
             },
             TagValue::Number(value) => value,
         };

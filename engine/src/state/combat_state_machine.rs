@@ -64,7 +64,7 @@ impl CombatStateMachine {
                 self.current.push(next);
             }
             TransitionType::Combat(_init) => {
-                panic!(); // Can't combat while in combat
+                panic!("Can't enter combat while already in combat");
             }
             TransitionType::None => {}
         };

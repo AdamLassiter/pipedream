@@ -4,6 +4,3 @@
 #![feature(let_chains)]
 
 pub mod game_coordinator;
-
-// Extern log for arbitrary provider
-extern crate log;

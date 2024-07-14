@@ -4,9 +4,11 @@ use std::{
     time::Duration,
 };
 
-use bichannel::{channel, Channel};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
-use pipedream_engine::core::commands::{EngineCommand, UiCommand};
+use pipedream_engine::{
+    core::commands::{EngineCommand, UiCommand},
+    bichannel::{Channel, bichannel},
+};
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
@@ -53,7 +55,7 @@ pub struct Tui {
 
 impl Tui {
     fn new() -> (Self, Channel<UiCommand, EngineCommand>) {
-        let (ui_chan, engine_chan) = channel();
+        let (ui_chan, engine_chan) = bichannel();
 
         let this = Self {
             current_tab: SelectedTab::Campaign,

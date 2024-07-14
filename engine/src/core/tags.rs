@@ -18,7 +18,7 @@ pub type Static<T> = LazyLock<T>;
 pub type FI64 = FixedI64<U16>;
 
 pub static KEY_SEP: char = ':';
-pub static VAL_SEP: char = '/';
+pub static VAL_SEP: char = '=';
 
 static MAX_RESOLVE_DEPTH: usize = 256;
 
@@ -42,7 +42,7 @@ impl std::fmt::Display for Tag {
             .get(self.key.trailing_key())
             .copied()
             .unwrap_or("x");
-        f.write_str(format!("<{} {}/{}>", style, self.key.trailing_key(), self.value).as_str())
+        f.write_str(format!("<{} {}={}>", style, self.key.trailing_key(), self.value).as_str())
     }
 }
 
