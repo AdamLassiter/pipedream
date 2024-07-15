@@ -11,16 +11,16 @@ use ratatui::text::{Line, Span, Text};
 
 #[derive(Debug)]
 pub struct AsciiOptions {
-    pub width: u16,
-    pub height: u16,
+    pub height: Option<u16>,
+    pub width: Option<u16>,
     pub gamma: f32,
 }
 
 impl Default for AsciiOptions {
     fn default() -> Self {
         Self {
-            width: Default::default(),
             height: Default::default(),
+            width: Default::default(),
             gamma: 1.0,
         }
     }
@@ -32,27 +32,28 @@ pub trait ToAsciiArt {
 
 pub struct ImageConverter {
     image: DynamicImage,
+    threshold: f32,
 }
 
 impl ImageConverter {
     pub fn new(image: DynamicImage) -> Self {
-        Self { image }
+        Self {
+            image,
+            threshold: 256. / 3.,
+        }
     }
 
     fn sum_channels(
         &self,
-        height_ratio: f32,
         width_ratio: f32,
+        height_ratio: f32,
         start_x: u32,
         start_y: u32,
     ) -> ([[[f32; 4]; 2]; 2], [[i32; 2]; 2]) {
         let (mut total_channels, mut count) =
             self.downscale_sample(width_ratio, height_ratio, start_x, start_y);
-
-        if height_ratio < 2. || width_ratio < 2. {
-            (total_channels, count) =
-                self.upscale_interpolate(width_ratio, height_ratio, total_channels, count);
-        }
+        (total_channels, count) =
+            self.upscale_interpolate(width_ratio, height_ratio, total_channels, count);
 
         (total_channels, count)
     }
@@ -114,6 +115,7 @@ impl ImageConverter {
     }
 
     fn mean_channels(
+        &self,
         channels: [[[f32; 4]; 2]; 2],
         count: [[i32; 2]; 2],
         gamma: f32,
@@ -132,7 +134,10 @@ impl ImageConverter {
         mean_channels
     }
 
-    fn two_means_cluster_iter(clusters: [Vec<[u8; 4]>; 2]) -> ([[f32; 4]; 2], [Vec<[u8; 4]>; 2]) {
+    fn two_means_cluster_iter(
+        &self,
+        clusters: [Vec<[u8; 4]>; 2],
+    ) -> ([[f32; 4]; 2], [Vec<[u8; 4]>; 2]) {
         let mut new_centres = [[0.0; 4]; 2];
         for x in 0..clusters.len() {
             let cluster = &clusters[x];
@@ -169,14 +174,14 @@ impl ImageConverter {
         (new_centres, new_clusters)
     }
 
-    fn two_means_cluster(points: Vec<[u8; 4]>) -> ([[f32; 4]; 2], [Vec<[u8; 4]>; 2]) {
+    fn two_means_cluster(&self, points: Vec<[u8; 4]>) -> ([[f32; 4]; 2], [Vec<[u8; 4]>; 2]) {
         let (l, r) = points.split_at(1);
         let mut init_clusters = [l.to_vec(), r.to_vec()];
         let mut next_centres;
         let mut next_clusters;
 
         while {
-            (next_centres, next_clusters) = Self::two_means_cluster_iter(init_clusters.clone());
+            (next_centres, next_clusters) = self.two_means_cluster_iter(init_clusters.clone());
 
             if next_clusters == init_clusters {
                 false
@@ -190,13 +195,13 @@ impl ImageConverter {
     }
 
     fn subpixel_render(
+        &self,
         channels: [[[u8; 4]; 2]; 2],
         centres: [[f32; 4]; 2],
         clusters: [Vec<[u8; 4]>; 2],
     ) -> (char, Style) {
-        let threshold = 10.;
         let colors = centres.map(|[r, g, b, a]| {
-            Some(Color::Rgb(r as u8, g as u8, b as u8)).filter(|_| a > threshold)
+            Some(Color::Rgb(r as u8, g as u8, b as u8)).filter(|_| a > self.threshold)
         });
 
         let (primary_idx, secondary_idx) = if colors[0].is_none() { (1, 0) } else { (0, 1) };
@@ -205,9 +210,9 @@ impl ImageConverter {
         for sub_x in 0..2 {
             for sub_y in 0..2 {
                 if clusters[primary_idx].contains(&channels[sub_x][sub_y])
-                    && centres[primary_idx][3] > threshold
+                    && centres[primary_idx][3] > self.threshold
                 {
-                    bitmask += 2_u8.pow((sub_x + 2 * sub_y) as u32);
+                    bitmask += 1 << (sub_x + 2 * sub_y);
                 }
             }
         }
@@ -251,8 +256,21 @@ impl ToAsciiArt for ImageConverter {
             gamma,
         } = options;
 
-        let width_ratio = self.image.width() as f32 / width as f32;
-        let height_ratio = self.image.height() as f32 / height as f32;
+        let (width_ratio, height_ratio) = match (height, width) {
+            (Some(_), Some(_)) | (None, None) => panic!("Expected just one dimension for image"),
+            (Some(height), None) => (
+                self.image.height() as f32 / 2. / height as f32,
+                self.image.height() as f32 / height as f32,
+            ),
+            (None, Some(width)) => (
+                self.image.width() as f32 / width as f32,
+                self.image.width() as f32 * 2. / width as f32,
+            ),
+        };
+
+        let width = (self.image.width() as f32 / width_ratio) as u16;
+        let height = (self.image.height() as f32 / height_ratio) as u16;
+
         debug!(target:"Image/Ratios", "{:?}", (width_ratio, height_ratio));
 
         let mut lines = vec![];
@@ -263,11 +281,11 @@ impl ToAsciiArt for ImageConverter {
                 let start_y = (y as f32 * height_ratio) as u32;
 
                 let (total_channels, count) =
-                    self.sum_channels(height_ratio, width_ratio, start_x, start_y);
-                let mean_channels = Self::mean_channels(total_channels, count, gamma);
+                    self.sum_channels(width_ratio, height_ratio, start_x, start_y);
+                let mean_channels = self.mean_channels(total_channels, count, gamma);
                 let (centres, clusters) =
-                    Self::two_means_cluster(mean_channels.as_flattened().to_vec());
-                let (character, style) = Self::subpixel_render(mean_channels, centres, clusters);
+                    self.two_means_cluster(mean_channels.as_flattened().to_vec());
+                let (character, style) = self.subpixel_render(mean_channels, centres, clusters);
                 line.push(Span::from(character.to_string()).style(style));
             }
 

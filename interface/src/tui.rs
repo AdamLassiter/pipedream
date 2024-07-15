@@ -97,7 +97,7 @@ impl Tui {
     }
 
     fn handle_events(&mut self) {
-        while event::poll(Duration::from_millis(50))
+        while event::poll(Duration::from_millis(10))
             .expect("Event pollng error while handling events")
         {
             match event::read().expect("Event read error while handling events") {

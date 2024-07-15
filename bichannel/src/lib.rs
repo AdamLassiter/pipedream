@@ -15,72 +15,73 @@ use crossbeam::channel::{
 
 pub struct Bichannel<Send, Recv>(Sender<Send>, Receiver<Recv>);
 
-pub struct BichannelMonitor<Left, Right>(
-    #[allow(clippy::type_complexity)]
-    Arc<Mutex<(Vec<Bichannel<Left, Right>>, Vec<Bichannel<Right, Left>>)>>,
-)
+#[derive(Clone)]
+pub struct BichannelMonitor<Left, Right>
 where
     Left: Send + Sync + Clone + 'static,
-    Right: Send + Sync + Clone + 'static;
+    Right: Send + Sync + Clone + 'static,
+{
+    // Clone to make new bichannels
+    send_l: Sender<Left>,
+    send_r: Sender<Right>,
+
+    // Attacned to returned bichannels, shared with thread to forward to
+    frwd_l: Arc<Mutex<Vec<Sender<Left>>>>,
+    frwd_r: Arc<Mutex<Vec<Sender<Right>>>>,
+}
 
 impl<Left: Send + Sync + Clone, Right: Send + Sync + Clone> BichannelMonitor<Left, Right> {
-    fn new() -> Self {
-        Self(Arc::new(Mutex::new((vec![], vec![]))))
-    }
-
     pub fn spawn() -> (Self, JoinHandle<()>) {
-        let this = Self::new();
-        let fanout;
+        let (send_l, recv_l) = unbounded::<Left>();
+        let (send_r, recv_r) = unbounded::<Right>();
+
+        let this = Self {
+            send_l,
+            send_r,
+            frwd_l: Arc::new(Mutex::new(vec![])),
+            frwd_r: Arc::new(Mutex::new(vec![])),
+        };
+
+        let fanout_thread;
         {
-            let this = Self(Arc::clone(&this.0));
-            fanout = thread::spawn(move || loop {
+            let this = this.clone();
+            fanout_thread = thread::spawn(move || loop {
                 {
-                    let channels = this.0.lock().unwrap();
-                    channels.0.iter().for_each(|receiver| {
-                        while let Ok(mesg) = receiver.try_recv() {
-                            channels.1.iter().for_each(|sender| {
-                                sender.send(mesg.clone()).expect(
-                                "Monitor failed to forward upstream message to downstream channel",
-                            )
-                            });
-                        }
-                    });
-                    channels.1.iter().for_each(|receiver| {
-                        while let Ok(mesg) = receiver.try_recv() {
-                            channels.0.iter().for_each(|sender| {
-                                sender.send(mesg.clone()).expect(
-                                "Monitor failed to forward upstream message to downstream channel",
-                            )
-                            });
-                        }
-                    });
+                    let frwd_l = this.frwd_l.lock().unwrap();
+                    while let Ok(mesg) = recv_l.try_recv() {
+                        frwd_l.iter().for_each(|sender| {
+                            sender.send(mesg.clone()).expect(
+                            "Monitor failed to forward upstream message to downstream channel",
+                        )
+                        });
+                    }
                 }
-                thread::sleep(Duration::from_millis(5));
+                {
+                    let frwd_r = this.frwd_r.lock().unwrap();
+                    while let Ok(mesg) = recv_r.try_recv() {
+                        frwd_r.iter().for_each(|sender| {
+                            sender.send(mesg.clone()).expect(
+                            "Monitor failed to forward upstream message to downstream channel",
+                        )
+                        });
+                    }
+                }
+                thread::sleep(Duration::from_millis(1));
             });
         }
-        (this, fanout)
+        (this, fanout_thread)
     }
 
     pub fn new_left(&mut self) -> Bichannel<Left, Right> {
-        let (send_left, recv_left) = unbounded::<Left>();
-        let (send_right, recv_right) = unbounded::<Right>();
-        self.0
-            .lock()
-            .unwrap()
-            .1
-            .push(Bichannel(send_right, recv_left));
-        Bichannel(send_left, recv_right)
+        let (send_r, recv_r) = unbounded::<Right>();
+        self.frwd_r.lock().unwrap().push(send_r);
+        Bichannel(self.send_l.clone(), recv_r)
     }
 
     pub fn new_right(&mut self) -> Bichannel<Right, Left> {
-        let (send_left, recv_left) = unbounded::<Left>();
-        let (send_right, recv_right) = unbounded::<Right>();
-        self.0
-            .lock()
-            .unwrap()
-            .0
-            .push(Bichannel(send_left, recv_right));
-        Bichannel(send_right, recv_left)
+        let (send_l, recv_l) = unbounded::<Left>();
+        self.frwd_l.lock().unwrap().push(send_l);
+        Bichannel(self.send_r.clone(), recv_l)
     }
 }
 

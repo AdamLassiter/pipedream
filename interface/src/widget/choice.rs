@@ -81,6 +81,12 @@ impl Renderable for Choice {
         let details_size_hint = self.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
+        let [_space, area] = Layout::vertical([
+            Constraint::Fill(1),
+            Constraint::Length(if details_size_hint > 0 { 24 } else { 32 } as u16 + 2),
+        ])
+        .areas(area);
+
         let mut block = Block::default()
             .borders(Borders::ALL)
             .border_set(border::ROUNDED);
@@ -119,10 +125,16 @@ impl Renderable for Choice {
 
         if let Some(image) = &self.image {
             let image = ImageConverter::from(&PathBuf::from(image));
-            let options = AsciiOptions {
-                height: ascii_area.height,
-                width: ascii_area.width,
-                ..Default::default()
+            let options = if self.details.is_empty() {
+                AsciiOptions {
+                    width: Some(ascii_area.width),
+                    ..Default::default()
+                }
+            } else {
+                AsciiOptions {
+                    height: Some(16),
+                    ..Default::default()
+                }
             };
             let ascii_text = image.to_ascii_art(Some(options));
             Paragraph::new(ascii_text)

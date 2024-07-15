@@ -9,11 +9,11 @@ use ratatui::prelude::*;
 
 use super::scene_and_choices::SceneAndChoicesHandler;
 
-pub struct CampaignComponent {
+pub struct CombatComponent {
     inner: SceneAndChoicesHandler,
 }
 
-impl CampaignComponent {
+impl CombatComponent {
     pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
             inner: SceneAndChoicesHandler::new(channel),
@@ -21,7 +21,7 @@ impl CampaignComponent {
     }
 }
 
-impl Handler for CampaignComponent {
+impl Handler for CombatComponent {
     fn handle_tick_event(&mut self) -> bool {
         self.inner.handle_tick_event()
     }
@@ -31,7 +31,7 @@ impl Handler for CampaignComponent {
     }
 }
 
-impl Renderable for CampaignComponent {
+impl Renderable for CombatComponent {
     fn render(&self, area: Rect, buf: &mut Buffer) {
         let stats_size_hint = 5_u16;
         let scene_size_hint = self
@@ -92,4 +92,4 @@ impl Renderable for CampaignComponent {
     }
 }
 
-impl Component for CampaignComponent {}
+impl Component for CombatComponent {}
