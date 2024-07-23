@@ -1,3 +1,6 @@
+mod campaign_scene;
+mod combat_scene;
+
 use std::time::Instant;
 
 use crate::{Controllable, Handler, Renderable, TickResult};
@@ -12,10 +15,11 @@ use pipedream_engine::{
     },
     log::debug,
 };
+use ratatui::prelude::*;
 
-use super::{campaign::render_campaign, combat::render_combat, Component};
+use super::Component;
 
-pub struct SceneAndChoicesComponent {
+pub struct SceneComponent {
     pub channel: Bichannel<EngineCommand, UiCommand>,
     pub scene: Option<Scene>,
     pub options: Option<Choices>,
@@ -24,7 +28,7 @@ pub struct SceneAndChoicesComponent {
     ui_mode: UiMode,
 }
 
-impl SceneAndChoicesComponent {
+impl SceneComponent {
     pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
             channel,
@@ -51,7 +55,7 @@ impl SceneAndChoicesComponent {
     }
 }
 
-impl Handler for SceneAndChoicesComponent {
+impl Handler for SceneComponent {
     fn handle_tick_event(&mut self) -> TickResult {
         let mut should_redraw = false;
 
@@ -101,13 +105,13 @@ impl Handler for SceneAndChoicesComponent {
     }
 }
 
-impl Renderable for SceneAndChoicesComponent {
-    fn render(&self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer) {
+impl Renderable for SceneComponent {
+    fn render(&self, area: Rect, buf: &mut Buffer) {
         match self.ui_mode {
-            UiMode::Campaign => render_campaign(self, area, buf),
-            UiMode::Combat => render_combat(self, area, buf),
+            UiMode::Campaign => self.render_campaign(area, buf),
+            UiMode::Combat => self.render_combat(area, buf),
         }
     }
 }
 
-impl Component for SceneAndChoicesComponent {}
+impl Component for SceneComponent {}

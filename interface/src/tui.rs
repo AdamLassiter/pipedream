@@ -5,9 +5,7 @@ use std::{
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use pipedream_bichannel::{Bichannel, BichannelMonitor};
-use pipedream_engine::{
-    core::command::{EngineCommand, UiCommand},
-};
+use pipedream_engine::core::command::{EngineCommand, UiCommand};
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
@@ -24,8 +22,7 @@ use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use crate::{
     component::{
-        inventory::InventoryComponent, logging::LoggingComponent,
-        scene_and_choices::SceneAndChoicesComponent, Component,
+        inventory::InventoryComponent, logging::LoggingComponent, scene::SceneComponent, Component,
     },
     log_utils,
     widget::instructions::instructions,
@@ -59,7 +56,7 @@ impl Tui {
         Self {
             current_tab: SelectedTab::Campaign,
             tabs: vec![
-                Box::new(SceneAndChoicesComponent::new(monitor.new_left())),
+                Box::new(SceneComponent::new(monitor.new_left())),
                 Box::new(InventoryComponent::new(monitor.new_left())),
                 Box::new(LoggingComponent::new()),
             ],
