@@ -7,4 +7,4 @@ pub mod tags;
 pub mod transition;
 pub mod location;
 pub mod predicate;
-pub mod commands;
+pub mod command;

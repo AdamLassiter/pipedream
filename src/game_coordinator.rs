@@ -5,7 +5,7 @@ use std::time;
 use pipedream_bichannel::{Bichannel, BichannelMonitor};
 use pipedream_engine::{
     core::{
-        commands::{EngineCommand, UiCommand},
+        command::{EngineCommand, UiCommand},
         transition::Transition,
     },
     log::debug,

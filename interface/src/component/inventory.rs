@@ -1,8 +1,8 @@
-use crate::{Handler, Renderable};
+use crate::{Handler, Renderable, TickResult};
 use crossterm::event::KeyEvent;
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::core::{
-    commands::{EngineCommand, UiCommand},
+    command::{EngineCommand, UiCommand},
     tags::Tags,
 };
 use ratatui::prelude::*;
@@ -24,7 +24,7 @@ impl InventoryComponent {
 }
 
 impl Handler for InventoryComponent {
-    fn handle_tick_event(&mut self) -> bool {
+    fn handle_tick_event(&mut self) -> TickResult {
         let mut should_redraw = false;
 
         while let Ok(ev) = self.channel.try_recv() {
@@ -35,7 +35,9 @@ impl Handler for InventoryComponent {
             should_redraw = true;
         }
 
-        should_redraw
+        TickResult {
+            should_redraw,
+        }
     }
 
     fn handle_key_event(&mut self, _key_event: KeyEvent) {

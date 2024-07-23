@@ -13,10 +13,10 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::core::{
+use pipedream_engine::{core::{
     choice::{Choice, ChoiceType, Choices},
     transition::Transition,
-};
+}, log::debug};
 
 use crate::{
     image::{AsciiOptions, ImageConverter, ToAsciiArt},
@@ -162,6 +162,7 @@ impl Renderable for Choice {
 
 impl Renderable for (&[Choice], usize) {
     fn render(&self, summary_area: Rect, buf: &mut Buffer) {
+        debug!(target:"Render/Choice", "render choices");
         let (choices, cursor) = self;
         let mut state = ListState::default().with_selected(Some(*cursor));
 
@@ -171,9 +172,10 @@ impl Renderable for (&[Choice], usize) {
                 let Choice {
                     summary,
                     selectable,
+                    predicate,
                     ..
                 } = choice;
-                let description = if let Some(pred) = &choice.predicate {
+                let description = if let Some(pred) = predicate {
                     format!("{} [{}]", summary, pred)
                 } else {
                     summary.to_string()

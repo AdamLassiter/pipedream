@@ -11,4 +11,11 @@ pub enum UiCommand {
     ShowScene(Scene),
     ShowChoices(Choices),
     ShowTags(Tags),
+    ChangeMode(UiMode),
+}
+
+#[derive(Debug, Clone)]
+pub enum UiMode {
+    Campaign,
+    Combat,
 }

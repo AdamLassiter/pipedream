@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::{
     choice::{Choice, ChoiceType},
-    commands::UiCommand,
+    command::{UiCommand, UiMode},
     description::Description,
     location::Location,
     predicate::Predicate,
@@ -98,7 +98,9 @@ impl CampaignStateMachine {
                     .expect("Failed to get Campaign -> Combat exporter")(
                     self
                 ));
-                return Some(combat_init.next_options());
+                let mut enter_combat_cmds = vec![UiCommand::ChangeMode(UiMode::Combat)];
+                enter_combat_cmds.extend(combat_init.next_options());
+                return Some(enter_combat_cmds);
             }
             TransitionType::None => {}
         };

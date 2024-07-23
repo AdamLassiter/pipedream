@@ -7,7 +7,7 @@ use ratatui::{
 };
 use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget, TuiWidgetEvent, TuiWidgetState};
 
-use crate::{component::Component, Handler, Renderable};
+use crate::{component::Component, Handler, Renderable, TickResult};
 
 pub struct LoggingComponent {
     log: TuiWidgetState,
@@ -42,8 +42,10 @@ impl Handler for LoggingComponent {
         }
     }
 
-    fn handle_tick_event(&mut self) -> bool {
-        true // Always re-draw
+    fn handle_tick_event(&mut self) -> TickResult {
+        TickResult {
+            should_redraw: true,
+        }
     }
 }
 

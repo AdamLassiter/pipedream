@@ -1,9 +1,9 @@
 use crate::{Handler, Renderable};
 
-pub mod campaign;
+mod campaign;
+mod combat;
 pub mod inventory;
 pub mod logging;
-mod scene_and_choices;
-pub mod combat;
+pub mod scene_and_choices;
 
 pub trait Component: Handler + Renderable + Send {}

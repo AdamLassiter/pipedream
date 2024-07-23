@@ -28,5 +28,9 @@ pub trait Renderable {
 pub trait Handler {
     fn handle_key_event(&mut self, key_event: KeyEvent);
 
-    fn handle_tick_event(&mut self) -> bool;
+    fn handle_tick_event(&mut self) -> TickResult;
+}
+
+pub struct TickResult {
+    pub should_redraw: bool,
 }

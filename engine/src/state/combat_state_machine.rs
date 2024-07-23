@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use crate::core::{
     choice::{Choice, ChoiceType},
-    commands::UiCommand,
+    command::{UiCommand, UiMode},
     description::Description,
     location::Location,
     predicate::Predicate,
@@ -20,7 +20,7 @@ pub struct CombatStateMachine {
     #[serde(skip_serializing)]
     pub exporter: fn(&Self) -> Transition,
     pub tag_engine: TagEngine,
-    pub current: Vec<Location>,
+    pub current: Option<Location>,
 }
 
 impl CombatStateMachine {
@@ -34,34 +34,41 @@ impl CombatStateMachine {
             combat_world,
             exporter,
             tag_engine,
-            current: vec![start],
+            current: Some(start),
         }
     }
 
     pub fn handle_effect(&mut self, side_effect: Transition) -> Result<Vec<UiCommand>, Transition> {
         self.tag_engine.handle_actions(&side_effect.actions);
-        self.handle_transition(side_effect);
+        let handle_transition = self.handle_transition(side_effect).map(Ok);
+        debug!(target:"Handle/CombatTransition", "{:?}", handle_transition);
 
-        if self.current.is_empty() {
-            Err((self.exporter)(self))
-        } else {
-            Ok(self.next_options())
-        }
+        let handle_combat = handle_transition.unwrap_or_else(|| {
+            if self.current.is_none() {
+                Err((self.exporter)(self))
+            } else {
+                Ok(self.next_options())
+            }
+        });
+        debug!(target:"Handle/Combat", "{:?}", handle_combat);
+
+        handle_combat
     }
 
-    fn handle_transition(&mut self, side_effect: Transition) {
+    fn handle_transition(&mut self, side_effect: Transition) -> Option<Vec<UiCommand>> {
         debug!(target:"Event/Transition", "{:?}", side_effect.next);
 
         match side_effect.next {
             TransitionType::Leave => {
-                self.current.pop();
+                self.current = None;
+                let exit_combat_cmds = vec![UiCommand::ChangeMode(UiMode::Campaign)];
+                return Some(exit_combat_cmds);
             }
             TransitionType::Enter(next) => {
-                self.current.push(next);
+                self.current = Some(next);
             }
             TransitionType::Goto(next) => {
-                self.current.pop();
-                self.current.push(next);
+                self.current = Some(next);
             }
             TransitionType::Combat(_init) => {
                 panic!("Can't enter combat while already in combat");
@@ -70,6 +77,7 @@ impl CombatStateMachine {
         };
 
         debug!(target:"State/Location", "{:?}", self.current);
+        None
     }
 
     pub fn next_options(&mut self) -> Vec<UiCommand> {
@@ -105,7 +113,7 @@ impl CombatStateMachine {
     fn current_state(&self) -> State {
         let state_fn = self.combat_world.get_state(
             self.current
-                .last()
+                .as_ref()
                 .expect("Location stack empty, cannot find current state"),
         );
 

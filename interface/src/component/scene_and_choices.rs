@@ -1,27 +1,30 @@
 use std::time::Instant;
 
-use crate::{Controllable, Handler};
+use crate::{Controllable, Handler, Renderable, TickResult};
 use crossterm::event::{KeyCode, KeyEvent};
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
     core::{
         choice::{ChoiceType, Choices},
-        commands::{EngineCommand, UiCommand},
+        command::{EngineCommand, UiCommand, UiMode},
         scene::Scene,
         tags::Tags,
     },
     log::debug,
 };
 
-pub struct SceneAndChoicesHandler {
+use super::{campaign::render_campaign, combat::render_combat, Component};
+
+pub struct SceneAndChoicesComponent {
     pub channel: Bichannel<EngineCommand, UiCommand>,
     pub scene: Option<Scene>,
     pub options: Option<Choices>,
     pub tags: Option<Tags>,
     pub wake_time: Option<Instant>,
+    ui_mode: UiMode,
 }
 
-impl SceneAndChoicesHandler {
+impl SceneAndChoicesComponent {
     pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
             channel,
@@ -29,6 +32,7 @@ impl SceneAndChoicesHandler {
             options: None,
             tags: None,
             wake_time: None,
+            ui_mode: UiMode::Campaign,
         }
     }
 
@@ -47,8 +51,8 @@ impl SceneAndChoicesHandler {
     }
 }
 
-impl Handler for SceneAndChoicesHandler {
-    fn handle_tick_event(&mut self) -> bool {
+impl Handler for SceneAndChoicesComponent {
+    fn handle_tick_event(&mut self) -> TickResult {
         let mut should_redraw = false;
 
         if let Some(Choices {
@@ -75,11 +79,14 @@ impl Handler for SceneAndChoicesHandler {
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowChoices(opts) => self.options = Some(opts),
                 UiCommand::ShowTags(tags) => self.tags = Some(tags),
+                UiCommand::ChangeMode(mode) => {
+                    self.ui_mode = mode;
+                }
             }
             should_redraw = true;
         }
 
-        should_redraw
+        TickResult { should_redraw }
     }
 
     fn handle_key_event(&mut self, key_event: KeyEvent) {
@@ -93,3 +100,14 @@ impl Handler for SceneAndChoicesHandler {
         }
     }
 }
+
+impl Renderable for SceneAndChoicesComponent {
+    fn render(&self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer) {
+        match self.ui_mode {
+            UiMode::Campaign => render_campaign(self, area, buf),
+            UiMode::Combat => render_combat(self, area, buf),
+        }
+    }
+}
+
+impl Component for SceneAndChoicesComponent {}

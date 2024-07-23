@@ -5,7 +5,9 @@ use std::{
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use pipedream_bichannel::{Bichannel, BichannelMonitor};
-use pipedream_engine::core::commands::{EngineCommand, UiCommand};
+use pipedream_engine::{
+    core::command::{EngineCommand, UiCommand},
+};
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
@@ -22,14 +24,14 @@ use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use crate::{
     component::{
-        campaign::CampaignComponent, inventory::InventoryComponent, logging::LoggingComponent,
-        Component,
+        inventory::InventoryComponent, logging::LoggingComponent,
+        scene_and_choices::SceneAndChoicesComponent, Component,
     },
     log_utils,
     widget::instructions::instructions,
 };
 
-#[derive(Display, FromRepr, EnumCount, VariantArray, Copy, Clone)]
+#[derive(Display, FromRepr, EnumCount, VariantArray, Copy, Clone, PartialEq, Eq)]
 #[repr(usize)]
 enum SelectedTab {
     Campaign = 0,
@@ -57,7 +59,7 @@ impl Tui {
         Self {
             current_tab: SelectedTab::Campaign,
             tabs: vec![
-                Box::new(CampaignComponent::new(monitor.new_left())),
+                Box::new(SceneAndChoicesComponent::new(monitor.new_left())),
                 Box::new(InventoryComponent::new(monitor.new_left())),
                 Box::new(LoggingComponent::new()),
             ],
@@ -68,18 +70,18 @@ impl Tui {
     }
 
     pub fn spawn(monitor: &mut BichannelMonitor<EngineCommand, UiCommand>) -> JoinHandle<()> {
-        let mut app = Tui::new(monitor);
+        let mut this = Self::new(monitor);
 
         thread::spawn(move || {
             let mut terminal = log_utils::init().expect("Failed to init terminal state");
-            while !app.exit {
-                if app.should_redraw {
+            while !this.exit {
+                if this.should_redraw {
                     terminal
-                        .draw(|frame| app.render_frame(frame))
+                        .draw(|frame| this.render_frame(frame))
                         .expect("Failed to render terminal frame");
-                    app.should_redraw = false;
+                    this.should_redraw = false;
                 }
-                app.handle_events();
+                this.handle_events();
             }
             log_utils::restore().expect("Failed to restore terminal state");
         })
@@ -114,18 +116,7 @@ impl Tui {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Esc => self.exit(),
-            KeyCode::Char('q') => {
-                self.current_tab = SelectedTab::from_repr(
-                    (self.current_tab as i32 - 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
-                )
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Current tab index {:?} outside of bounds of SelectedTab enum repr",
-                        self.current_tab as i32 - 1
-                    )
-                });
-            }
-            KeyCode::Char('e') => {
+            KeyCode::Tab => {
                 self.current_tab = SelectedTab::from_repr(
                     (self.current_tab as i32 + 1).rem_euclid(SelectedTab::COUNT as i32) as usize,
                 )
@@ -147,9 +138,9 @@ impl Tui {
 
     fn handle_tick_event(&mut self) {
         self.tabs.iter_mut().enumerate().for_each(|(index, tab)| {
-            let tab_redraw = tab.handle_tick_event();
-            if (self.current_tab as usize == index) && tab_redraw {
-                self.should_redraw = true;
+            let tick_result = tab.handle_tick_event();
+            if self.current_tab as usize == index {
+                self.should_redraw |= tick_result.should_redraw;
             }
         });
     }
@@ -173,6 +164,19 @@ impl Tui {
             .select(self.current_tab as usize)
             .padding("", "")
             .divider(" ");
+
+        let [_, area, _] = Layout::horizontal([
+            Constraint::Fill(1),
+            Constraint::Length(160),
+            Constraint::Fill(1),
+        ])
+        .areas(area);
+        let [_, area, _] = Layout::vertical([
+            Constraint::Fill(1),
+            Constraint::Length(50),
+            Constraint::Fill(1),
+        ])
+        .areas(area);
 
         let [header_area, inner_area] =
             Layout::vertical([Constraint::Length(2), Constraint::Min(0)]).areas(block.inner(area));
