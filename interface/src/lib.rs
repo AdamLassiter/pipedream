@@ -8,7 +8,7 @@ use pipedream_engine::core::{choice::Choice, transition::Transition};
 use ratatui::{buffer::Buffer, layout::Rect};
 
 pub mod component;
-pub mod image;
+pub mod ascii_art;
 pub mod log_utils;
 pub mod tui;
 pub mod widget;

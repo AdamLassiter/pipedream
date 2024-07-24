@@ -31,7 +31,7 @@ pub trait ToAsciiArt {
 }
 
 pub struct ImageConverter {
-    image: DynamicImage,
+    pub image: DynamicImage,
     threshold: f32,
 }
 
@@ -50,67 +50,37 @@ impl ImageConverter {
         start_x: u32,
         start_y: u32,
     ) -> ([[[f32; 4]; 2]; 2], [[i32; 2]; 2]) {
-        let (mut total_channels, mut count) =
-            self.downscale_sample(width_ratio, height_ratio, start_x, start_y);
-        (total_channels, count) =
-            self.upscale_interpolate(width_ratio, height_ratio, total_channels, count);
-
-        (total_channels, count)
-    }
-
-    fn upscale_interpolate(
-        &self,
-        width_ratio: f32,
-        height_ratio: f32,
-        channels: [[[f32; 4]; 2]; 2],
-        count: [[i32; 2]; 2],
-    ) -> ([[[f32; 4]; 2]; 2], [[i32; 2]; 2]) {
-        let mut interpolated_channels = channels;
-        let mut interolated_count = count;
-
-        if height_ratio < 2. {
-            for sub_x in 0..2 {
-                for chan in 0..4 {
-                    interpolated_channels[sub_x][1][chan] += interpolated_channels[sub_x][0][chan];
-                }
-                interolated_count[sub_x][1] += count[sub_x][0];
-            }
-        }
-        if width_ratio < 2. {
-            for sub_y in 0..2 {
-                for chan in 0..4 {
-                    interpolated_channels[1][sub_y][chan] += interpolated_channels[0][sub_y][chan];
-                }
-                interolated_count[1][sub_y] += count[0][sub_y];
-            }
-        }
-
-        (interpolated_channels, interolated_count)
-    }
-
-    fn downscale_sample(
-        &self,
-        width_ratio: f32,
-        height_ratio: f32,
-        start_x: u32,
-        start_y: u32,
-    ) -> ([[[f32; 4]; 2]; 2], [[i32; 2]; 2]) {
         let mut total_channels = [[[0.0; 4]; 2]; 2];
         let mut count = [[0; 2]; 2];
 
-        // Downscale
-        for dx in 0..width_ratio as u32 {
-            for dy in 0..height_ratio as u32 {
-                let pixel = self.image.get_pixel(start_x + dx, start_y + dy);
-                let sub_x = (dx % 2) as usize;
-                let sub_y = (dy % 2) as usize;
-                let channels = pixel.channels();
-                for chan in 0..4 {
-                    total_channels[sub_x][sub_y][chan] += channels[chan] as f32;
+        for (sub_x, mut dx_range) in [
+            (0, 0..(width_ratio / 2.) as u32),
+            (1, (width_ratio / 2.) as u32..width_ratio as u32),
+        ] {
+            if dx_range.is_empty() {
+                dx_range = 0..1;
+            }
+            for (sub_y, mut dy_range) in [
+                (0, 0..(height_ratio / 2.) as u32),
+                (1, (height_ratio / 2.) as u32..height_ratio as u32),
+            ] {
+                if dy_range.is_empty() {
+                    dy_range = 0..1;
                 }
-                count[sub_x][sub_y] += 1;
+                for dx in dx_range.clone() {
+                    for dy in dy_range.clone() {
+                        let pixel = self.image.get_pixel(start_x + dx, start_y + dy);
+                        let channels = pixel.channels();
+                        for chan in 0..4 {
+                            total_channels[sub_x][sub_y][chan] += channels[chan] as f32;
+                        }
+                        count[sub_x][sub_y] += 1;
+                    }
+                }
             }
         }
+
+        // Downscale
         (total_channels, count)
     }
 
@@ -258,14 +228,14 @@ impl ToAsciiArt for ImageConverter {
 
         let (width_ratio, height_ratio) = match (height, width) {
             (Some(_), Some(_)) | (None, None) => panic!("Expected just one dimension for image"),
-            (Some(height), None) => (
-                self.image.height() as f32 / 2. / height as f32,
-                self.image.height() as f32 / height as f32,
-            ),
-            (None, Some(width)) => (
-                self.image.width() as f32 / width as f32,
-                self.image.width() as f32 * 2. / width as f32,
-            ),
+            (Some(height), None) => {
+                let height_ratio = self.image.height() as f32 / height as f32;
+                (height_ratio / 2., height_ratio)
+            }
+            (None, Some(width)) => {
+                let width_ratio = self.image.width() as f32 / width as f32;
+                (width_ratio, width_ratio * 2.)
+            }
         };
 
         let width = (self.image.width() as f32 / width_ratio) as u16;
@@ -276,6 +246,7 @@ impl ToAsciiArt for ImageConverter {
         let mut lines = vec![];
         for y in 0..height {
             let mut line = vec![];
+            let mut log_line = vec![];
             for x in 0..width {
                 let start_x = (x as f32 * width_ratio) as u32;
                 let start_y = (y as f32 * height_ratio) as u32;
@@ -287,7 +258,9 @@ impl ToAsciiArt for ImageConverter {
                     self.two_means_cluster(mean_channels.as_flattened().to_vec());
                 let (character, style) = self.subpixel_render(mean_channels, centres, clusters);
                 line.push(Span::from(character.to_string()).style(style));
+                log_line.push(character.to_string());
             }
+            debug!(target:"Image/Ascii", "{}",  log_line.join(""));
 
             lines.push(Line::from(line));
         }

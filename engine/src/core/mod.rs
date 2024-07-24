@@ -8,3 +8,4 @@ pub mod transition;
 pub mod location;
 pub mod predicate;
 pub mod command;
+pub mod image;

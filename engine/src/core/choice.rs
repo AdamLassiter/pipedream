@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-use super::{predicate::Predicate, transition::Transition};
+use super::{image::Image, predicate::Predicate, transition::Transition};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choices {
@@ -15,7 +15,7 @@ pub struct Choices {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
     pub summary: String,
-    pub image: Option<String>,
+    pub image: Option<Image>,
     pub details: Vec<String>,
     pub cost: Option<String>,
     pub predicate: Option<Predicate>,

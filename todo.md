@@ -24,4 +24,3 @@
   - [ ] Deck management
 - ...
 - [ ] Game
-

@@ -1,12 +1,16 @@
 mod campaign;
 mod combat;
 
-use crate::{Handler, Renderable, TickResult};
+use crate::{widget::tags::IMAGE_TAGS, Handler, Renderable, TickResult};
 use crossterm::event::KeyEvent;
 use pipedream_bichannel::Bichannel;
-use pipedream_engine::core::{
-    command::{EngineCommand, UiCommand, UiMode},
-    tags::Tags,
+use pipedream_engine::{
+    combat::{entity::Ent, target::Tgt},
+    core::{
+        command::{EngineCommand, UiCommand, UiMode},
+        image::Image,
+        tags::{Tag, TagKey},
+    },
 };
 use ratatui::prelude::*;
 
@@ -14,8 +18,10 @@ use super::Component;
 
 pub struct InventoryComponent {
     channel: Bichannel<EngineCommand, UiCommand>,
-    player_tags: Option<Tags>,
-    enemy_tags: Option<Tags>,
+    player_stats: Option<Vec<Tag>>,
+    enemy_stats: Option<Vec<Tag>>,
+    player_image: Option<Image>,
+    enemy_image: Option<Image>,
     ui_mode: UiMode,
 }
 
@@ -23,8 +29,10 @@ impl InventoryComponent {
     pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
             channel,
-            player_tags: None,
-            enemy_tags: None,
+            player_stats: None,
+            enemy_stats: None,
+            player_image: None,
+            enemy_image: None,
             ui_mode: UiMode::Campaign,
         }
     }
@@ -36,7 +44,35 @@ impl Handler for InventoryComponent {
 
         while let Ok(ev) = self.channel.try_recv() {
             match ev {
-                UiCommand::ShowTags(tags) => self.player_tags = Some(tags),
+                UiCommand::ShowTags(tags) => {
+                    // Player
+                    if let Some(portrait_tag) = tags
+                        .find(
+                            IMAGE_TAGS
+                                .get(&Tgt::Player)
+                                .expect("Failed to get tag-key for player portrait"),
+                        )
+                        .first()
+                    {
+                        self.player_image =
+                            Some(Image(portrait_tag.key.trailing_key().to_string()));
+                    }
+                    self.player_stats =
+                        Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Player, Ent::Resource))));
+                    // Enemy
+                    if let Some(portrait_tag) = tags
+                        .find(
+                            IMAGE_TAGS
+                                .get(&Tgt::Enemy)
+                                .expect("Failed to get tag-key for enemy portrait"),
+                        )
+                        .first()
+                    {
+                        self.enemy_image = Some(Image(portrait_tag.key.trailing_key().to_string()));
+                    }
+                    self.enemy_stats =
+                        Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Enemy, Ent::Resource))));
+                }
                 UiCommand::ChangeMode(mode) => {
                     self.ui_mode = mode;
                 }

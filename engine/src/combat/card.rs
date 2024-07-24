@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::{
     action::Action,
+    image::Image,
     predicate::Predicate,
     tags::{TagKey, Tags},
 };
@@ -32,7 +33,7 @@ impl Cards {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Card {
     pub name: String,
-    pub image: String,
+    pub image: Image,
     pub details: Vec<String>,
     pub cost: String,
     pub tags: Tags,

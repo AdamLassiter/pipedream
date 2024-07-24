@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
@@ -13,15 +11,15 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::{core::{
-    choice::{Choice, ChoiceType, Choices},
-    transition::Transition,
-}, log::debug};
-
-use crate::{
-    image::{AsciiOptions, ImageConverter, ToAsciiArt},
-    Controllable, Renderable,
+use pipedream_engine::{
+    core::{
+        choice::{Choice, ChoiceType, Choices},
+        transition::Transition,
+    },
+    log::debug,
 };
+
+use crate::{Controllable, Renderable};
 
 fn cursor_up(this: &mut Choices) {
     if let ChoiceType::Manual(choices) = &this.choices
@@ -124,45 +122,30 @@ impl Renderable for Choice {
         }
 
         if let Some(image) = &self.image {
-            let image = ImageConverter::from(&PathBuf::from(image));
-            let options = if self.details.is_empty() {
-                AsciiOptions {
-                    width: Some(ascii_area.width),
-                    ..Default::default()
-                }
-            } else {
-                AsciiOptions {
-                    height: Some(16),
-                    ..Default::default()
-                }
-            };
-            let ascii_text = image.to_ascii_art(Some(options));
-            Paragraph::new(ascii_text)
-                .alignment(Alignment::Center)
-                .render(ascii_area, buf);
-
-            let details_lines = self
-                .details
-                .iter()
-                .flat_map(|details| {
-                    compile::<RatatuiTextGenerator>(details)
-                        .into_iter()
-                        .flat_map(|text| text.lines)
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>();
-            Paragraph::new(details_lines)
-                .alignment(Alignment::Center)
-                .render(details_area, buf);
+            image.render(ascii_area, buf);
         }
+
+        let details_lines = self
+            .details
+            .iter()
+            .flat_map(|details| {
+                compile::<RatatuiTextGenerator>(details)
+                    .into_iter()
+                    .flat_map(|text| text.lines)
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        Paragraph::new(details_lines)
+            .alignment(Alignment::Center)
+            .render(details_area, buf);
 
         block.render(area, buf);
     }
 }
 
 impl Renderable for (&[Choice], usize) {
-    fn render(&self, summary_area: Rect, buf: &mut Buffer) {
-        debug!(target:"Render/Choice", "render choices");
+    fn render(&self, area: Rect, buf: &mut Buffer) {
+        debug!(target:"Render/Choice", "render choices {:?} at area {:?}", self, area);
         let (choices, cursor) = self;
         let mut state = ListState::default().with_selected(Some(*cursor));
 
@@ -199,6 +182,6 @@ impl Renderable for (&[Choice], usize) {
         let summary_list = List::new(summary_text)
             .direction(ratatui::widgets::ListDirection::BottomToTop)
             .highlight_symbol(">> ");
-        StatefulWidget::render(summary_list, summary_area, buf, &mut state);
+        StatefulWidget::render(summary_list, area, buf, &mut state);
     }
 }

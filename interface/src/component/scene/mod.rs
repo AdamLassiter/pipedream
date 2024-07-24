@@ -3,15 +3,17 @@ mod combat_scene;
 
 use std::time::Instant;
 
-use crate::{Controllable, Handler, Renderable, TickResult};
+use crate::{widget::tags::IMAGE_TAGS, Controllable, Handler, Renderable, TickResult};
 use crossterm::event::{KeyCode, KeyEvent};
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
+    combat::{entity::Ent, target::Tgt},
     core::{
         choice::{ChoiceType, Choices},
         command::{EngineCommand, UiCommand, UiMode},
+        image::Image,
         scene::Scene,
-        tags::Tags,
+        tags::{Tag, TagKey},
     },
     log::debug,
 };
@@ -23,7 +25,8 @@ pub struct SceneComponent {
     pub channel: Bichannel<EngineCommand, UiCommand>,
     pub scene: Option<Scene>,
     pub options: Option<Choices>,
-    pub tags: Option<Tags>,
+    pub image: Option<Image>,
+    pub player_stats: Option<Vec<Tag>>,
     pub wake_time: Option<Instant>,
     ui_mode: UiMode,
 }
@@ -34,7 +37,8 @@ impl SceneComponent {
             channel,
             scene: None,
             options: None,
-            tags: None,
+            image: None,
+            player_stats: None,
             wake_time: None,
             ui_mode: UiMode::Campaign,
         }
@@ -82,7 +86,20 @@ impl Handler for SceneComponent {
             match ev {
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowChoices(opts) => self.options = Some(opts),
-                UiCommand::ShowTags(tags) => self.tags = Some(tags),
+                UiCommand::ShowTags(tags) => {
+                    if let Some(portrait_tag) = tags
+                        .find(
+                            IMAGE_TAGS
+                                .get(&Tgt::Player)
+                                .expect("Failed to get tag-key for player portrait"),
+                        )
+                        .first()
+                    {
+                        self.image = Some(Image(portrait_tag.key.trailing_key().to_string()));
+                    }
+                    self.player_stats =
+                        Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Player, Ent::Resource))));
+                }
                 UiCommand::ChangeMode(mode) => {
                     self.ui_mode = mode;
                 }

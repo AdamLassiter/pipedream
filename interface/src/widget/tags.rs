@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -8,9 +10,18 @@ use tui_markup::{compile, generator::RatatuiTextGenerator};
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
     core::tags::{Static, Tag, TagKey, TagValue, Tags},
+    log::debug,
 };
 
 use crate::Renderable;
+
+pub static IMAGE_TAGS: Static<BTreeMap<Tgt, TagKey>> = Static::new(|| {
+    BTreeMap::from_iter(
+        vec![Tgt::Player, Tgt::Enemy]
+            .into_iter()
+            .map(|tgt| (tgt, TagKey(format!("{}:image:", tgt)))),
+    )
+});
 
 static RENDERABLE_TAGS: Static<Vec<TagKey>> = Static::new(|| {
     vec![
@@ -29,15 +40,21 @@ static RENDERABLE_TAGS: Static<Vec<TagKey>> = Static::new(|| {
     ]
 });
 
-impl Renderable for Tags {
+impl Renderable for Vec<Tag> {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        // debug!(target:"Render/Tags", "{:?}", self);
+        let this: Tags = Tags::new(
+            self.clone().into_iter().map(|tag| (tag.key, tag.value)).collect(),
+            vec![],
+            vec![],
+        );
+
+        debug!(target:"Render/Tags", "render tags {:?} at area {:?}", self, area);
 
         let renderable = RENDERABLE_TAGS
             .clone()
             .into_iter()
             .map(|key| {
-                self.get(&key)
+                this.get(&key)
                     .cloned()
                     .map(|value| Tag {
                         key: key.clone(),
