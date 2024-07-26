@@ -5,7 +5,7 @@ use ratatui::{
 };
 use symbols::border;
 
-use crate::Renderable;
+use crate::{widget::choice::campaign_choice::CampaignChoice, Renderable};
 
 use super::SceneComponent;
 
@@ -18,7 +18,7 @@ impl SceneComponent {
             .as_ref()
             .map(|s| s.descriptions.len())
             .unwrap_or(0) as u16;
-        let choices_size_hint = match self.options.as_ref() {
+        let choices_size_hint = match self.options.as_ref().map(|c| c.choices()) {
             Some(Choices {
                 choices: ChoiceType::Manual(c),
                 ..
@@ -28,6 +28,7 @@ impl SceneComponent {
         let has_details = self
             .options
             .as_ref()
+            .map(|c| c.choices())
             .map(|x| match x {
                 Choices {
                     choices: ChoiceType::Manual(choices),
@@ -75,14 +76,14 @@ impl SceneComponent {
             scene.render(scene_area, buf);
         }
 
-        if let Some(Choices {
-            choices: ChoiceType::Manual(choices),
-            cursor,
-        }) = self.options.as_ref()
-        {
-            (choices.as_slice(), *cursor).render(choices_area, buf);
-            if let Some(selected) = choices.get(*cursor) {
-                selected.render(details_area, buf);
+        if let Some(widget) = self.options.as_ref() {
+            widget.renderable().render(choices_area, buf);
+
+            let cursor = widget.choices().cursor;
+            if let ChoiceType::Manual(choices) = &widget.choices().choices {
+                if let Some(selected) = choices.get(cursor) {
+                    CampaignChoice(selected.clone()).render(details_area, buf);
+                }
             }
         }
 

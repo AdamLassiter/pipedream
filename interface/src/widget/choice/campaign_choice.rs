@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
@@ -5,8 +7,7 @@ use ratatui::{
     style::Stylize,
     symbols::border,
     widgets::{
-        block::{Position, Title},
-        Block, Borders, List, ListState, Paragraph, StatefulWidget, Widget,
+        block::{Position, Title}, Block, Borders, List, ListDirection, ListState, Paragraph, StatefulWidget, Widget
     },
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
@@ -20,6 +21,38 @@ use pipedream_engine::{
 };
 
 use crate::{Controllable, Renderable};
+
+pub struct CampaignChoices(pub Choices);
+
+impl Deref for CampaignChoices {
+    type Target = Choices;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for CampaignChoices {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+pub struct CampaignChoice(pub Choice);
+
+impl Deref for CampaignChoice {
+    type Target = Choice;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for CampaignChoice {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 fn cursor_up(this: &mut Choices) {
     if let ChoiceType::Manual(choices) = &this.choices
@@ -37,17 +70,11 @@ fn cursor_down(this: &mut Choices) {
     }
 }
 
-fn cursor_left(_this: &mut Choices) {}
-
-fn cursor_right(_this: &mut Choices) {}
-
-impl Controllable for Choices {
+impl Controllable for CampaignChoices {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
             KeyCode::Char('w') | KeyCode::Up => cursor_up(self),
             KeyCode::Char('s') | KeyCode::Down => cursor_down(self),
-            KeyCode::Char('a') | KeyCode::Left => cursor_left(self),
-            KeyCode::Char('d') | KeyCode::Right => cursor_right(self),
             _ => {}
         }
     }
@@ -70,7 +97,7 @@ impl Controllable for Choices {
     }
 }
 
-impl Renderable for Choice {
+impl Renderable for CampaignChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
         if self.image.is_none() && self.details.is_empty() && self.cost.is_none() {
             return;
@@ -143,45 +170,47 @@ impl Renderable for Choice {
     }
 }
 
-impl Renderable for (&[Choice], usize) {
+impl Renderable for CampaignChoices {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        debug!(target:"Render/Choice", "render choices {:?} at area {:?}", self, area);
-        let (choices, cursor) = self;
+        debug!(target:"Render/Choice", "render choices {:?} at area {:?}", self.0, area);
+        let Choices { choices, cursor } = &self.0;
         let mut state = ListState::default().with_selected(Some(*cursor));
 
-        let summary_descriptions = choices
-            .iter()
-            .map(|choice| {
-                let Choice {
-                    summary,
-                    selectable,
-                    predicate,
-                    ..
-                } = choice;
-                let description = if let Some(pred) = predicate {
-                    format!("{} [{}]", summary, pred)
-                } else {
-                    summary.to_string()
-                };
-                if *selectable {
-                    description
-                } else {
-                    format!("<d {}>", description)
-                }
-            })
-            .collect::<Vec<_>>();
+        if let ChoiceType::Manual(choices) = choices {
+            let summary_descriptions = choices
+                .iter()
+                .map(|choice| {
+                    let Choice {
+                        summary,
+                        selectable,
+                        predicate,
+                        ..
+                    } = choice;
+                    let description = if let Some(pred) = predicate {
+                        format!("{} [{}]", summary, pred)
+                    } else {
+                        summary.to_string()
+                    };
+                    if *selectable {
+                        description
+                    } else {
+                        format!("<d {}>", description)
+                    }
+                })
+                .collect::<Vec<_>>();
 
-        let summary_text = summary_descriptions
-            .iter()
-            .map(|description| {
-                compile::<RatatuiTextGenerator>(description)
-                    .expect("Failed to compile tui text markup for summaries")
-            })
-            .collect::<Vec<_>>();
+            let summary_text = summary_descriptions
+                .iter()
+                .map(|description| {
+                    compile::<RatatuiTextGenerator>(description)
+                        .expect("Failed to compile tui text markup for summaries")
+                })
+                .collect::<Vec<_>>();
 
-        let summary_list = List::new(summary_text)
-            .direction(ratatui::widgets::ListDirection::BottomToTop)
-            .highlight_symbol(">> ");
-        StatefulWidget::render(summary_list, area, buf, &mut state);
+            let summary_list = List::new(summary_text)
+                .direction(ListDirection::BottomToTop)
+                .highlight_symbol(">> ");
+            StatefulWidget::render(summary_list, area, buf, &mut state);
+        }
     }
 }
