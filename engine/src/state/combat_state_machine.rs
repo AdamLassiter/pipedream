@@ -38,18 +38,17 @@ impl CombatStateMachine {
         }
     }
 
-    pub fn handle_effect(&mut self, side_effect: Transition) -> Result<Vec<UiCommand>, Transition> {
+    pub fn handle_effect(
+        &mut self,
+        side_effect: Transition,
+    ) -> (Vec<UiCommand>, Option<Transition>) {
         self.tag_engine.handle_actions(&side_effect.actions);
-        let handle_transition = self.handle_transition(side_effect).map(Ok);
+        let handle_transition = self.handle_transition(side_effect);
         debug!(target:"Engine/CombatStateMachine/HandleTransition", "{:?}", handle_transition);
 
-        let handle_combat = handle_transition.unwrap_or_else(|| {
-            if self.current.is_none() {
-                Err((self.exporter)(self))
-            } else {
-                Ok(self.next_options())
-            }
-        });
+        let handle_combat = handle_transition
+            .map(|exit| (exit, Some((self.exporter)(self))))
+            .unwrap_or_else(|| (self.next_options(), None));
         debug!(target:"Engine/CombatStateMachine/HandleCombat", "{:?}", handle_combat);
 
         handle_combat

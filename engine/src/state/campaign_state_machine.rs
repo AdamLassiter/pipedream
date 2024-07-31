@@ -57,13 +57,22 @@ impl CampaignStateMachine {
         // If combat ended, pop the combat-state-machine
         // Otherwise, prepare to handle effect in campaign
         let handle_end_combat = handle_combat
-            .map(|csm| {
-                let handle_end_combat = csm.inspect_err(|_ended_combat| {
+            .map(|(mut handle_combat, post_combat_effect)| {
+                let handle_end_combat = post_combat_effect.map(|ended_combat| {
+                    // Pop combat state
                     self.combat_state_machine.take();
-                });
-                debug!(target:"Engine/CampaignStateMachine/EndCombat", "{:?}", handle_end_combat);
+                    let handle_end_combat = self.handle_transition(ended_combat)
+                        .unwrap_or_else(|| self.next_options());
+                    debug!(target:"Engine/CampaignStateMachine/EndCombat", "{:?}", handle_end_combat);
 
-                handle_end_combat
+                    handle_end_combat
+                });
+                if let Some(handle_end_combat) = handle_end_combat {
+                    handle_combat.extend(handle_end_combat);
+                }
+                debug!(target:"Engine/CampaignStateMachine/HandleCombat", "{:?}", handle_combat);
+
+                Ok(handle_combat)
             })
             .unwrap_or_else(|| Err(side_effect));
 
