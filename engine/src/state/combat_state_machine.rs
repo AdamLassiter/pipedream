@@ -41,7 +41,7 @@ impl CombatStateMachine {
     pub fn handle_effect(&mut self, side_effect: Transition) -> Result<Vec<UiCommand>, Transition> {
         self.tag_engine.handle_actions(&side_effect.actions);
         let handle_transition = self.handle_transition(side_effect).map(Ok);
-        debug!(target:"Handle/CombatTransition", "{:?}", handle_transition);
+        debug!(target:"Engine/CombatStateMachine/HandleTransition", "{:?}", handle_transition);
 
         let handle_combat = handle_transition.unwrap_or_else(|| {
             if self.current.is_none() {
@@ -50,13 +50,13 @@ impl CombatStateMachine {
                 Ok(self.next_options())
             }
         });
-        debug!(target:"Handle/Combat", "{:?}", handle_combat);
+        debug!(target:"Engine/CombatStateMachine/HandleCombat", "{:?}", handle_combat);
 
         handle_combat
     }
 
     fn handle_transition(&mut self, side_effect: Transition) -> Option<Vec<UiCommand>> {
-        debug!(target:"Event/Transition", "{:?}", side_effect.next);
+        debug!(target:"Engine/CombatStateMachine/HandleTransition", "{:?}", side_effect.next);
 
         match side_effect.next {
             TransitionType::Leave => {
@@ -76,7 +76,7 @@ impl CombatStateMachine {
             TransitionType::None => {}
         };
 
-        debug!(target:"State/Location", "{:?}", self.current);
+        debug!(target:"Engine/CombatStateMachine/LocationState", "{:?}", self.current);
         None
     }
 
@@ -100,9 +100,9 @@ impl CombatStateMachine {
             choices.retain(|Choice { predicate, .. }| test(predicate));
         }
 
-        debug!(target:"Event/Scene", "{:?}", &scene);
-        debug!(target:"Event/Choices", "{:?}", &options);
-        debug!(target:"Event/Tags", "{:?}", &tags);
+        debug!(target:"Engine/CombatStateMachine/ShowScene", "{:?}", &scene);
+        debug!(target:"Engine/CombatStateMachine/ShowChoices", "{:?}", &options);
+        debug!(target:"Engine/CombatStateMachine/ShowTags", "{:?}", &tags);
         vec![
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(options),

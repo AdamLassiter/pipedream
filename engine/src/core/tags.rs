@@ -221,7 +221,7 @@ impl Tags {
         } else {
             self.tags
                 .insert(self.concrete_key(key), self.resolve_value(value));
-            debug!(target:"Tags/Insert", "{:?} {:?}", key, value);
+            debug!(target:"Engine/Tags/Insert", "{:?} {:?}", key, value);
         }
     }
 
@@ -230,11 +230,11 @@ impl Tags {
             self.tags.remove(&self.concrete_key(key));
         });
 
-        debug!(target:"Tags/Remove", "{:?}", key);
+        debug!(target:"Engine/Tags/Remove", "{:?}", key);
     }
 
     pub fn get(&self, key: &TagKey) -> Option<&TagValue> {
-        let got = self
+        let value = self
             .get_variants(key)
             .iter()
             .filter_map(|key| {
@@ -243,8 +243,8 @@ impl Tags {
             })
             .next();
 
-        debug!(target:"Tags/Get", "{:?} {:?}", key, got);
-        got
+        debug!(target:"Engine/Tags/Get", "{:?} {:?}", key, value);
+        value
     }
 
     pub fn find(&self, partial_key: &TagKey) -> Vec<Tag> {
@@ -264,7 +264,7 @@ impl Tags {
             })
             .collect();
 
-        debug!(target:"Tags/Find", "{:?} -> {:?}", partial_key, found);
+        debug!(target:"Engine/Tags/Find", "{:?} -> {:?}", partial_key, found);
         found
     }
 
@@ -284,7 +284,7 @@ impl Tags {
                                 "Expected Tag reference when resolving key {:?}, but was Number",
                                 key)
                         });
-                    debug!(target:"Tags/Resolve", "{:?} {:?} {:?}", key, target, substitution);
+                    debug!(target:"Engine/Tags/Resolve", "{:?} {:?} {:?}", key, target, substitution);
                     key = key.replace(target, &substitution.0);
                 }
             });

@@ -24,7 +24,7 @@ impl From<Vec<Card>> for Cards {
 impl Cards {
     pub fn find(&self, card: &TagKey) -> &Card {
         self.0.get(card.trailing_key()).unwrap_or_else(|| {
-            error!(target:"Combat/Lookup", "Failed to find card by tag '{:?}'", card.0);
+            error!(target:"Engine/Combat/Lookup", "Failed to find card by tag '{:?}'", card.0);
             panic!("Failed to find card by tag '{:?}'", card.0)
         })
     }

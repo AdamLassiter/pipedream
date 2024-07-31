@@ -88,6 +88,6 @@ fn draw_cards(player_deck_slice: Vec<Tag>, player_draw_count: FI64) -> Vec<TagKe
         .take(player_draw_count.to_num())
         .collect::<Vec<_>>();
 
-    debug!(target:"Combat/Draw", "{:?}", player_draw_cards);
+    debug!(target:"Prefab/Combat/Draw", "{:?}", player_draw_cards);
     player_draw_cards
 }

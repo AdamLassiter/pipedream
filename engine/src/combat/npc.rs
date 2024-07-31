@@ -19,7 +19,7 @@ impl From<Vec<Npc>> for Npcs {
 impl Npcs {
     pub fn find(&self, npc: &TagKey) -> &Npc {
         self.0.get(npc.trailing_key()).unwrap_or_else(|| {
-            error!(target:"Combat/Lookup", "Failed to find npc by tag '{:?}'", npc.0);
+            error!(target:"Engine/Combat/Lookup", "Failed to find npc by tag '{:?}'", npc.0);
             panic!("Failed to find npc by tag '{:?}'", npc.0)
         })
     }

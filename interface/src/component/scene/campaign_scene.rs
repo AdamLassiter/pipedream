@@ -12,7 +12,6 @@ use super::SceneComponent;
 impl SceneComponent {
     pub fn render_campaign(&self, area: Rect, buf: &mut Buffer) {
         // Size hints
-
         let scene_size_hint = self
             .scene
             .as_ref()
@@ -45,25 +44,20 @@ impl SceneComponent {
         let portrait_height_hint = if self.image.is_some() { 16 + 2 } else { 0 };
 
         // Layouts
-
         let [description_area, details_area] =
             Layout::horizontal([Constraint::Fill(1), Constraint::Length(details_size_hint)])
                 .areas(area);
-
         let [_, details_area] =
             Layout::vertical([Constraint::Fill(1), Constraint::Length(details_size_hint)])
                 .areas(details_area);
-
         let [portrait_and_stats_area, scene_and_choices_area] = Layout::vertical([
             Constraint::Length(portrait_height_hint),
             Constraint::Fill(1),
         ])
         .areas(description_area);
-
         let [portrait_border_area, stats_area] =
             Layout::horizontal([Constraint::Length(portrait_width_hint), Constraint::Fill(1)])
                 .areas(portrait_and_stats_area);
-
         let [scene_area, choices_area] = Layout::vertical([
             Constraint::Min(scene_size_hint),
             Constraint::Min(choices_size_hint),
@@ -71,11 +65,9 @@ impl SceneComponent {
         .areas(scene_and_choices_area);
 
         // Render
-
         if let Some(scene) = self.scene.as_ref() {
             scene.render(scene_area, buf);
         }
-
         if let Some(widget) = self.options.as_ref() {
             widget.renderable().render(choices_area, buf);
 
@@ -86,7 +78,6 @@ impl SceneComponent {
                 }
             }
         }
-
         if let Some(portrait) = self.image.as_ref() {
             let block = Block::default()
                 .borders(Borders::ALL)
@@ -96,7 +87,6 @@ impl SceneComponent {
             block.render(portrait_border_area, buf);
             portrait.render(portrait_area, buf);
         }
-
         if let Some(tags) = self.player_stats.as_ref() {
             tags.render(stats_area, buf);
         }

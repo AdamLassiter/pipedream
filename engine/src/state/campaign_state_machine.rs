@@ -53,32 +53,34 @@ impl CampaignStateMachine {
             .combat_state_machine
             .as_mut()
             .map(|csm| csm.handle_effect(side_effect.clone()));
-        debug!(target:"Handle/Combat", "{:?}", handle_combat);
 
         // If combat ended, pop the combat-state-machine
         // Otherwise, prepare to handle effect in campaign
         let handle_end_combat = handle_combat
             .map(|csm| {
-                csm.inspect_err(|_ended_combat| {
+                let handle_end_combat = csm.inspect_err(|_ended_combat| {
                     self.combat_state_machine.take();
-                })
+                });
+                debug!(target:"Engine/CampaignStateMachine/EndCombat", "{:?}", handle_end_combat);
+
+                handle_end_combat
             })
             .unwrap_or_else(|| Err(side_effect));
-        debug!(target:"Handle/EndCombat", "{:?}", handle_end_combat);
 
         // If not in combat, handle effect in campaign
-        let handle_campaign = handle_end_combat.unwrap_or_else(|side_effect| {
+        handle_end_combat.unwrap_or_else(|side_effect| {
             self.tag_engine.handle_actions(&side_effect.actions);
-            self.handle_transition(side_effect)
-                .unwrap_or_else(|| self.next_options())
-        });
-        debug!(target:"Handle/Campaign", "{:?}", handle_campaign);
+            let handle_campaign = self
+                .handle_transition(side_effect)
+                .unwrap_or_else(|| self.next_options());
+            debug!(target:"Engine/CampaignStateMachine/HandleCampaign", "{:?}", handle_campaign);
 
-        handle_campaign
+            handle_campaign
+        })
     }
 
     fn handle_transition(&mut self, side_effect: Transition) -> Option<Vec<UiCommand>> {
-        debug!(target:"Event/Transition", "{:?}", side_effect.next);
+        debug!(target:"Engine/CampaignStateMachine/HandleTransition", "{:?}", side_effect.next);
 
         match side_effect.next {
             TransitionType::Leave => {
@@ -105,7 +107,7 @@ impl CampaignStateMachine {
             TransitionType::None => {}
         };
 
-        debug!(target:"State/Location", "{:?}", self.current);
+        debug!(target:"Engine/CampaignStateMachine/LocationState", "{:?}", self.current);
         None
     }
 
@@ -130,9 +132,9 @@ impl CampaignStateMachine {
             choices.retain(|Choice { predicate, .. }| test(predicate));
         }
 
-        debug!(target:"Show/Scene", "{:?}", &scene);
-        debug!(target:"Show/Choices", "{:?}", &options);
-        debug!(target:"Show/Tags", "{:?}", &tags);
+        debug!(target:"Engine/CampaignStateMachine/ShowScene", "{:?}", &scene);
+        debug!(target:"Engine/CampaignStateMachine/ShowChoices", "{:?}", &options);
+        debug!(target:"Engine/CampaignStateMachine/ShowTags", "{:?}", &tags);
         vec![
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(options),

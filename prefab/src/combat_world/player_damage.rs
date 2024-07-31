@@ -19,7 +19,7 @@ fn calculate_damage(assist_stat: FI64, resist_stat: FI64, damage_val: FI64) -> F
 
 pub fn player_damamge(machine: &CombatStateMachine) -> State {
     let any_resc_damage_slice = machine.tag_engine.find(&Tgt::Any.ent(Ent::Damage));
-    debug!(target:"Combat/Damage", "{:?}", any_resc_damage_slice);
+    debug!(target:"Prefab/Combat/Damage", "{:?}", any_resc_damage_slice);
 
     let resolved_damages = any_resc_damage_slice
         .into_iter()

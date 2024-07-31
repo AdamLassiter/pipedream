@@ -18,7 +18,7 @@ use pipedream_engine::{
 
 pub fn player_play(machine: &CombatStateMachine) -> State {
     let player_hand_slice = machine.tag_engine.find(&Tgt::Me.ent(Ent::Hand));
-    debug!(target:"Combat/Hand", "{:?}", player_hand_slice);
+    debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand_slice);
 
     State {
         location: PLAYER_PLAY.clone(),

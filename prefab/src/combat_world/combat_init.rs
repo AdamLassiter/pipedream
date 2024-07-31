@@ -20,7 +20,7 @@ use pipedream_engine::{
 
 pub fn combat_init(machine: &CombatStateMachine) -> State {
     let enemy_name_slice = machine.tag_engine.find(&Tgt::Enemy.ent(Ent::Name));
-    debug!(target:"Combat/Init", "{:?}", enemy_name_slice);
+    debug!(target:"Prefab/Combat/Init", "{:?}", enemy_name_slice);
 
     let Tag { key: enemy, .. } = enemy_name_slice
         .first()

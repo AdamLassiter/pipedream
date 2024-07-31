@@ -172,7 +172,7 @@ impl Renderable for CampaignChoice {
 
 impl Renderable for CampaignChoices {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        debug!(target:"Render/Choice", "render choices {:?} at area {:?}", self.0, area);
+        debug!(target:"Interface/Render/CampaignChoices", "{:?} at {:?}", self.0, area);
         let Choices { choices, cursor } = &self.0;
         let mut state = ListState::default().with_selected(Some(*cursor));
 

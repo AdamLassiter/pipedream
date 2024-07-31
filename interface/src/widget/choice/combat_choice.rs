@@ -105,7 +105,7 @@ impl Renderable for CombatChoice {
         };
 
         let details_size_hint = self.details.len() as u16;
-        let ascii_size_hint = if details_size_hint > 0 { 32 + 2 } else { 0 } as u16;
+        let ascii_size_hint = if details_size_hint > 0 { 16 + 2 } else { 0 } as u16;
 
         if self.image.is_none() && self.details.is_empty() && self.cost.is_none() {
             return;
@@ -172,7 +172,12 @@ impl Renderable for CombatChoice {
 
 impl Renderable for CombatChoices {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        debug!(target:"Render/Choice", "render choices {:?} at area {:?}", self.0, area);
+        debug!(target:"Interface/Render/CombatChoices", "{:?} at {:?}", self.0, area);
+        let area = Rect {
+            y: area.y + 1,
+            height: area.height - 1,
+            ..area
+        };
         let Choices { choices, cursor } = &self.0;
 
         if let ChoiceType::Manual(choices) = choices {

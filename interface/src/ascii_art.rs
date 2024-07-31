@@ -218,7 +218,7 @@ where
 impl ToAsciiArt for ImageConverter {
     fn to_ascii_art(&self, options: Option<AsciiOptions>) -> Text {
         let options = options.unwrap_or_default();
-        debug!(target:"Image/Options", "{:?}", options);
+        debug!(target:"Interface/AsciiArt/ToAsciiArt", "{:?}", options);
 
         let AsciiOptions {
             height,
@@ -241,7 +241,7 @@ impl ToAsciiArt for ImageConverter {
         let width = (self.image.width() as f32 / width_ratio) as u16;
         let height = (self.image.height() as f32 / height_ratio) as u16;
 
-        debug!(target:"Image/Ratios", "{:?}", (width_ratio, height_ratio));
+        debug!(target:"Interface/AsciiArt/Ratios", "{:?}", (width_ratio, height_ratio));
 
         let mut lines = vec![];
         for y in 0..height {
@@ -260,7 +260,7 @@ impl ToAsciiArt for ImageConverter {
                 line.push(Span::from(character.to_string()).style(style));
                 log_line.push(character.to_string());
             }
-            debug!(target:"Image/Ascii", "{}",  log_line.join(""));
+            debug!(target:"Interface/AsciiArt/Image", "{}",  log_line.join(""));
 
             lines.push(Line::from(line));
         }

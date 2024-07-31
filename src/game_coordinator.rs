@@ -45,6 +45,7 @@ impl GameCoordinator {
     fn handle_effect(&mut self, effect: Transition) {
         let commands = self.campaign.handle_effect(effect);
         commands.into_iter().for_each(|command| {
+            debug!(target:"Coordinator/HandleEffect", "{:?}", command);
             self.channel
                 .send(command)
                 .expect("Broken channel while handling effect")

@@ -21,7 +21,7 @@ pub fn combat_end(machine: &CombatStateMachine) -> State {
         .tag_engine
         .find(&Tgt::Enemy.ent(Ent::ResourceHealth));
 
-    debug!(target:"Combat/End", "{:?} {:?}", player_health_slice, enemy_health_slice);
+    debug!(target:"Prefab/Combat/End", "{:?} vs {:?}", player_health_slice, enemy_health_slice);
 
     let next = match player_health_slice.first() {
         None => &COMBAT_DEFEAT,

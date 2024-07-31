@@ -10,7 +10,7 @@ use ratatui::{prelude::*, widgets::Paragraph};
 
 impl Renderable for Image {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        debug!(target:"Render/Image", "render image {:?} at {:?}", self, area);
+        debug!(target:"Interface/Image/Render", "{:?} at {:?}", self, area);
         let image = ImageConverter::from(&PathBuf::from(self.0.clone()));
 
         let area_aspect = (area.width as f32 / 2.) / area.height as f32;

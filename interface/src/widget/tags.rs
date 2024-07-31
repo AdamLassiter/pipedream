@@ -43,12 +43,15 @@ static RENDERABLE_TAGS: Static<Vec<TagKey>> = Static::new(|| {
 impl Renderable for Vec<Tag> {
     fn render(&self, area: Rect, buf: &mut Buffer) {
         let this: Tags = Tags::new(
-            self.clone().into_iter().map(|tag| (tag.key, tag.value)).collect(),
+            self.clone()
+                .into_iter()
+                .map(|tag| (tag.key, tag.value))
+                .collect(),
             vec![],
             vec![],
         );
 
-        debug!(target:"Render/Tags", "render tags {:?} at area {:?}", self, area);
+        debug!(target:"Interface/Tags/Render", "{:?} at {:?}", self, area);
 
         let renderable = RENDERABLE_TAGS
             .clone()

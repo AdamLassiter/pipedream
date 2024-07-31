@@ -60,7 +60,7 @@ pub fn into_combat(campaign_tags: &TagEngine) -> TagEngine {
         .flat_map(|from_campaign| campaign_tags.find(from_campaign))
         .collect::<Vec<_>>();
 
-    debug!(target:"State/IntoCombat", "{:?}", from_campaign);
+    debug!(target:"Prefab/TagEngine/IntoCombat", "{:?}", from_campaign);
     TagEngine {
         tags: Tags::build(from_campaign),
     }
@@ -72,7 +72,7 @@ pub fn from_combat(combat_tags: &TagEngine) -> TagEngine {
         .flat_map(|from_combat| combat_tags.find(from_combat))
         .collect::<Vec<_>>();
 
-    debug!(target:"State/FromCombat", "{:?}", from_combat);
+    debug!(target:"Prefab/TagEngine/FromCombat", "{:?}", from_combat);
     TagEngine {
         tags: Tags::build(from_combat),
     }

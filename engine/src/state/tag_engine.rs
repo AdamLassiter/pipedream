@@ -14,7 +14,7 @@ pub struct TagEngine {
 
 impl TagEngine {
     pub fn handle_actions(&mut self, actions: &Vec<Action>) {
-        debug!(target:"Event/Actions", "{:?}", actions);
+        debug!(target:"Engine/TagEngine/HandleActions", "{:?}", actions);
 
         actions.iter().for_each(|action| match action {
             Action::Insert(tag) => {
@@ -53,7 +53,7 @@ impl TagEngine {
             TagValue::Number(value) => value,
         };
 
-        debug!(target:"Tags/Compute", "{:?} {}", new.key, op(*current, *new_value));
+        debug!(target:"Engine/TagEngine/Compute", "{:?} -> {}", new.key, op(*current, *new_value));
         self.tags
             .insert(&new.key, &TagValue::Number(op(*current, *new_value)));
     }

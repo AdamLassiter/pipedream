@@ -1,15 +1,16 @@
 use ratatui::{prelude::*, widgets::*};
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::core::{description::Description, scene::Scene};
+use pipedream_engine::{core::{description::Description, scene::Scene}, log::debug};
 
 use crate::Renderable;
 
 impl Renderable for Scene {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        // debug!(target:"Render/Scene", "{:?}", self.descriptions);
+        debug!(target:"Interface/Scene/Render", "{:?}", self.descriptions);
 
-        let scene = self.descriptions
+        let scene = self
+            .descriptions
             .iter()
             .map(|Description { descriptor, .. }| {
                 compile::<RatatuiTextGenerator>(descriptor)

@@ -51,7 +51,7 @@ impl SceneComponent {
         if let Some(options) = self.options.as_mut() {
             let widget = options.controllable();
             if let Some(current) = widget.current_choice() {
-                debug!(target:"Interface/Choice", "{:?}", current);
+                debug!(target:"Interface/Scene/MakeChoice", "{:?}", current);
             }
             if let Some(transition) = widget.current_transition() {
                 let _ = self.options.take();
