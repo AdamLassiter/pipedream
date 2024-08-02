@@ -1,8 +1,5 @@
 use std::{
-    clone::Clone,
-    collections::{BTreeMap, VecDeque},
-    ops::Bound::Included,
-    str::FromStr,
+    clone::Clone, collections::{BTreeMap, VecDeque}, ops::Bound::Included, str::FromStr
 };
 
 use fixed::{types::extra::U16, FixedI64};
@@ -28,7 +25,7 @@ pub struct Tag {
     pub value: TagValue,
 }
 
-static TAG_STYLES: Static<BTreeMap<&str, &str>> = Static::new(|| {
+pub static TAG_STYLES: Static<BTreeMap<&str, &str>> = Static::new(|| {
     BTreeMap::from_iter([
         ("health", "red"),
         ("stamina", "green"),
@@ -309,5 +306,9 @@ impl Tags {
             "Expected to resolve value {:?} but reached max depth at {:?}",
             value, next
         );
+    }
+
+    pub fn iter(&self) -> std::collections::btree_map::Iter<TagKey, TagValue> {
+        self.tags.iter()
     }
 }

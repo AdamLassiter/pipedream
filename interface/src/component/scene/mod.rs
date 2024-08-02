@@ -29,7 +29,7 @@ pub struct SceneComponent {
     pub scene: Option<Scene>,
     pub options: Option<ChoicesWidget>,
     pub image: Option<Image>,
-    pub player_stats: Option<Vec<Tag>>,
+    pub tags: Option<Vec<Tag>>,
     pub wake_time: Option<Instant>,
     ui_mode: UiMode,
 }
@@ -41,7 +41,7 @@ impl SceneComponent {
             scene: None,
             options: None,
             image: None,
-            player_stats: None,
+            tags: None,
             wake_time: None,
             ui_mode: UiMode::Campaign,
         }
@@ -103,7 +103,7 @@ impl Handler for SceneComponent {
                     {
                         self.image = Some(Image(portrait_tag.key.trailing_key().to_string()));
                     }
-                    self.player_stats =
+                    self.tags =
                         Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Player, Ent::Resource))));
                 }
                 UiCommand::ChangeMode(mode) => {

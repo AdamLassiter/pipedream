@@ -61,6 +61,7 @@ impl CampaignStateMachine {
                 let handle_end_combat = post_combat_effect.map(|ended_combat| {
                     // Pop combat state
                     self.combat_state_machine.take();
+                    self.tag_engine.handle_actions(&ended_combat.actions);
                     let handle_end_combat = self.handle_transition(ended_combat)
                         .unwrap_or_else(|| self.next_options());
                     debug!(target:"Engine/CampaignStateMachine/EndCombat", "{:?}", handle_end_combat);

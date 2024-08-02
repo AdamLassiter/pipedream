@@ -4,7 +4,7 @@ use crate::core::tags::TagKey;
 
 use super::target::Tgt;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Ent {
     Name,
     Attribute,

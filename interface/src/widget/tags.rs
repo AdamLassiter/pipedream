@@ -9,7 +9,7 @@ use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
-    core::tags::{Static, Tag, TagKey, TagValue, Tags},
+    core::tags::{Static, Tag, TagKey, TAG_STYLES},
     log::debug,
 };
 
@@ -23,63 +23,46 @@ pub static IMAGE_TAGS: Static<BTreeMap<Tgt, TagKey>> = Static::new(|| {
     )
 });
 
-static RENDERABLE_TAGS: Static<Vec<TagKey>> = Static::new(|| {
-    vec![
-        format!("{}:{}:health", Tgt::Player, Ent::Resource)
-            .as_str()
-            .into(),
-        format!("{}:{}:stamina", Tgt::Player, Ent::Resource)
-            .as_str()
-            .into(),
-        format!("{}:{}:mana", Tgt::Player, Ent::Resource)
-            .as_str()
-            .into(),
-        format!("{}:{}:faith", Tgt::Player, Ent::Resource)
-            .as_str()
-            .into(),
-    ]
-});
+#[derive(Debug)]
+pub struct TgtEntTags<'a> {
+    pub tgt: Tgt,
+    pub ent: Ent,
+    pub tags: &'a Vec<Tag>,
+}
 
-impl Renderable for Vec<Tag> {
+impl <'a> Renderable for TgtEntTags<'a> {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let this: Tags = Tags::new(
-            self.clone()
-                .into_iter()
-                .map(|tag| (tag.key, tag.value))
-                .collect(),
-            vec![],
-            vec![],
-        );
-
         debug!(target:"Interface/Tags/Render", "{:?} at {:?}", self, area);
 
-        let renderable = RENDERABLE_TAGS
-            .clone()
-            .into_iter()
-            .map(|key| {
-                this.get(&key)
-                    .cloned()
-                    .map(|value| Tag {
-                        key: key.clone(),
-                        value,
-                    })
-                    .unwrap_or(Tag {
-                        key,
-                        value: TagValue::Number(0.into()),
-                    })
+        // Must live long enough
+        let display_strs = self
+            .tags
+            .iter()
+            .filter(|tag| {
+                tag.key
+                    .0
+                    .starts_with(format!("{}:{}", self.tgt, self.ent).as_str())
             })
-            .map(|tag| format!("{}", tag))
+            .map(display)
             .collect::<Vec<_>>();
 
-        let scene = renderable
+        let scene = display_strs
             .iter()
-            .map(|tag| {
-                compile::<RatatuiTextGenerator>(tag.as_str())
-                    .expect("Failed to compile tui text markup")
+            .flat_map(|display_str| {
+                let compiled = compile::<RatatuiTextGenerator>(display_str.as_str())
+                    .expect("Failed to compile tui text markup");
+                compiled.lines
             })
-            .flat_map(|text| text.lines)
             .collect::<Vec<_>>();
 
         Widget::render(Paragraph::new(scene), area, buf);
     }
+}
+
+fn display(tag: &Tag) -> String {
+    let style = TAG_STYLES
+        .get(tag.key.trailing_key())
+        .copied()
+        .unwrap_or("x");
+    format!("<{} {}={}>", style, tag.key.trailing_key(), tag.value)
 }

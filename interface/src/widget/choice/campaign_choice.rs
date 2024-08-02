@@ -133,7 +133,8 @@ impl Renderable for CampaignChoice {
             });
         }
 
-        let padded_cost; // Must live long enough
+        // Must live long enough
+        let padded_cost;
         if let Some(cost) = &self.cost {
             padded_cost = format!(" {} ", cost);
             let mut cost_lines = compile::<RatatuiTextGenerator>(&padded_cost)

@@ -4,7 +4,7 @@ use crate::core::tags::TagKey;
 
 use super::entity::Ent;
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum Tgt {
     Any,
     Me,

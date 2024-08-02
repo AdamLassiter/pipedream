@@ -1,10 +1,11 @@
+use pipedream_engine::combat::{entity::Ent, target::Tgt};
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders},
 };
 use symbols::border;
 
-use crate::Renderable;
+use crate::{widget::tags::TgtEntTags, Renderable};
 
 use super::SceneComponent;
 
@@ -45,8 +46,13 @@ impl SceneComponent {
             block.render(portrait_border_area, buf);
             portrait.render(portrait_area, buf);
         }
-        if let Some(tags) = self.player_stats.as_ref() {
-            tags.render(stats_area, buf);
+        if let Some(tags) = self.tags.as_ref() {
+            TgtEntTags {
+                tgt: Tgt::Player,
+                ent: Ent::Resource,
+                tags,
+            }
+            .render(stats_area, buf);
         }
         if let Some(choices) = self.options.as_ref() {
             choices.renderable().render(cards_area, buf);
