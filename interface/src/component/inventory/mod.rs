@@ -5,11 +5,11 @@ use crate::{widget::tags::IMAGE_TAGS, Handler, Renderable, TickResult};
 use crossterm::event::KeyEvent;
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    combat::target::Tgt,
     core::{
         command::{EngineCommand, UiCommand, UiMode},
         image::Image,
-        tags::{Tag, TagKey},
+        tags::Tags,
     },
 };
 use ratatui::prelude::*;
@@ -18,8 +18,7 @@ use super::Component;
 
 pub struct InventoryComponent {
     channel: Bichannel<EngineCommand, UiCommand>,
-    player_stats: Option<Vec<Tag>>,
-    enemy_stats: Option<Vec<Tag>>,
+    tags: Option<Tags>,
     player_image: Option<Image>,
     enemy_image: Option<Image>,
     ui_mode: UiMode,
@@ -29,8 +28,7 @@ impl InventoryComponent {
     pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
             channel,
-            player_stats: None,
-            enemy_stats: None,
+            tags: None,
             player_image: None,
             enemy_image: None,
             ui_mode: UiMode::Campaign,
@@ -57,8 +55,6 @@ impl Handler for InventoryComponent {
                         self.player_image =
                             Some(Image(portrait_tag.key.trailing_key().to_string()));
                     }
-                    self.player_stats =
-                        Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Player, Ent::Resource))));
                     // Enemy
                     if let Some(portrait_tag) = tags
                         .find(
@@ -70,8 +66,7 @@ impl Handler for InventoryComponent {
                     {
                         self.enemy_image = Some(Image(portrait_tag.key.trailing_key().to_string()));
                     }
-                    self.enemy_stats =
-                        Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Enemy, Ent::Resource))));
+                    self.tags = Some(tags);
                 }
                 UiCommand::ChangeMode(mode) => {
                     self.ui_mode = mode;

@@ -10,13 +10,13 @@ use crate::{
 use crossterm::event::{KeyCode, KeyEvent};
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    combat::target::Tgt,
     core::{
         choice::{ChoiceType, Choices},
         command::{EngineCommand, UiCommand, UiMode},
         image::Image,
         scene::Scene,
-        tags::{Tag, TagKey},
+        tags::Tags,
     },
     log::debug,
 };
@@ -28,8 +28,9 @@ pub struct SceneComponent {
     pub channel: Bichannel<EngineCommand, UiCommand>,
     pub scene: Option<Scene>,
     pub options: Option<ChoicesWidget>,
-    pub image: Option<Image>,
-    pub tags: Option<Vec<Tag>>,
+    pub player_image: Option<Image>,
+    pub enemy_image: Option<Image>,
+    pub tags: Option<Tags>,
     pub wake_time: Option<Instant>,
     ui_mode: UiMode,
 }
@@ -40,7 +41,8 @@ impl SceneComponent {
             channel,
             scene: None,
             options: None,
-            image: None,
+            player_image: None,
+            enemy_image: None,
             tags: None,
             wake_time: None,
             ui_mode: UiMode::Campaign,
@@ -93,7 +95,7 @@ impl Handler for SceneComponent {
                     self.options = Some(ChoicesWidget::new(opts, &self.ui_mode))
                 }
                 UiCommand::ShowTags(tags) => {
-                    if let Some(portrait_tag) = tags
+                    if let Some(player_portrait) = tags
                         .find(
                             IMAGE_TAGS
                                 .get(&Tgt::Player)
@@ -101,10 +103,19 @@ impl Handler for SceneComponent {
                         )
                         .first()
                     {
-                        self.image = Some(Image(portrait_tag.key.trailing_key().to_string()));
+                        self.player_image = Some(Image(player_portrait.key.trailing_key().to_string()));
                     }
-                    self.tags =
-                        Some(tags.find(&TagKey(format!("{}:{}:", Tgt::Player, Ent::Resource))));
+                    if let Some(enemy_portrait) = tags
+                        .find(
+                            IMAGE_TAGS
+                                .get(&Tgt::Enemy)
+                                .expect("Failed to get tag-key for enemy portrait"),
+                        )
+                        .first()
+                    {
+                        self.enemy_image = Some(Image(enemy_portrait.key.trailing_key().to_string()));
+                    }
+                    self.tags = Some(tags);
                 }
                 UiCommand::ChangeMode(mode) => {
                     self.ui_mode = mode;

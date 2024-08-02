@@ -10,7 +10,7 @@ impl InventoryComponent {
         let [player_area, enemy_area] =
             Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).areas(area);
 
-        if let Some(tags) = self.player_stats.as_ref() {
+        if let Some(tags) = self.tags.as_ref() {
             TgtEntTags {
                 tgt: Tgt::Player,
                 ent: Ent::Resource,
@@ -19,7 +19,7 @@ impl InventoryComponent {
             .render(player_area, buf);
         }
 
-        if let Some(tags) = self.enemy_stats.as_ref() {
+        if let Some(tags) = self.tags.as_ref() {
             TgtEntTags {
                 tgt: Tgt::Enemy,
                 ent: Ent::Resource,

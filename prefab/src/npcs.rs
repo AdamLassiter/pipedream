@@ -27,7 +27,7 @@ fn generate_vec() -> Vec<Npc> {
             name: "Dave".into(),
             tags: Tags::build(vec![
                 "enemy:name:Dave".into(),
-                "enemy:image:resources/rpg/demon-avatar-icons-pixel-art-64x64/png/transperent/icon42.png".into(),
+                "enemy:image:resources/rpg/demon-avatar-32x32-icons-pixel-art/png/transperent/icon3.png".into(),
                 "enemy:resource:health=1".into(),
                 "enemy:resource:stamina=1".into(),
                 "enemy:resource:mana=1".into(),

@@ -9,7 +9,7 @@ use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use pipedream_engine::{
     combat::{entity::Ent, target::Tgt},
-    core::tags::{Static, Tag, TagKey, TAG_STYLES},
+    core::tags::{Static, TagKey, TagValue, Tags, TAG_STYLES},
     log::debug,
 };
 
@@ -27,7 +27,7 @@ pub static IMAGE_TAGS: Static<BTreeMap<Tgt, TagKey>> = Static::new(|| {
 pub struct TgtEntTags<'a> {
     pub tgt: Tgt,
     pub ent: Ent,
-    pub tags: &'a Vec<Tag>,
+    pub tags: &'a Tags,
 }
 
 impl <'a> Renderable for TgtEntTags<'a> {
@@ -38,8 +38,8 @@ impl <'a> Renderable for TgtEntTags<'a> {
         let display_strs = self
             .tags
             .iter()
-            .filter(|tag| {
-                tag.key
+            .filter(|(key, _value)| {
+                key
                     .0
                     .starts_with(format!("{}:{}", self.tgt, self.ent).as_str())
             })
@@ -59,10 +59,10 @@ impl <'a> Renderable for TgtEntTags<'a> {
     }
 }
 
-fn display(tag: &Tag) -> String {
+fn display((key, value): (&TagKey, &TagValue)) -> String {
     let style = TAG_STYLES
-        .get(tag.key.trailing_key())
+        .get(key.trailing_key())
         .copied()
         .unwrap_or("x");
-    format!("<{} {}={}>", style, tag.key.trailing_key(), tag.value)
+    format!("<{} {}={}>", style, key.trailing_key(), value)
 }

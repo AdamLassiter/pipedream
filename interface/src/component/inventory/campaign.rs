@@ -7,7 +7,7 @@ use super::InventoryComponent;
 
 impl InventoryComponent {
     pub fn render_campaign(&self, area: Rect, buf: &mut Buffer) {
-        if let Some(tags) = self.player_stats.as_ref() {
+        if let Some(tags) = self.tags.as_ref() {
             TgtEntTags {
                 tgt: Tgt::Player,
                 ent: Ent::Resource,

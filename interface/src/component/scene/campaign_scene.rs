@@ -46,8 +46,16 @@ impl SceneComponent {
             })
             .unwrap_or(false);
         let details_size_hint = if has_details { 64 + 2 } else { 0 };
-        let portrait_width_hint = if self.image.is_some() { 32 + 2 } else { 0 };
-        let portrait_height_hint = if self.image.is_some() { 16 + 2 } else { 0 };
+        let portrait_width_hint = if self.player_image.is_some() {
+            32 + 2
+        } else {
+            0
+        };
+        let portrait_height_hint = if self.player_image.is_some() {
+            16 + 2
+        } else {
+            0
+        };
 
         // Layouts
         let [description_area, details_area] =
@@ -84,7 +92,7 @@ impl SceneComponent {
                 }
             }
         }
-        if let Some(portrait) = self.image.as_ref() {
+        if let Some(portrait) = self.player_image.as_ref() {
             let block = Block::default()
                 .borders(Borders::ALL)
                 .border_set(border::ROUNDED);
