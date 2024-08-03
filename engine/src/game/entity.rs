@@ -16,6 +16,7 @@ pub enum Ent {
     Deck,
     Hand,
     DrawCount,
+    Item,
 }
 
 impl From<Ent> for String {
@@ -31,6 +32,7 @@ impl From<Ent> for String {
             Ent::Deck => "deck",
             Ent::Hand => "hand",
             Ent::DrawCount => "draw:count",
+            Ent::Item => "item",
         }
         .to_string()
     }
@@ -45,8 +47,22 @@ impl Display for Ent {
 
 impl Ent {
     pub fn tgt(self, target: Tgt) -> TagKey {
-        let targeted: String = target.into();
-        let entity: String = self.into();
-        TagKey(format!("{}:{}", targeted, entity))
+        target.ent(self)
+    }
+
+    pub fn pretty(&self) -> &'static str {
+        match self {
+            Self::Name => "Name",
+            Self::Attribute => "Attributes",
+            Self::AttributeAssist => "Assists",
+            Self::AttributeResist => "Resists",
+            Self::Resource => "Resources",
+            Self::ResourceHealth => "Health",
+            Self::Damage => "Damage",
+            Self::Deck => "Deck",
+            Self::Hand => "Hand",
+            Self::DrawCount => "Draw Count",
+            Self::Item => "Items",
+        }
     }
 }

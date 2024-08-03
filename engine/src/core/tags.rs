@@ -6,7 +6,7 @@ use fixed::{types::extra::U16, FixedI64};
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::combat::field::Combatant;
+use crate::game::field::Combatant;
 
 use std::sync::LazyLock;
 

@@ -10,7 +10,7 @@ use crate::{
 use crossterm::event::{KeyCode, KeyEvent};
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
-    combat::target::Tgt,
+    game::target::Tgt,
     core::{
         choice::{ChoiceType, Choices},
         command::{EngineCommand, UiCommand, UiMode},

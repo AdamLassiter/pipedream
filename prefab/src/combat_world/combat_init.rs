@@ -7,7 +7,7 @@ use crate::{
     tags::{ME_REF, YOU_REF},
 };
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    game::{entity::Ent, target::Tgt},
     core::{
         action::Action,
         scene::Scene,

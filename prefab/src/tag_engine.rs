@@ -1,5 +1,5 @@
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    game::{entity::Ent, target::Tgt},
     core::tags::{Static, TagKey, Tags},
     log::debug,
     state::tag_engine::TagEngine,

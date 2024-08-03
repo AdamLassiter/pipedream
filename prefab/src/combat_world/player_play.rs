@@ -4,7 +4,7 @@ use pipedream_engine::log::debug;
 
 use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
 use pipedream_engine::{
-    combat::{card::Card, entity::Ent, target::Tgt},
+    game::{card::Card, entity::Ent, target::Tgt},
     core::{
         action::Action,
         choice::Choice,

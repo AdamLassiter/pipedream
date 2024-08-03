@@ -9,6 +9,7 @@ use pipedream_engine::core::command::{EngineCommand, UiCommand};
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
+    style::Style,
     text::Line,
     widgets::{block::Position, Borders, Tabs, Widget},
     Frame,
@@ -157,7 +158,7 @@ impl Tui {
             .padding(Padding::uniform(1));
 
         let tabs = Tabs::new(SelectedTab::VARIANTS.iter().map(|&var| var.title()))
-            .highlight_style(Color::Blue)
+            .highlight_style(Style::default().fg(Color::White))
             .select(self.current_tab as usize)
             .padding("", "")
             .divider(" ");

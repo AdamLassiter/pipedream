@@ -1,5 +1,5 @@
 use pipedream_engine::{
-    combat::npc::{Npc, Npcs},
+    game::npc::{Npc, Npcs},
     core::tags::Tags,
 };
 

@@ -1,6 +1,6 @@
 use crate::{Buildable, Generatable};
 use pipedream_engine::{
-    combat::card::{Card, Cards},
+    game::card::{Card, Cards},
     core::{action::Action, predicate::Predicate, tags::Tags},
 };
 

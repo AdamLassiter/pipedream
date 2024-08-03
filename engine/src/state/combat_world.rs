@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::Serialize;
 
 use crate::{
-    combat::{card::Cards, npc::Npcs},
+    game::{card::Cards, npc::Npcs},
     core::{location::Location, state::State},
     state::combat_state_machine::CombatStateMachine,
 };

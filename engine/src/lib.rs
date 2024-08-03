@@ -3,7 +3,7 @@
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
 
-pub mod combat;
+pub mod game;
 pub mod core;
 pub mod state;
 

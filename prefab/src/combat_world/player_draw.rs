@@ -2,7 +2,7 @@ use std::{iter::repeat_n, time::Duration};
 
 use crate::combat_world::{PLAYER_DRAW, PLAYER_PLAY};
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    game::{entity::Ent, target::Tgt},
     core::{
         action::Action,
         scene::Scene,

@@ -5,7 +5,7 @@ use crate::{widget::tags::IMAGE_TAGS, Handler, Renderable, TickResult};
 use crossterm::event::KeyEvent;
 use pipedream_bichannel::Bichannel;
 use pipedream_engine::{
-    combat::target::Tgt,
+    game::target::Tgt,
     core::{
         command::{EngineCommand, UiCommand, UiMode},
         image::Image,

@@ -1,7 +1,7 @@
 use pipedream_engine::log::debug;
 
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    game::{entity::Ent, target::Tgt},
     core::{
         scene::Scene,
         state::State,

@@ -36,11 +36,12 @@ impl Generatable for CampaignWorld {
                         summary:
                             "Pick up the sword"
                             .into(),
+                        image: Some("resources/hi-res/48-sword-rpg-icons/png/without_shadow/7.png".into()),
                         predicate: Some(Predicate::Tag("woods:entrance:item:sword".into())),
                         effect: Transition {
                             next: TransitionType::None,
                             actions: vec![
-                                Action::Insert("player:item:sword".into()),
+                                Action::Add("player:item:sword".into()),
                                 Action::Remove("woods:entrance:item:sword".into()),
                             ],
                         },
@@ -48,7 +49,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Go into the shop".into(),
-                        image: Some("resources/objects/glade-objects-top-down-pixel-art/png/objects_separated/assets_no_shadow/house1.png".into()),
+                        image: Some("resources/scenery/glade-objects-top-down-pixel-art/png/objects_separated/assets_no_shadow/house1.png".into()),
                         effect: Transition {
                             next: TransitionType::Enter("ephemeral:shop".into()),
                             actions: vec![],
@@ -57,7 +58,7 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Go deeper into the woods".into(),
-                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/luminous_tree2.png".into()),
+                        image: Some("resources/scenery/forest-objects-top-down-pixel-art/png/assets_no_shadow/luminous_tree1.png".into()),
                         effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],
@@ -75,7 +76,7 @@ impl Generatable for CampaignWorld {
                 options: vec![
                     Choice { 
                         summary: "Go deeper into the woods".into(),
-                        image: Some("resources/objects/forest-objects-top-down-pixel-art/png/assets/luminous_tree2.png".into()),
+                        image: Some("resources/scenery/forest-objects-top-down-pixel-art/png/assets_no_shadow/luminous_tree2.png".into()),
                         effect: Transition {
                             next: TransitionType::Goto("woods:depths".into()),
                             actions: vec![],

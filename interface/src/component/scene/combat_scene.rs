@@ -1,4 +1,4 @@
-use pipedream_engine::combat::{entity::Ent, target::Tgt};
+use pipedream_engine::game::{entity::Ent, target::Tgt};
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders},
@@ -40,8 +40,8 @@ impl SceneComponent {
         let [player_portrait_border_area, player_stats_area] =
             Layout::horizontal([Constraint::Length(portrait_width_hint), Constraint::Fill(1)])
                 .areas(player_stats_area);
-        let [enemy_portrait_border_area, enemy_stats_area] =
-            Layout::horizontal([Constraint::Length(portrait_width_hint), Constraint::Fill(1)])
+        let [enemy_stats_area, enemy_portrait_border_area] =
+            Layout::horizontal([Constraint::Fill(1), Constraint::Length(portrait_width_hint)])
                 .areas(enemy_stats_area);
 
         // Render
@@ -56,6 +56,14 @@ impl SceneComponent {
 
             block.render(player_portrait_border_area, buf);
             portrait.render(portrait_area, buf);
+            if let Some(tags) = self.tags.as_ref() {
+                TgtEntTags {
+                    tgt: Tgt::Player,
+                    ent: Ent::Resource,
+                    tags,
+                }
+                .render(player_stats_area, buf);
+            }
         }
         if let Some(portrait) = self.enemy_image.as_ref() {
             let block = Block::default()
@@ -65,20 +73,14 @@ impl SceneComponent {
 
             block.render(enemy_portrait_border_area, buf);
             portrait.render(portrait_area, buf);
-        }
-        if let Some(tags) = self.tags.as_ref() {
-            TgtEntTags {
-                tgt: Tgt::Player,
-                ent: Ent::Resource,
-                tags,
+            if let Some(tags) = self.tags.as_ref() {
+                TgtEntTags {
+                    tgt: Tgt::Enemy,
+                    ent: Ent::Resource,
+                    tags,
+                }
+                .render(enemy_stats_area, buf);
             }
-            .render(player_stats_area, buf);
-            TgtEntTags {
-                tgt: Tgt::Enemy,
-                ent: Ent::Resource,
-                tags,
-            }
-            .render(enemy_stats_area, buf);
         }
         if let Some(choices) = self.options.as_ref() {
             choices.renderable().render(cards_area, buf);

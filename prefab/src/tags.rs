@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use pipedream_engine::{
-    combat::target::Tgt,
+    game::target::Tgt,
     core::tags::{Static, Tag, TagKey, Tags},
 };
 

@@ -1,5 +1,5 @@
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    game::{entity::Ent, target::Tgt},
     core::choice::{ChoiceType, Choices},
 };
 use ratatui::{
@@ -30,22 +30,6 @@ impl SceneComponent {
             }) => c.len(),
             _ => 0,
         } as u16;
-        let has_details = self
-            .options
-            .as_ref()
-            .map(|c| c.choices())
-            .map(|x| match x {
-                Choices {
-                    choices: ChoiceType::Manual(choices),
-                    cursor,
-                } => choices
-                    .get(*cursor)
-                    .map(|choice| choice.image.is_some())
-                    .unwrap_or(false),
-                _ => false,
-            })
-            .unwrap_or(false);
-        let details_size_hint = if has_details { 64 + 2 } else { 0 };
         let portrait_width_hint = if self.player_image.is_some() {
             32 + 2
         } else {
@@ -59,11 +43,7 @@ impl SceneComponent {
 
         // Layouts
         let [description_area, details_area] =
-            Layout::horizontal([Constraint::Fill(1), Constraint::Length(details_size_hint)])
-                .areas(area);
-        let [_, details_area] =
-            Layout::vertical([Constraint::Fill(1), Constraint::Length(details_size_hint)])
-                .areas(details_area);
+            Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).areas(area);
         let [portrait_and_stats_area, scene_and_choices_area] = Layout::vertical([
             Constraint::Length(portrait_height_hint),
             Constraint::Fill(1),

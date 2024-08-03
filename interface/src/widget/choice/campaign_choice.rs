@@ -7,7 +7,8 @@ use ratatui::{
     style::Stylize,
     symbols::border,
     widgets::{
-        block::{Position, Title}, Block, Borders, List, ListDirection, ListState, Paragraph, StatefulWidget, Widget
+        block::{Position, Title},
+        Block, Borders, List, ListDirection, ListState, Paragraph, StatefulWidget, Widget,
     },
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
@@ -106,9 +107,16 @@ impl Renderable for CampaignChoice {
         let details_size_hint = self.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
-        let [_space, area] = Layout::vertical([
+        let [_, area, _] = Layout::horizontal([
             Constraint::Fill(1),
-            Constraint::Length(if details_size_hint > 0 { 24 } else { 32 } as u16 + 2),
+            Constraint::Length(2 * ascii_size_hint + 2),
+            Constraint::Fill(1),
+        ])
+        .areas(area);
+        let [_, area, _] = Layout::vertical([
+            Constraint::Fill(1),
+            Constraint::Length(ascii_size_hint + details_size_hint + 2),
+            Constraint::Fill(1),
         ])
         .areas(area);
 
@@ -117,8 +125,8 @@ impl Renderable for CampaignChoice {
             .border_set(border::ROUNDED);
 
         let [ascii_area, details_area] = Layout::vertical([
-            Constraint::Min(ascii_size_hint),
-            Constraint::Fill(details_size_hint),
+            Constraint::Length(ascii_size_hint),
+            Constraint::Length(details_size_hint),
         ])
         .areas(block.inner(area));
 
@@ -184,18 +192,12 @@ impl Renderable for CampaignChoices {
                     let Choice {
                         summary,
                         selectable,
-                        predicate,
                         ..
                     } = choice;
-                    let description = if let Some(pred) = predicate {
-                        format!("{} [{}]", summary, pred)
-                    } else {
-                        summary.to_string()
-                    };
                     if *selectable {
-                        description
+                        summary.clone()
                     } else {
-                        format!("<d {}>", description)
+                        format!("<d {}>", summary)
                     }
                 })
                 .collect::<Vec<_>>();

@@ -2,7 +2,7 @@ use pipedream_engine::log::debug;
 
 use crate::combat_world::{COMBAT_END, PLAYER_DAMAGE};
 use pipedream_engine::{
-    combat::{entity::Ent, target::Tgt},
+    game::{entity::Ent, target::Tgt},
     core::{
         action::Action,
         scene::Scene,
