@@ -1,3 +1,8 @@
+extern crate serde;
+extern crate serde_json;
+extern crate rusqlite;
+extern crate serde_rusqlite;
+
 extern crate proc_macro;
 
 use proc_macro2::TokenStream;
@@ -25,7 +30,7 @@ impl Parse for JsonPath {
 impl JsonPath {
     fn as_sql(&self, table_name: &String) -> String {
         format!(
-            "select data from {} where json_extract(data, '{}') like :{}",
+            "select data from {} where data -> '{}' = :{}",
             table_name,
             self.path.value(),
             self.ident
@@ -52,7 +57,7 @@ impl JsonPaths {
             let query_by_ident = format_ident!("query_by_{}", jp.ident);
             let ident_key = format!(":{}", jp.ident);
             quote! {
-                pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: T) -> rusqlite::Result<Vec<Self>> where T: Serialize {
+                pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<Vec<Self>> where T: Serialize {
                     Ok(conn.prepare(#query_sql)?
                         .query_and_then(rusqlite::named_params! {#ident_key: serde_json::to_value(value).unwrap()}, serde_rusqlite::from_row::<String>)?
                         .map(|data| serde_json::from_str::<Self>(data.unwrap().as_str()).unwrap())
@@ -64,7 +69,7 @@ impl JsonPaths {
 }
 
 #[proc_macro_attribute]
-pub fn json_sql(
+pub fn orm_bind(
     bindings: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
@@ -78,14 +83,14 @@ pub fn json_sql(
 
     let table_name = format!("{}s", ident).to_lowercase();
     let create_sql = format!(
-        "create table {} ( id int primary key, data json )",
+        "create table {} ( id integer primary key autoincrement, data json )",
         table_name
     );
     let insert_sql = format!("insert into {} (data) values (:data)", table_name);
     let query_id_sql = format!("select data from {} where id = :id", table_name);
     let queries_by_ident = TokenStream::from_iter(bindings.as_quotes(&table_name));
 
-    let generated = quote! {
+    quote! {
         #item
 
         #[automatically_derived]
@@ -103,17 +108,21 @@ pub fn json_sql(
                 Ok(())
             }
 
-            pub fn query(conn: &rusqlite::Connection, id: i32) -> rusqlite::Result<Vec<Self>> {
+            pub fn query_by_id(conn: &rusqlite::Connection, id: i32) -> rusqlite::Result<Option<Self>> {
                 Ok(conn.prepare(#query_id_sql)?
                     .query_and_then(rusqlite::named_params! {":id": id}, serde_rusqlite::from_row::<String>)?
                     .map(|data| serde_json::from_str::<Self>(data.unwrap().as_str()).unwrap())
-                    .collect::<Vec<Self>>())
+                    .next())
+            }
+
+            pub fn query_raw(conn: &rusqlite::Connection, raw_sql: &str, params: &[(&str, &dyn rusqlite::ToSql)]) -> rusqlite::Result<Option<Self>> {
+                Ok(conn.prepare(raw_sql)?
+                    .query_and_then(params, serde_rusqlite::from_row::<String>)?
+                    .map(|data| serde_json::from_str::<Self>(data.unwrap().as_str()).unwrap())
+                    .next())
             }
 
             #queries_by_ident
         }
-    }.into();
-
-    println!("{}", generated);
-    generated
+    }.into()
 }
