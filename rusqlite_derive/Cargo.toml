@@ -1,0 +1,23 @@
+cargo-features = ["edition2024", "codegen-backend"]
+
+
+[package]
+name = "rusqlite_derive"
+version = "0.1.0"
+edition = "2024"
+
+
+[lib]
+proc-macro = true
+
+
+[dependencies]
+quote = "1.0.36"
+syn = { version = "2.0.72", features = ["full"] }
+proc-macro2 = "1.0.86"
+
+serde = { version = "1.0.201", features = ["derive"] }
+serde_json = "1.0.122"
+
+rusqlite = { version = "0.31.0", features = ["serde_json", "bundled", "trace"] }
+serde_rusqlite = "0.35.0"
