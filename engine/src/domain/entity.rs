@@ -1,10 +1,6 @@
-use std::fmt::Display;
+use serde::{Deserialize, Serialize};
 
-use crate::core::tags::TagKey;
-
-use super::target::Tgt;
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Ent {
     Name,
     Attribute,
@@ -19,9 +15,9 @@ pub enum Ent {
     Item,
 }
 
-impl From<Ent> for String {
-    fn from(val: Ent) -> Self {
-        match val {
+impl Ent {
+    pub fn as_key(&self) -> &'static str {
+        match self {
             Ent::Name => "name",
             Ent::Attribute => "attribute",
             Ent::AttributeAssist => "attribute:assist",
@@ -31,23 +27,9 @@ impl From<Ent> for String {
             Ent::Damage => "damage",
             Ent::Deck => "deck",
             Ent::Hand => "hand",
-            Ent::DrawCount => "draw:count",
+            Ent::DrawCount => "draw-count",
             Ent::Item => "item",
         }
-        .to_string()
-    }
-}
-
-impl Display for Ent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let this: String = (*self).into();
-        f.write_str(&this)
-    }
-}
-
-impl Ent {
-    pub fn tgt(self, target: Tgt) -> TagKey {
-        target.ent(self)
     }
 
     pub fn pretty(&self) -> &'static str {

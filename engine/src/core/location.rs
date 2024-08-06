@@ -1,10 +1,21 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct Location(pub String);
+use super::command::UiMode;
 
-impl From<&str> for Location {
-    fn from(value: &str) -> Self {
-        Self(value.into())
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct Location {
+    pub location: String,
+    pub ui_mode: UiMode,
+}
+
+impl Location {
+    fn from<T>(location: T, ui_mode: UiMode) -> Self
+    where
+        T: Into<String>,
+    {
+        Self {
+            location: location.into(),
+            ui_mode,
+        }
     }
 }

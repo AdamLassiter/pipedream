@@ -1,6 +1,22 @@
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Stats {
+    pub resources: BTreeMap<Resource, f64>,
+    pub max_resources: BTreeMap<Resource, f64>,
+    pub assisstances: BTreeMap<Assistance, f64>,
+    pub resistances: BTreeMap<Resistance, f64>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EphemeralStats {
+    pub buffs: BTreeMap<Buff, f64>,
+    pub debuffs: BTreeMap<Debuff, f64>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Resource {
     Health,
     Stamina,
@@ -8,13 +24,7 @@ pub enum Resource {
     Favour,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
-pub enum Attribute {
-    Assistance(Assistance),
-    Resistance(Resistance),
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Assistance {
     Strength,
     Dexterity,
@@ -22,7 +32,7 @@ pub enum Assistance {
     Faith,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Resistance {
     Endurance,
     Vitality,
@@ -30,7 +40,7 @@ pub enum Resistance {
     Fortitude,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Element {
     Bludgeoning,
     Piercing,
@@ -53,13 +63,7 @@ pub enum Element {
     Necrotic,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
-pub enum Condition {
-    Buff(Buff),
-    Debuff(Debuff),
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Buff {
     Overwhelm,
     Guard,
@@ -82,7 +86,7 @@ pub enum Buff {
     Protect,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Debuff {
     Stun,
     Bleed,

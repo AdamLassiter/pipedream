@@ -2,30 +2,29 @@ use serde::{Deserialize, Serialize};
 
 use super::{action::Action, location::Location};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Transition {
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Effect {
     #[serde(default = "none")]
-    pub next: TransitionType,
+    pub transition: Transition,
     pub actions: Vec<Action>,
 }
 
-fn none() -> TransitionType {
-    TransitionType::None
+fn none() -> Transition {
+    Transition::None
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum TransitionType {
+pub enum Transition {
     None,
     Leave,
     Enter(Location),
     Goto(Location),
-    Combat(Vec<Action>),
 }
 
-impl Default for Transition {
+impl Default for Effect {
     fn default() -> Self {
         Self {
-            next: TransitionType::None,
+            transition: Transition::None,
             actions: Default::default(),
         }
     }

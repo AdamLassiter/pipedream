@@ -1,8 +1,10 @@
-use super::{choice::Choices, scene::Scene, tags::Tags, transition::Transition};
+use serde::{Deserialize, Serialize};
+
+use super::{choice::Choices, effect::Effect, scene::Scene};
 
 #[derive(Debug, Clone)]
 pub enum EngineCommand {
-    RespondWithChoice(Transition),
+    RespondWithChoice(Effect),
     Exit,
 }
 
@@ -10,12 +12,12 @@ pub enum EngineCommand {
 pub enum UiCommand {
     ShowScene(Scene),
     ShowChoices(Choices),
-    ShowTags(Tags),
     ChangeMode(UiMode),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum UiMode {
     Campaign,
     Combat,
+    // Inventory,
 }

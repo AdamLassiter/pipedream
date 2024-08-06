@@ -1,33 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use super::tags::Tag;
+// A predicate is a SQL statement to be queried and compared against boolean true/1 and false/0
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Predicate(pub String);
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Predicate {
-    And(Box<Vec<Predicate>>),
-    Or(Box<Vec<Predicate>>),
-    Not(Box<Predicate>),
-    Tag(Tag),
-}
-
-impl std::fmt::Display for Predicate {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(
-            match self {
-                Self::Tag(tag) => format!("{}", tag),
-                Self::And(tags) => tags
-                    .iter()
-                    .map(|t| format!("{}", t))
-                    .collect::<Vec<_>>()
-                    .join(" AND "),
-                Self::Or(tags) => tags
-                    .iter()
-                    .map(|t| format!("{}", t))
-                    .collect::<Vec<_>>()
-                    .join(" OR "),
-                Self::Not(tag) => format!("Not {}", tag),
-            }
-            .as_str(),
-        )
+impl Predicate {
+    pub fn test(&self) -> bool {
+        true
     }
 }

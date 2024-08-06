@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use strum::EnumString;
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumString)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Combatant {
     Me,
     You,

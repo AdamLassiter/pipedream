@@ -8,13 +8,16 @@ edition = "2024"
 
 
 [dependencies]
+rusqlite_orm = { path = "../rusqlite_orm" }
+serde = { version = "1.0.201", features = ["derive"] }
+serde_json = "1.0.122"
+rusqlite = { version = "0.31.0", features = ["serde_json", "bundled", "trace"] }
+serde_rusqlite = "0.35.0"
+
 rand = "0.8.5"
 fixed = { version = "1.27.0", features = ["serde", "serde-str"]}
 
 log = { version = "0.4.21", features = ["kv"] }
-
-serde = { version = "1.0.201", features = ["derive"] }
-serde_yml = "0.0.10"
 
 strum = "0.26.2"
 strum_macros = "0.26.4"

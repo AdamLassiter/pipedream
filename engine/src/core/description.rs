@@ -4,37 +4,32 @@ use super::predicate::Predicate;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Description {
+    pub descriptor: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub predicate: Option<Predicate>,
-    pub descriptor: String,
 }
 
-impl From<(Predicate, String)> for Description {
-    fn from((predicate, descriptor): (Predicate, String)) -> Self {
-        Description {
-            predicate: Some(predicate),
-            descriptor,
+
+
+impl Description {
+    pub fn predicated<T, U>(descriptor: U, predicate: T) -> Self
+    where
+        U: Into<String>,
+        T: Into<Predicate>,
+    {
+        Self {
+            descriptor: descriptor.into(),
+            predicate: Some(predicate.into()),
         }
     }
-}
 
-impl From<(Predicate, &str)> for Description {
-    fn from((predicate, descriptor): (Predicate, &str)) -> Self {
-        (predicate, descriptor.to_string()).into()
-    }
-}
-
-impl From<String> for Description {
-    fn from(descriptor: String) -> Self {
+    pub fn always<T>(descriptor: T) -> Self
+    where
+        T: Into<String>,
+    {
         Description {
             predicate: None,
-            descriptor,
+            descriptor: descriptor.into(),
         }
-    }
-}
-
-impl From<&str> for Description {
-    fn from(descriptor: &str) -> Self {
-        descriptor.to_string().into()
     }
 }
