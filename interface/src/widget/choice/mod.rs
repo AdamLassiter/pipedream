@@ -15,8 +15,8 @@ pub enum ChoicesWidget {
 impl ChoicesWidget {
     pub fn new(choices: Choices, ui_mode: &UiMode) -> Self {
         match ui_mode {
-            UiMode::Campaign => Self::CampaignChoices(CampaignChoices(choices)),
-            UiMode::Combat => Self::CombatChoices(CombatChoices(choices)),
+            UiMode::Campaign => Self::CampaignChoices(CampaignChoices(choices, 0)),
+            UiMode::Combat => Self::CombatChoices(CombatChoices(choices, 0)),
         }
     }
 
@@ -36,8 +36,15 @@ impl ChoicesWidget {
 
     pub fn choices(&self) -> &Choices {
         match self {
-            Self::CampaignChoices(CampaignChoices(choices)) => choices,
-            Self::CombatChoices(CombatChoices(choices)) => choices,
+            Self::CampaignChoices(CampaignChoices(choices, _)) => choices,
+            Self::CombatChoices(CombatChoices(choices, _)) => choices,
+        }
+    }
+
+    pub fn cursor(&self) -> &usize {
+        match self {
+            Self::CampaignChoices(CampaignChoices(_, cursor)) => cursor,
+            Self::CombatChoices(CombatChoices(_, cursor)) => cursor,
         }
     }
 }

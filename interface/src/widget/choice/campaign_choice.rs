@@ -15,30 +15,14 @@ use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use pipedream_engine::{
     core::{
-        choice::{Choice, ChoiceType, Choices},
-        transition::Transition,
+        choice::{Choice, Choices}, description::Description, effect::Effect
     },
     log::debug,
 };
 
 use crate::{Controllable, Renderable};
 
-pub struct CampaignChoices(pub Choices);
-
-impl Deref for CampaignChoices {
-    type Target = Choices;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for CampaignChoices {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
+pub struct CampaignChoices(pub Choices, pub usize);
 pub struct CampaignChoice(pub Choice);
 
 impl Deref for CampaignChoice {
@@ -54,56 +38,53 @@ impl DerefMut for CampaignChoice {
         &mut self.0
     }
 }
-
-fn cursor_up(this: &mut Choices) {
-    if let ChoiceType::Manual(choices) = &this.choices
-        && !choices.is_empty()
-    {
-        this.cursor = this.cursor.saturating_add(1).clamp(0, choices.len() - 1);
+impl CampaignChoices {
+    fn cursor_up(&mut self) {
+        if let Choices::Manual(choices) = &self.0
+            && !choices.is_empty()
+        {
+            self.1 = self.1.saturating_add(1).clamp(0, choices.len() - 1);
+        }
     }
-}
 
-fn cursor_down(this: &mut Choices) {
-    if let ChoiceType::Manual(choices) = &this.choices
-        && !choices.is_empty()
-    {
-        this.cursor = this.cursor.saturating_sub(1).clamp(0, choices.len() - 1);
+    fn cursor_down(&mut self) {
+        if let Choices::Manual(choices) = &self.0
+            && !choices.is_empty()
+        {
+            self.1 = self.1.saturating_sub(1).clamp(0, choices.len() - 1);
+        }
     }
 }
 
 impl Controllable for CampaignChoices {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
-            KeyCode::Char('w') | KeyCode::Up => cursor_up(self),
-            KeyCode::Char('s') | KeyCode::Down => cursor_down(self),
+            KeyCode::Char('w') | KeyCode::Up => self.cursor_up(),
+            KeyCode::Char('s') | KeyCode::Down => self.cursor_down(),
             _ => {}
         }
     }
 
     fn current_choice(&self) -> Option<Choice> {
-        match &self.choices {
-            ChoiceType::Manual(choices) => choices.get(self.cursor).cloned(),
-            ChoiceType::Auto(..) => None,
+        match &self.0 {
+            Choices::Manual(choices) => choices.get(self.1).cloned(),
+            Choices::Auto(..) => None,
         }
     }
 
-    fn current_transition(&self) -> Option<Transition> {
-        match &self.choices {
-            ChoiceType::Manual(choices) => choices
-                .get(self.cursor)
+    fn current_transition(&self) -> Option<Effect> {
+        match &self.0 {
+            Choices::Manual(choices) => choices
+                .get(self.1)
                 .filter(|&c| c.selectable)
                 .map(|c| c.effect.clone()),
-            ChoiceType::Auto(transition, _) => Some(transition.clone()),
+            Choices::Auto(transition, _) => Some(transition.clone()),
         }
     }
 }
 
 impl Renderable for CampaignChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        if self.image.is_none() && self.details.is_empty() && self.cost.is_none() {
-            return;
-        };
-
         let details_size_hint = self.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
@@ -157,15 +138,13 @@ impl Renderable for CampaignChoice {
             }
         }
 
-        if let Some(image) = &self.image {
-            image.render(ascii_area, buf);
-        }
+        self.image.render(ascii_area, buf);
 
         let details_lines = self
             .details
             .iter()
-            .flat_map(|details| {
-                compile::<RatatuiTextGenerator>(details)
+            .flat_map(|Description { descriptor, .. }| {
+                compile::<RatatuiTextGenerator>(descriptor)
                     .into_iter()
                     .flat_map(|text| text.lines)
                     .collect::<Vec<_>>()
@@ -182,10 +161,10 @@ impl Renderable for CampaignChoice {
 impl Renderable for CampaignChoices {
     fn render(&self, area: Rect, buf: &mut Buffer) {
         debug!(target:"Interface/Render/CampaignChoices", "{:?} at {:?}", self.0, area);
-        let Choices { choices, cursor } = &self.0;
+        let Self (choices, cursor) = self;
         let mut state = ListState::default().with_selected(Some(*cursor));
 
-        if let ChoiceType::Manual(choices) = choices {
+        if let Choices::Manual(choices) = choices {
             let summary_descriptions = choices
                 .iter()
                 .map(|choice| {

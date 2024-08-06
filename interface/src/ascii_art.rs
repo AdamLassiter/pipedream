@@ -1,5 +1,6 @@
 #![allow(clippy::needless_range_loop)]
 
+use std::fmt::Debug;
 use std::iter::zip;
 use std::path::Path;
 
@@ -206,11 +207,14 @@ impl ImageConverter {
 
 impl<P> From<P> for ImageConverter
 where
-    P: AsRef<Path>,
+    P: AsRef<Path> + Debug + Clone,
 {
     fn from(value: P) -> Self {
-        let open_file = Reader::open(value).unwrap();
-        let image = open_file.decode().unwrap();
+        let open_file = Reader::open(value.clone())
+            .unwrap_or_else(|_| panic!("No such file or directory {:?}", value));
+        let image = open_file
+            .decode()
+            .unwrap_or_else(|_| panic!("No such file or directory {:?}", value));
         Self::new(image)
     }
 }

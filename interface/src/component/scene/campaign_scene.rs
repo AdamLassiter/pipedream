@@ -1,33 +1,20 @@
-use pipedream_engine::{
-    game::{entity::Ent, target::Tgt},
-    core::choice::{ChoiceType, Choices},
-};
+use pipedream_engine::core::choice::Choices;
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders},
 };
 use symbols::border;
 
-use crate::{
-    widget::{choice::campaign_choice::CampaignChoice, tags::TgtEntTags},
-    Renderable,
-};
+use crate::{widget::choice::campaign_choice::CampaignChoice, Renderable};
 
 use super::SceneComponent;
 
 impl SceneComponent {
     pub fn render_campaign(&self, area: Rect, buf: &mut Buffer) {
         // Size hints
-        let scene_size_hint = self
-            .scene
-            .as_ref()
-            .map(|s| s.descriptions.len())
-            .unwrap_or(0) as u16;
-        let choices_size_hint = match self.options.as_ref().map(|c| c.choices()) {
-            Some(Choices {
-                choices: ChoiceType::Manual(c),
-                ..
-            }) => c.len(),
+        let scene_size_hint = self.scene.as_ref().map(|scene| scene.0.len()).unwrap_or(0) as u16;
+        let choices_size_hint = match self.choices.as_ref().map(|c| c.choices()) {
+            Some(Choices::Manual(choices)) => choices.len(),
             _ => 0,
         } as u16;
         let portrait_width_hint = if self.player_image.is_some() {
@@ -62,12 +49,12 @@ impl SceneComponent {
         if let Some(scene) = self.scene.as_ref() {
             scene.render(scene_area, buf);
         }
-        if let Some(widget) = self.options.as_ref() {
+        if let Some(widget) = self.choices.as_ref() {
             widget.renderable().render(choices_area, buf);
 
-            let cursor = widget.choices().cursor;
-            if let ChoiceType::Manual(choices) = &widget.choices().choices {
-                if let Some(selected) = choices.get(cursor) {
+            let cursor = widget.cursor();
+            if let Choices::Manual(choices) = &widget.choices() {
+                if let Some(selected) = choices.get(*cursor) {
                     CampaignChoice(selected.clone()).render(details_area, buf);
                 }
             }
@@ -80,14 +67,6 @@ impl SceneComponent {
 
             block.render(portrait_border_area, buf);
             portrait.render(portrait_area, buf);
-        }
-        if let Some(tags) = self.tags.as_ref() {
-            TgtEntTags {
-                tgt: Tgt::Player,
-                ent: Ent::Resource,
-                tags,
-            }
-            .render(stats_area, buf);
         }
     }
 }

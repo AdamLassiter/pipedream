@@ -10,10 +10,10 @@ use crate::Renderable;
 
 impl Renderable for Scene {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        debug!(target:"Interface/Scene/Render", "{:?}", self.descriptions);
+        debug!(target:"Interface/Scene/Render", "{:?}", self.0);
 
         let scene = self
-            .descriptions
+            .0
             .iter()
             .map(|Description { descriptor, .. }| {
                 compile::<RatatuiTextGenerator>(descriptor)

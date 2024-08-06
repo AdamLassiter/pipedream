@@ -3,20 +3,15 @@ mod combat_scene;
 
 use std::time::Instant;
 
-use crate::{
-    widget::{choice::ChoicesWidget, tags::IMAGE_TAGS},
-    Handler, Renderable, TickResult,
-};
+use crate::{widget::choice::ChoicesWidget, Handler, Renderable, TickResult};
 use crossterm::event::{KeyCode, KeyEvent};
-use pipedream_bichannel::Bichannel;
+use bichannel::Bichannel;
 use pipedream_engine::{
-    game::target::Tgt,
     core::{
-        choice::{ChoiceType, Choices},
+        choice::Choices,
         command::{EngineCommand, UiCommand, UiMode},
         image::Image,
         scene::Scene,
-        tags::Tags,
     },
     log::debug,
 };
@@ -25,14 +20,13 @@ use ratatui::prelude::*;
 use super::Component;
 
 pub struct SceneComponent {
+    ui_mode: UiMode,
     pub channel: Bichannel<EngineCommand, UiCommand>,
     pub scene: Option<Scene>,
-    pub options: Option<ChoicesWidget>,
+    pub choices: Option<ChoicesWidget>,
     pub player_image: Option<Image>,
     pub enemy_image: Option<Image>,
-    pub tags: Option<Tags>,
     pub wake_time: Option<Instant>,
-    ui_mode: UiMode,
 }
 
 impl SceneComponent {
@@ -40,23 +34,22 @@ impl SceneComponent {
         Self {
             channel,
             scene: None,
-            options: None,
+            choices: None,
             player_image: None,
             enemy_image: None,
-            tags: None,
             wake_time: None,
             ui_mode: UiMode::Campaign,
         }
     }
 
     pub fn make_choice(&mut self) {
-        if let Some(options) = self.options.as_mut() {
+        if let Some(options) = self.choices.as_mut() {
             let widget = options.controllable();
             if let Some(current) = widget.current_choice() {
                 debug!(target:"Interface/Scene/MakeChoice", "{:?}", current);
             }
             if let Some(transition) = widget.current_transition() {
-                let _ = self.options.take();
+                let _ = self.choices.take();
                 self.channel
                     .send(EngineCommand::RespondWithChoice(transition))
                     .expect("Broken channel while responding with choice");
@@ -69,11 +62,7 @@ impl Handler for SceneComponent {
     fn handle_tick_event(&mut self) -> TickResult {
         let mut should_redraw = false;
 
-        if let Some(Choices {
-            choices: ChoiceType::Auto(_, duration),
-            ..
-        }) = self.options.as_ref().map(|c| c.choices())
-        {
+        if let Some(Choices::Auto(_, duration)) = self.choices.as_ref().map(|c| c.choices()) {
             self.wake_time.get_or_insert(
                 Instant::now()
                     .checked_add(*duration)
@@ -92,30 +81,7 @@ impl Handler for SceneComponent {
             match ev {
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowChoices(opts) => {
-                    self.options = Some(ChoicesWidget::new(opts, &self.ui_mode))
-                }
-                UiCommand::ShowTags(tags) => {
-                    if let Some(player_portrait) = tags
-                        .find(
-                            IMAGE_TAGS
-                                .get(&Tgt::Player)
-                                .expect("Failed to get tag-key for player portrait"),
-                        )
-                        .first()
-                    {
-                        self.player_image = Some(Image(player_portrait.key.trailing_key().to_string()));
-                    }
-                    if let Some(enemy_portrait) = tags
-                        .find(
-                            IMAGE_TAGS
-                                .get(&Tgt::Enemy)
-                                .expect("Failed to get tag-key for enemy portrait"),
-                        )
-                        .first()
-                    {
-                        self.enemy_image = Some(Image(enemy_portrait.key.trailing_key().to_string()));
-                    }
-                    self.tags = Some(tags);
+                    self.choices = Some(ChoicesWidget::new(opts, &self.ui_mode))
                 }
                 UiCommand::ChangeMode(mode) => {
                     self.ui_mode = mode;
@@ -131,7 +97,7 @@ impl Handler for SceneComponent {
         match key_event.code {
             KeyCode::Char('x') | KeyCode::Enter => self.make_choice(),
             _ => {
-                if let Some(options) = self.options.as_mut() {
+                if let Some(options) = self.choices.as_mut() {
                     options.controllable().handle_key_event(key_event);
                 }
             }

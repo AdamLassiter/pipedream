@@ -15,29 +15,14 @@ use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use pipedream_engine::{
     core::{
-        choice::{Choice, ChoiceType, Choices},
-        transition::Transition,
+        choice::{Choice, Choices}, description::Description, effect::Effect
     },
     log::debug,
 };
 
 use crate::{Controllable, Renderable};
 
-pub struct CombatChoices(pub Choices);
-
-impl Deref for CombatChoices {
-    type Target = Choices;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for CombatChoices {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
+pub struct CombatChoices(pub Choices, pub usize);
 
 pub struct CombatChoice(pub Choice);
 
@@ -55,61 +40,55 @@ impl DerefMut for CombatChoice {
     }
 }
 
-fn cursor_left(this: &mut Choices) {
-    if let ChoiceType::Manual(choices) = &this.choices
-        && !choices.is_empty()
-    {
-        this.cursor = this.cursor.saturating_sub(1).clamp(0, choices.len() - 1);
+impl CombatChoices {
+    fn cursor_right(&mut self) {
+        if let Choices::Manual(choices) = &self.0
+            && !choices.is_empty()
+        {
+            self.1 = self.1.saturating_add(1).clamp(0, choices.len() - 1);
+        }
     }
-}
 
-fn cursor_right(this: &mut Choices) {
-    if let ChoiceType::Manual(choices) = &this.choices
-        && !choices.is_empty()
-    {
-        this.cursor = this.cursor.saturating_add(1).clamp(0, choices.len() - 1);
+    fn cursor_left(&mut self) {
+        if let Choices::Manual(choices) = &self.0
+            && !choices.is_empty()
+        {
+            self.1 = self.1.saturating_sub(1).clamp(0, choices.len() - 1);
+        }
     }
 }
 
 impl Controllable for CombatChoices {
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
-            KeyCode::Char('a') | KeyCode::Left => cursor_left(self),
-            KeyCode::Char('d') | KeyCode::Right => cursor_right(self),
+            KeyCode::Char('a') | KeyCode::Left => self.cursor_left(),
+            KeyCode::Char('d') | KeyCode::Right => self.cursor_right(),
             _ => {}
         }
     }
 
     fn current_choice(&self) -> Option<Choice> {
-        match &self.choices {
-            ChoiceType::Manual(choices) => choices.get(self.cursor).cloned(),
-            ChoiceType::Auto(..) => None,
+        match &self.0 {
+            Choices::Manual(choices) => choices.get(self.1).cloned(),
+            Choices::Auto(..) => None,
         }
     }
 
-    fn current_transition(&self) -> Option<Transition> {
-        match &self.choices {
-            ChoiceType::Manual(choices) => choices
-                .get(self.cursor)
+    fn current_transition(&self) -> Option<Effect> {
+        match &self.0 {
+            Choices::Manual(choices) => choices
+                .get(self.1)
                 .filter(|&c| c.selectable)
                 .map(|c| c.effect.clone()),
-            ChoiceType::Auto(transition, _) => Some(transition.clone()),
+            Choices::Auto(transition, _) => Some(transition.clone()),
         }
     }
 }
 
 impl Renderable for CombatChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        if self.image.is_none() && self.details.is_empty() && self.cost.is_none() {
-            return;
-        };
-
         let details_size_hint = self.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 + 2 } else { 0 } as u16;
-
-        if self.image.is_none() && self.details.is_empty() && self.cost.is_none() {
-            return;
-        };
 
         let mut block = Block::default()
             .borders(Borders::ALL)
@@ -148,15 +127,13 @@ impl Renderable for CombatChoice {
             }
         }
 
-        if let Some(image) = &self.image {
-            image.render(ascii_area, buf);
-        }
+        self.image.render(ascii_area, buf);
 
         let details_lines = self
             .details
             .iter()
-            .flat_map(|details| {
-                compile::<RatatuiTextGenerator>(details)
+            .flat_map(|Description { descriptor, .. }| {
+                compile::<RatatuiTextGenerator>(descriptor)
                     .into_iter()
                     .flat_map(|text| text.lines)
                     .collect::<Vec<_>>()
@@ -178,9 +155,9 @@ impl Renderable for CombatChoices {
             height: area.height - 1,
             ..area
         };
-        let Choices { choices, cursor } = &self.0;
+        let Self (choices, cursor) = self;
 
-        if let ChoiceType::Manual(choices) = choices {
+        if let Choices::Manual(choices) = choices {
             let card_size_hint = 32 + 2;
             let carousel_len = choices.len();
             let space_between = (area.width - card_size_hint) / carousel_len as u16;

@@ -4,7 +4,7 @@
 #![feature(let_chains)]
 
 use crossterm::event::KeyEvent;
-use pipedream_engine::core::{choice::Choice, transition::Transition};
+use pipedream_engine::core::{choice::Choice, effect::Effect};
 use ratatui::{buffer::Buffer, layout::Rect};
 
 pub mod ascii_art;
@@ -18,7 +18,7 @@ pub trait Controllable {
 
     fn current_choice(&self) -> Option<Choice>;
 
-    fn current_transition(&self) -> Option<Transition>;
+    fn current_transition(&self) -> Option<Effect>;
 }
 
 pub trait Renderable {

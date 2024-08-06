@@ -4,7 +4,7 @@ use std::{
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
-use pipedream_bichannel::{Bichannel, BichannelMonitor};
+use bichannel::{Bichannel, BichannelMonitor};
 use pipedream_engine::core::command::{EngineCommand, UiCommand};
 use ratatui::{
     buffer::Buffer,

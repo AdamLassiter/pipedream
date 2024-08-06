@@ -1,11 +1,10 @@
-use pipedream_engine::game::{entity::Ent, target::Tgt};
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders},
 };
 use symbols::border;
 
-use crate::{widget::tags::TgtEntTags, Renderable};
+use crate::Renderable;
 
 use super::SceneComponent;
 
@@ -22,11 +21,7 @@ impl SceneComponent {
         } else {
             0
         };
-        let scene_size_hint = self
-            .scene
-            .as_ref()
-            .map(|s| s.descriptions.len())
-            .unwrap_or(0) as u16;
+        let scene_size_hint = self.scene.as_ref().map(|scene| scene.0.len()).unwrap_or(0) as u16;
 
         // Layouts
         let [stats_area, scene_area, cards_area] = Layout::vertical([
@@ -56,14 +51,6 @@ impl SceneComponent {
 
             block.render(player_portrait_border_area, buf);
             portrait.render(portrait_area, buf);
-            if let Some(tags) = self.tags.as_ref() {
-                TgtEntTags {
-                    tgt: Tgt::Player,
-                    ent: Ent::Resource,
-                    tags,
-                }
-                .render(player_stats_area, buf);
-            }
         }
         if let Some(portrait) = self.enemy_image.as_ref() {
             let block = Block::default()
@@ -73,16 +60,8 @@ impl SceneComponent {
 
             block.render(enemy_portrait_border_area, buf);
             portrait.render(portrait_area, buf);
-            if let Some(tags) = self.tags.as_ref() {
-                TgtEntTags {
-                    tgt: Tgt::Enemy,
-                    ent: Ent::Resource,
-                    tags,
-                }
-                .render(enemy_stats_area, buf);
-            }
         }
-        if let Some(choices) = self.options.as_ref() {
+        if let Some(choices) = self.choices.as_ref() {
             choices.renderable().render(cards_area, buf);
         }
     }
