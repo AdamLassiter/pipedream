@@ -51,8 +51,8 @@ impl<Left: Send + Sync + Clone, Right: Send + Sync + Clone> BichannelMonitor<Lef
                     while let Ok(mesg) = recv_l.try_recv() {
                         frwd_l.iter().for_each(|sender| {
                             sender.send(mesg.clone()).expect(
-                            "Monitor failed to forward upstream message to downstream channel",
-                        )
+                                "Monitor failed to forward upstream message to downstream channel",
+                            )
                         });
                     }
                 }
@@ -61,8 +61,8 @@ impl<Left: Send + Sync + Clone, Right: Send + Sync + Clone> BichannelMonitor<Lef
                     while let Ok(mesg) = recv_r.try_recv() {
                         frwd_r.iter().for_each(|sender| {
                             sender.send(mesg.clone()).expect(
-                            "Monitor failed to forward upstream message to downstream channel",
-                        )
+                                "Monitor failed to forward upstream message to downstream channel",
+                            )
                         });
                     }
                 }

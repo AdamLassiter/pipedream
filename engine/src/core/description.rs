@@ -9,8 +9,6 @@ pub struct Description {
     pub predicate: Option<Predicate>,
 }
 
-
-
 impl Description {
     pub fn predicated<T, U>(descriptor: U, predicate: T) -> Self
     where

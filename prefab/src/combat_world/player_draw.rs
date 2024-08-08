@@ -2,14 +2,10 @@ use std::{iter::repeat_n, time::Duration};
 
 use crate::combat_world::{PLAYER_DRAW, PLAYER_PLAY};
 use pipedream_engine::{
-    game::{entity::Ent, target::Tgt},
     core::{
-        action::Action,
-        scene::Scene,
-        state::State,
-        tags::{Tag, TagKey, TagValue, FI64},
-        transition::{Transition, TransitionType},
+        action::Action, choice::Choices, description::Description, effect::{Effect, Transition}, scene::Scene, state::State, tag::{Tag, TagKey, TagValue, FI64}
     },
+    domain::{entity::Ent, target::Target},
     log::debug,
     rand::{prelude::SliceRandom, thread_rng},
     state::combat_state_machine::CombatStateMachine,
@@ -18,7 +14,7 @@ use pipedream_engine::{
 pub fn player_draw(machine: &CombatStateMachine) -> State {
     let player_draw_count = machine
         .tag_engine
-        .find(&Tgt::Me.ent(Ent::DrawCount))
+        .find(&Target::Me.ent(Ent::DrawCount))
         .iter()
         .filter_map(|tag| {
             if let TagValue::Number(n) = tag.value {
@@ -30,7 +26,7 @@ pub fn player_draw(machine: &CombatStateMachine) -> State {
         .next()
         .expect("Failed to find player draw count");
 
-    let player_deck_slice = machine.tag_engine.find(&Tgt::Me.ent(Ent::Deck));
+    let player_deck_slice = machine.tag_engine.find(&Target::Me.ent(Ent::Deck));
     let player_draw_cards = draw_cards(player_deck_slice, player_draw_count);
 
     let player_hand_cards = player_draw_cards
@@ -46,11 +42,11 @@ pub fn player_draw(machine: &CombatStateMachine) -> State {
     State {
         location: PLAYER_DRAW.clone(),
         scene: Scene {
-            descriptions: vec!["Draw!".into()],
+            descriptions: vec![Description::always("Draw!")],
         },
-        options: (
-            Transition {
-                next: TransitionType::Goto(PLAYER_PLAY.clone()),
+        choices: Choices::timed(
+            Effect {
+                transition: Transition::Goto(PLAYER_PLAY.clone()),
                 actions: player_draw_cards
                     .into_iter()
                     .map(|draw| Action::Subtract(draw.0.into()))
@@ -62,8 +58,7 @@ pub fn player_draw(machine: &CombatStateMachine) -> State {
                     .collect(),
             },
             Duration::from_secs(2),
-        )
-            .into(),
+        ),
     }
 }
 

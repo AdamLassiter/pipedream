@@ -1,55 +1,49 @@
 use pipedream_engine::{
-    game::{entity::Ent, target::Tgt},
-    core::tags::{Static, TagKey, Tags},
+    core::tag::{Static, TagKey, Tags},
+    domain::{entity::Ent, target::Target},
     log::debug,
     state::tag_engine::TagEngine,
 };
 
-use crate::{Buildable, Generatable};
+use crate::{npcs::generate_player, Buildable, Generatable};
 
 pub static ANY_SUBSTITUTIONS: Static<Vec<String>> =
-    Static::new(|| vec![Tgt::Player.into(), Tgt::Enemy.into()]);
+    Static::new(|| vec![Target::Player.into(), Target::Enemy.into()]);
 
 pub static FROM_CAMPAIGN: Static<Vec<TagKey>> = Static::new(|| {
     vec![
-        Tgt::Any.ent(Ent::Name),
-        Tgt::Any.ent(Ent::Attribute),
-        Tgt::Any.ent(Ent::Resource),
-        Tgt::Any.ent(Ent::Deck),
-        Tgt::Any.ent(Ent::DrawCount),
+        Target::Any.ent(Ent::Name),
+        Target::Any.ent(Ent::Attribute),
+        Target::Any.ent(Ent::Resource),
+        Target::Any.ent(Ent::Deck),
+        Target::Any.ent(Ent::DrawCount),
     ]
 });
 pub static FROM_COMBAT: Static<Vec<TagKey>> = Static::new(|| {
     vec![
-        Tgt::Any.ent(Ent::Name),
-        Tgt::Any.ent(Ent::Attribute),
-        Tgt::Any.ent(Ent::Resource),
-        Tgt::Any.ent(Ent::Deck),
-        Tgt::Any.ent(Ent::DrawCount),
+        Target::Any.ent(Ent::Name),
+        Target::Any.ent(Ent::Attribute),
+        Target::Any.ent(Ent::Resource),
+        Target::Any.ent(Ent::Deck),
+        Target::Any.ent(Ent::DrawCount),
     ]
 });
 
 impl Generatable for TagEngine {
     fn generate() -> Self {
         Self {
-            tags: Tags::build(vec![
-                // World
-                "woods:entrance:item:sword".into(),
-                // Player
-                "player:name:Plae-Yerr".into(),
-                "player:image:resources/rpg/fairy-avatar-icons-32x32-pixel-art/png/transperent/icon24.png".into(),
-                "player:draw:count=4".into(),
-                // Resources
-                "player:resource:health=20".into(),
-                "player:resource:stamina=20".into(),
-                "player:resource:mana=20".into(),
-                "player:resource:faith=20".into(),
-                // Deck
-                "player:deck:Anathema Device".into(),
-                "player:deck:Bag of Endless Bags".into(),
-                "player:deck:Regular Punch=3".into(),
-                "player:deck:Immolate".into(),
-            ]),
+            tags: Tags::build(
+                vec![
+                    // World
+                    "woods:entrance:item:sword".into(),
+                ]
+                .into_iter()
+                .chain(
+                    // Player
+                    generate_player().0.tags.iter_tags(),
+                )
+                .collect::<Vec<_>>(),
+            ),
         }
     }
 }

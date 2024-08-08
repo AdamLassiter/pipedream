@@ -2,9 +2,10 @@ use std::time::Duration;
 
 use pipedream_engine::{
     core::{
+        choice::Choices,
+        effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        transition::{Transition, TransitionType},
     },
     state::combat_state_machine::CombatStateMachine,
 };
@@ -17,12 +18,12 @@ pub fn combat_victory(_machine: &CombatStateMachine) -> State {
         scene: Scene {
             descriptions: vec!["Victory!".into()],
         },
-        options: (
-            Transition {
-                next: TransitionType::Leave,
+        choices: Choices::timed(
+            Effect {
+                transition: Transition::Leave,
                 actions: vec![],
             },
             Duration::from_secs(2),
-        ).into(),
+        ),
     }
 }

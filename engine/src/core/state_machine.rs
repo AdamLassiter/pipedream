@@ -80,7 +80,7 @@ impl StateMachine {
         };
 
         scene
-            .0
+            .descriptions
             .retain(|Description { predicate, .. }| test(predicate));
 
         if let Choices::Manual(ref mut choices) = choices {

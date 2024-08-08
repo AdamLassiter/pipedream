@@ -1,7 +1,7 @@
 use crate::{Buildable, Generatable};
 use pipedream_engine::{
-    game::card::{Card, Cards},
-    core::{action::Action, predicate::Predicate, tags::Tags},
+    domain::card::{Card, Cards},
+    core::{action::Action, predicate::Predicate, tag::Tags},
 };
 
 impl Generatable for Cards {

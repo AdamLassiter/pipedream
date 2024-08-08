@@ -1,29 +1,31 @@
 use std::time::Duration;
 
 use pipedream_engine::{
+    core::state_machine::StateMachine,
     core::{
+        choice::Choices,
+        description::Description,
+        effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        transition::{Transition, TransitionType},
     },
-    state::combat_state_machine::CombatStateMachine,
 };
 
 use crate::combat_world::COMBAT_DEFEAT;
 
-pub fn combat_defeat(_machine: &CombatStateMachine) -> State {
+pub fn combat_defeat(_machine: &StateMachine) -> State {
     State {
         location: COMBAT_DEFEAT.clone(),
         scene: Scene {
-            descriptions: vec!["Defeat!".into()],
+            descriptions: vec![Description::always("Defeat!")],
         },
-        options: (
-            Transition {
-                next: TransitionType::Leave,
+        choices: Choices::timed(
+            Effect {
+                transition: Transition::Leave,
                 actions: vec![],
             },
             Duration::from_secs(2),
         )
-            .into(),
+        .into(),
     }
 }

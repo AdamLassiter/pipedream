@@ -1,25 +1,25 @@
 use std::time::Duration;
 
-use pipedream_engine::log::debug;
+use pipedream_engine::{core::{choice::Choices, description::Description}, log::debug};
 
 use crate::{
     combat_world::{COMBAT_INIT, PLAYER_DRAW},
     tags::{ME_REF, YOU_REF},
 };
 use pipedream_engine::{
-    game::{entity::Ent, target::Tgt},
     core::{
         action::Action,
+        effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        tags::{Tag, TagKey},
-        transition::{Transition, TransitionType},
+        tag::{Tag, TagKey},
     },
+    domain::{entity::Ent, target::Target},
     state::combat_state_machine::CombatStateMachine,
 };
 
 pub fn combat_init(machine: &CombatStateMachine) -> State {
-    let enemy_name_slice = machine.tag_engine.find(&Tgt::Enemy.ent(Ent::Name));
+    let enemy_name_slice = machine.tag_engine.find(&Target::Enemy.ent(Ent::Name));
     debug!(target:"Prefab/Combat/Init", "{:?}", enemy_name_slice);
 
     let Tag { key: enemy, .. } = enemy_name_slice
@@ -28,8 +28,8 @@ pub fn combat_init(machine: &CombatStateMachine) -> State {
     let enemy_data = machine.combat_world.npcs.find(enemy);
 
     let initial_actions = vec![
-        format!("{}={}", ME_REF.0, Tgt::Player).into(),
-        format!("{}={}", YOU_REF.0, Tgt::Enemy).into(),
+        format!("{}={}", ME_REF.0, Target::Player).into(),
+        format!("{}={}", YOU_REF.0, Target::Enemy).into(),
     ]
     .into_iter()
     .chain(enemy_data.tags.find(&TagKey("".to_string())))
@@ -40,17 +40,16 @@ pub fn combat_init(machine: &CombatStateMachine) -> State {
         location: COMBAT_INIT.clone(),
         scene: Scene {
             descriptions: vec![
-                "A challenger appears!".into(),
-                format!("{:?} is looking for a fight", enemy_data.name).into(),
+                Description::always("A challenger appears!"),
+                Description::always(format!("{:?} is looking for a fight", enemy_data.name)),
             ],
         },
-        options: (
-            Transition {
-                next: TransitionType::Goto(PLAYER_DRAW.clone()),
+        choices: Choices::timed(
+            Effect {
+                transition: Transition::Goto(PLAYER_DRAW.clone()),
                 actions: initial_actions,
             },
             Duration::from_secs(2),
-        )
-            .into(),
+        ),
     }
 }

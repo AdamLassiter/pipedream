@@ -1,13 +1,7 @@
-use pipedream_engine::{
-    core::{
-        action::Action,
-        tags::TagKey,
-        transition::{Transition, TransitionType},
-    },
-    state::{
-        campaign_state_machine::CampaignStateMachine, combat_state_machine::CombatStateMachine,
-        combat_world::CombatWorld,
-    },
+use pipedream_engine::core::{
+    action::Action,
+    effect::{Effect, Transition},
+    state_machine::StateMachine,
 };
 
 use crate::{
@@ -16,18 +10,17 @@ use crate::{
     Generatable,
 };
 
-pub fn campaign_exporter(campaign_machine: &CampaignStateMachine) -> CombatStateMachine {
-    CombatStateMachine::new(
-        CombatWorld::generate(),
+pub fn campaign_exporter(campaign_machine: &StateMachine) -> StateMachine {
+    StateMachine::new(
         into_combat(&campaign_machine.tag_engine),
         COMBAT_INIT.clone(),
         combat_exporter,
     )
 }
 
-pub fn combat_exporter(combat_machine: &CombatStateMachine) -> Transition {
-    Transition {
-        next: TransitionType::None,
+pub fn combat_exporter(combat_machine: &StateMachine) -> Effect {
+    Effect {
+        transition: Transition::None,
         actions: from_combat(&combat_machine.tag_engine)
             .tags
             .find(&TagKey("".into()))

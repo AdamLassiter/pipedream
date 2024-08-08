@@ -13,8 +13,8 @@ use combat_end::combat_end;
 use combat_init::combat_init;
 use combat_victory::combat_victory;
 use pipedream_engine::{
-    game::{card::Cards, npc::Npcs},
-    core::{location::Location, tags::Static},
+    domain::{card::Cards, character::Npcs},
+    core::{location::Location, tag::Static},
     state::combat_world::{CombatWorld, DynamicStateFn},
 };
 use player_damage::player_damamge;

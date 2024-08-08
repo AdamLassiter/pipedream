@@ -6,14 +6,14 @@ use pipedream_bichannel::{Bichannel, BichannelMonitor};
 use pipedream_engine::{
     core::{
         command::{EngineCommand, UiCommand},
-        transition::Transition,
+        effect::Effect,
     },
     log::debug,
-    state::campaign_state_machine::CampaignStateMachine,
+    state::campaign_state_machine::StateMachine,
 };
 
 pub struct GameCoordinator {
-    pub campaign: CampaignStateMachine,
+    pub campaign: StateMachine,
     pub channel: Bichannel<UiCommand, EngineCommand>,
     pub exit: bool,
 }
@@ -42,7 +42,7 @@ impl GameCoordinator {
         }
     }
 
-    fn handle_effect(&mut self, effect: Transition) {
+    fn handle_effect(&mut self, effect: Effect) {
         let commands = self.campaign.handle_effect(effect);
         commands.into_iter().for_each(|command| {
             debug!(target:"Coordinator/HandleEffect", "{:?}", command);
@@ -54,7 +54,7 @@ impl GameCoordinator {
 
     pub fn spawn(
         monitor: &mut BichannelMonitor<EngineCommand, UiCommand>,
-        campaign: CampaignStateMachine,
+        campaign: StateMachine,
     ) -> JoinHandle<()> {
         let mut this = GameCoordinator {
             campaign,

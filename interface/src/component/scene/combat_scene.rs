@@ -21,7 +21,7 @@ impl SceneComponent {
         } else {
             0
         };
-        let scene_size_hint = self.scene.as_ref().map(|scene| scene.0.len()).unwrap_or(0) as u16;
+        let scene_size_hint = self.scene.as_ref().map(|scene| scene.descriptions.len()).unwrap_or(0) as u16;
 
         // Layouts
         let [stats_area, scene_area, cards_area] = Layout::vertical([

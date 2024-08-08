@@ -1,15 +1,15 @@
-use pipedream_engine::log::debug;
+use pipedream_engine::{core::choice::Choices, log::debug};
 
 use crate::combat_world::{COMBAT_END, PLAYER_DAMAGE};
 use pipedream_engine::{
-    game::{entity::Ent, target::Tgt},
     core::{
         action::Action,
+        effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        tags::{Tag, TagKey, TagValue, FI64},
-        transition::{Transition, TransitionType},
+        tag::{Tag, TagKey, TagValue, FI64},
     },
+    domain::{entity::Ent, target::Target},
     state::combat_state_machine::CombatStateMachine,
 };
 
@@ -18,7 +18,7 @@ fn calculate_damage(assist_stat: FI64, resist_stat: FI64, damage_val: FI64) -> F
 }
 
 pub fn player_damamge(machine: &CombatStateMachine) -> State {
-    let any_resc_damage_slice = machine.tag_engine.find(&Tgt::Any.ent(Ent::Damage));
+    let any_resc_damage_slice = machine.tag_engine.find(&Target::Any.ent(Ent::Damage));
     debug!(target:"Prefab/Combat/Damage", "{:?}", any_resc_damage_slice);
 
     let resolved_damages = any_resc_damage_slice
@@ -30,7 +30,7 @@ pub fn player_damamge(machine: &CombatStateMachine) -> State {
             let assist_stat = match machine
                 .tag_engine
                 .find(&TagKey::from(
-                    format!("{}:{}:{}", Tgt::Me, Ent::AttributeAssist, dmg_type).as_ref(),
+                    format!("{}:{}:{}", Target::Me, Ent::AttributeAssist, dmg_type).as_ref(),
                 ))
                 .first()
             {
@@ -77,10 +77,9 @@ pub fn player_damamge(machine: &CombatStateMachine) -> State {
         scene: Scene {
             descriptions: vec![],
         },
-        options: Transition {
-            next: TransitionType::Goto(COMBAT_END.clone()),
+        choices: Choices::skip(Effect {
+            transition: Transition::Goto(COMBAT_END.clone()),
             actions: resolved_damages,
-        }
-        .into(),
+        }),
     }
 }

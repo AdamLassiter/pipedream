@@ -1,25 +1,26 @@
+use pipedream_engine::core::choice::Choices;
 use pipedream_engine::log::debug;
 
 use pipedream_engine::{
-    game::{entity::Ent, target::Tgt},
+    core::state_machine::StateMachine,
     core::{
+        effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        tags::{Tag, TagValue},
-        transition::{Transition, TransitionType},
+        tag::Tag,
     },
-    state::combat_state_machine::CombatStateMachine,
+    domain::{entity::Ent, target::Target},
 };
 
 use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, PLAYER_PLAY};
 
-pub fn combat_end(machine: &CombatStateMachine) -> State {
+pub fn combat_end(machine: &StateMachine) -> State {
     let player_health_slice = machine
         .tag_engine
-        .find(&Tgt::Player.ent(Ent::ResourceHealth));
+        .find(&Target::Player.ent(Ent::ResourceHealth));
     let enemy_health_slice = machine
         .tag_engine
-        .find(&Tgt::Enemy.ent(Ent::ResourceHealth));
+        .find(&Target::Enemy.ent(Ent::ResourceHealth));
 
     debug!(target:"Prefab/Combat/End", "{:?} vs {:?}", player_health_slice, enemy_health_slice);
 
@@ -44,10 +45,9 @@ pub fn combat_end(machine: &CombatStateMachine) -> State {
         scene: Scene {
             descriptions: vec![],
         },
-        options: Transition {
-            next: TransitionType::Goto((*next).clone()),
+        choices: Choices::skip(Effect {
+            transition: Transition::Goto((*next).clone()),
             actions: vec![],
-        }
-        .into(),
+        }),
     }
 }

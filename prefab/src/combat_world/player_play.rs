@@ -1,31 +1,31 @@
 use std::iter::repeat_n;
 
-use pipedream_engine::log::debug;
+use pipedream_engine::{core::description::Description, log::debug};
 
 use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
 use pipedream_engine::{
-    game::{card::Card, entity::Ent, target::Tgt},
     core::{
         action::Action,
         choice::Choice,
+        effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        tags::Tag,
-        transition::{Transition, TransitionType},
+        tag::Tag,
     },
+    domain::{card::Card, entity::Ent, target::Target},
     state::combat_state_machine::CombatStateMachine,
 };
 
 pub fn player_play(machine: &CombatStateMachine) -> State {
-    let player_hand_slice = machine.tag_engine.find(&Tgt::Me.ent(Ent::Hand));
+    let player_hand_slice = machine.tag_engine.find(&Target::Me.ent(Ent::Hand));
     debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand_slice);
 
     State {
         location: PLAYER_PLAY.clone(),
         scene: Scene {
-            descriptions: vec!["Play".into()],
+            descriptions: vec![Description::always("Play")],
         },
-        options: player_hand_slice
+        choices: player_hand_slice
             .iter()
             .map(|Tag { key: card, value }| (machine.combat_world.cards.find(card), value))
             .flat_map(
@@ -48,13 +48,13 @@ pub fn player_play(machine: &CombatStateMachine) -> State {
                         details: details.clone(),
                         cost: Some(cost.clone()),
                         predicate: Some(predicate.clone()),
-                        effect: Transition {
-                            next: TransitionType::Goto(PLAYER_DAMAGE.clone()),
+                        effect: Effect {
+                            transition: Transition::Goto(PLAYER_DAMAGE.clone()),
                             actions: actions
                                 .clone()
                                 .into_iter()
                                 .chain(vec![Action::Subtract(
-                                    format!("{}:{}:{}", Tgt::Me, Ent::Hand, name).into(),
+                                    format!("{}:{}:{}", Target::Me, Ent::Hand, name).into(),
                                 )])
                                 .collect(),
                         },

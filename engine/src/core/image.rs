@@ -1,14 +1,16 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Image(pub String);
+pub struct Image {
+    pub path: String,
+}
 
 impl Image {
     fn new<T>(value: T) -> Self
     where
         T: Into<String>,
     {
-        Self(value.into())
+        Self { path: value.into() }
     }
 }
 

@@ -22,7 +22,8 @@ members = [
 
 
 [dependencies]
-pipedream-bichannel = { path = "bichannel" }
+bichannel = { path = "bichannel" }
+rusqlite_orm = { path = "rusqlite_orm" }
 pipedream-engine = { path = "engine" }
 pipedream-interface = { path = "interface" }
 pipedream-prefab = { path = "prefab" }

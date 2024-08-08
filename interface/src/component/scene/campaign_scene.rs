@@ -12,7 +12,7 @@ use super::SceneComponent;
 impl SceneComponent {
     pub fn render_campaign(&self, area: Rect, buf: &mut Buffer) {
         // Size hints
-        let scene_size_hint = self.scene.as_ref().map(|scene| scene.0.len()).unwrap_or(0) as u16;
+        let scene_size_hint = self.scene.as_ref().map(|scene| scene.descriptions.len()).unwrap_or(0) as u16;
         let choices_size_hint = match self.choices.as_ref().map(|c| c.choices()) {
             Some(Choices::Manual(choices)) => choices.len(),
             _ => 0,

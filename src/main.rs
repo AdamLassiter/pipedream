@@ -5,7 +5,7 @@ use pipedream_bichannel::BichannelMonitor;
 use pipedream_engine::{
     core::location::Location,
     state::{
-        campaign_state_machine::CampaignStateMachine, campaign_world::CampaignWorld,
+        campaign_state_machine::StateMachine, campaign_world::CampaignWorld,
         tag_engine::TagEngine,
     },
 };
@@ -20,7 +20,7 @@ fn main() -> io::Result<()> {
     let world = CampaignWorld::generate();
     let tag_engine = TagEngine::generate();
     let start = Location("woods:entrance".into());
-    let campaign = CampaignStateMachine::new(world, tag_engine, start, campaign_exporter);
+    let campaign = StateMachine::new(world, tag_engine, start, campaign_exporter);
 
     let engine_thread = GameCoordinator::spawn(&mut monitor, campaign);
 

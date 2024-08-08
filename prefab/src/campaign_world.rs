@@ -7,10 +7,8 @@ use pipedream_engine::{
         predicate::Predicate,
         scene::Scene,
         state::State,
-        tags::Static,
-        transition::{Transition, TransitionType},
+        effect::{Effect, Transition},
     },
-    state::campaign_world::CampaignWorld,
 };
 
 pub static CAMPAIGN_DEFEAT: Static<Location> = Static::new(|| "campaign:defeat".into());
@@ -31,15 +29,15 @@ impl Generatable for CampaignWorld {
                             .into(),
                     ],
                 },
-                options: vec![
+                choices: vec![
                     Choice {
                         summary:
                             "Pick up the sword"
                             .into(),
-                        image: Some("resources/hi-res/48-sword-rpg-icons/png/without_shadow/7.png".into()),
+                        image: Some("resources/hi-res/sword/png/without_shadow/7.png".into()),
                         predicate: Some(Predicate::Tag("woods:entrance:item:sword".into())),
-                        effect: Transition {
-                            next: TransitionType::None,
+                        effect: Effect {
+                            transition: Transition::None,
                             actions: vec![
                                 Action::Add("player:item:sword".into()),
                                 Action::Remove("woods:entrance:item:sword".into()),
@@ -49,18 +47,18 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Go into the shop".into(),
-                        image: Some("resources/scenery/glade-objects-top-down-pixel-art/png/objects_separated/assets_no_shadow/house1.png".into()),
-                        effect: Transition {
-                            next: TransitionType::Enter("ephemeral:shop".into()),
+                        image: Some("resources/scenery/glade/png/objects_separated/assets_no_shadow/house1.png".into()),
+                        effect: Effect {
+                            transition: Transition::Enter("ephemeral:shop".into()),
                             actions: vec![],
                         },
                         ..Default::default()
                     },
                     Choice {
                         summary: "Go deeper into the woods".into(),
-                        image: Some("resources/scenery/forest-objects-top-down-pixel-art/png/assets_no_shadow/luminous_tree1.png".into()),
-                        effect: Transition {
-                            next: TransitionType::Goto("woods:depths".into()),
+                        image: Some("resources/scenery/forest/png/assets_no_shadow/luminous_tree1.png".into()),
+                        effect: Effect {
+                            transition: Transition::Goto("woods:depths".into()),
                             actions: vec![],
                         },
                         ..Default::default()
@@ -73,21 +71,21 @@ impl Generatable for CampaignWorld {
                 scene: Scene {
                     descriptions: vec!["You are lost in <green the woods>".into()],
                 },
-                options: vec![
+                choices: vec![
                     Choice { 
                         summary: "Go deeper into the woods".into(),
-                        image: Some("resources/scenery/forest-objects-top-down-pixel-art/png/assets_no_shadow/luminous_tree2.png".into()),
-                        effect: Transition {
-                            next: TransitionType::Goto("woods:depths".into()),
+                        image: Some("resources/scenery/forest/png/assets_no_shadow/luminous_tree2.png".into()),
+                        effect: Effect {
+                            transition: Transition::Goto("woods:depths".into()),
                             actions: vec![],
                         },
                         ..Default::default()
                     },
                     Choice { 
                         summary: "Battle <red inner demons>".into(),
-                        image: Some("resources/rpg/demon-avatar-icons-pixel-art-64x64/png/transperent/icon42.png".into()),
-                        effect: Transition {
-                            next: TransitionType::Combat(vec![Action::Add(
+                        image: Some("resources/avatars/demon-hires/png/transperent/icon42.png".into()),
+                        effect: Effect {
+                            transition: Transition::Combat(vec![Action::Add(
                                 "enemy:name:Dave".into(),
                             )]),
                             actions: vec![],
@@ -109,22 +107,22 @@ impl Generatable for CampaignWorld {
                             .into(),
                     ],
                 },
-                options: vec![
+                choices: vec![
                     Choice {
                         summary: "Leave the shop".into(),
-                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face1.png".into()),
-                        effect: Transition {
-                            next: TransitionType::Leave,
+                        image: Some("resources/avatars/dark-elf-2/png/dark elves_faces_transperent/character6_face1.png".into()),
+                        effect: Effect {
+                            transition: Transition::Leave,
                             actions: vec![],
                         },
                         ..Default::default()
                     },
                     Choice {
                         summary: "Trade a sword for two swords".into(),
-                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face2.png".into()),
+                        image: Some("resources/avatars/dark-elf-2/png/dark elves_faces_transperent/character6_face2.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword".into())),
-                        effect: Transition {
-                            next: TransitionType::None,
+                        effect: Effect {
+                            transition: Transition::None,
                             actions: vec![
                                 Action::Subtract("player:item:sword=1".into()),
                                 Action::Add("player:item:sword=2".into()),
@@ -134,20 +132,20 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Trade every sword for two swords".into(),
-                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face2.png".into()),
+                        image: Some("resources/avatars/dark-elf-2/png/dark elves_faces_transperent/character6_face2.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword".into())),
-                        effect: Transition {
-                            next: TransitionType::None,
+                        effect: Effect {
+                            transition: Transition::None,
                             actions: vec![Action::Multiply("player:item:sword=2".into())],
                         },
                         ..Default::default()
                     },
                     Choice {
                         summary: "Forge a pair of swords into a cursed ring".into(),
-                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face3.png".into()),
+                        image: Some("resources/avatars/dark-elf-2/png/dark elves_faces_transperent/character6_face3.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword=2".into())),
-                        effect: Transition {
-                            next: TransitionType::None,
+                        effect: Effect {
+                            transition: Transition::None,
                             actions: vec![
                                 Action::Subtract("player:item:sword=2".into()),
                                 Action::Add("player:item:cursed-ring".into()),
@@ -157,10 +155,10 @@ impl Generatable for CampaignWorld {
                     },
                     Choice {
                         summary: "Forge every pair of swords into a cursed ring".into(),
-                        image: Some("resources/profiles/dark-elf-characters-full-length-pixel-art/png/dark elves_faces_transperent/character6_face4.png".into()),
+                        image: Some("resources/avatars/dark-elf-2/png/dark elves_faces_transperent/character6_face4.png".into()),
                         predicate: Some(Predicate::Tag("player:item:sword=2".into())),
-                        effect: Transition {
-                            next: TransitionType::None,
+                        effect: Effect {
+                            transition: Transition::None,
                             actions: vec![
                                 Action::Divide("player:item:sword=2".into()),
                                 Action::Add("player:item:cursed-ring=player:item:sword".into()),

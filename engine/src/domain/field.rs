@@ -6,7 +6,7 @@ pub enum Combatant {
     You,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FieldPlace {
     Innate,
     Deck,
