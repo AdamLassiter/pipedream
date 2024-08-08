@@ -1,79 +1,54 @@
+mod binding;
+mod product;
+
+extern crate rusqlite;
 extern crate serde;
 extern crate serde_json;
-extern crate rusqlite;
 extern crate serde_rusqlite;
 
 extern crate proc_macro;
 
+use binding::Bindings;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use product::Products;
+use quote::quote;
 use syn::{
+    braced, bracketed,
     parse::{Parse, ParseStream},
-    parse_macro_input,
-    punctuated::Punctuated,
-    Ident, ItemStruct, LitStr, Result, Token,
+    parse_macro_input, ItemStruct, Token,
 };
 
-struct JsonPath {
-    ident: Ident,
-    path: LitStr,
+struct Attributes {
+    bindings: Bindings,
+    products: Products,
 }
-impl Parse for JsonPath {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let ident = input.parse::<Ident>()?;
-        input.parse::<Token![:]>()?;
-        let path = input.parse::<LitStr>()?;
+impl Parse for Attributes {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let bindings_input;
+        let _ = braced!(bindings_input in input);
+        let bindings = bindings_input.parse::<Bindings>()?;
 
-        Ok(JsonPath { ident, path })
-    }
-}
-impl JsonPath {
-    fn as_sql(&self, table_name: &String) -> String {
-        format!(
-            "select data from {} where data -> '{}' = :{}",
-            table_name,
-            self.path.value(),
-            self.ident
-        )
-    }
-}
+        let products: Products = input
+            .parse::<Token![,]>()
+            .and_then(|_| {
+                let products_input;
+                let _ = bracketed!(products_input in input);
 
-struct JsonPaths {
-    paths: std::vec::Vec<JsonPath>,
-}
-impl Parse for JsonPaths {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let inner: Punctuated<JsonPath, Token![,]> = Punctuated::parse_terminated(input)?;
+                products_input.parse::<Products>()
+            })
+            .ok()
+            .unwrap_or_default();
 
-        Ok(JsonPaths {
-            paths: inner.into_iter().collect(),
-        })
-    }
-}
-impl JsonPaths {
-    fn as_quotes(&self, table_name: &String) -> Vec<TokenStream> {
-        self.paths.iter().map(|jp| {
-            let query_sql = jp.as_sql(table_name);
-            let query_by_ident = format_ident!("query_by_{}", jp.ident);
-            let ident_key = format!(":{}", jp.ident);
-            quote! {
-                pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<Vec<Self>> where T: Serialize {
-                    Ok(conn.prepare(#query_sql)?
-                        .query_and_then(rusqlite::named_params! {#ident_key: serde_json::to_value(value).unwrap()}, serde_rusqlite::from_row::<String>)?
-                        .map(|data| serde_json::from_str::<Self>(data.unwrap().as_str()).unwrap())
-                        .collect::<Vec<Self>>())
-                }
-            }
-        }).collect()
+        Ok(Self { bindings, products })
     }
 }
 
 #[proc_macro_attribute]
 pub fn orm_bind(
-    bindings: proc_macro::TokenStream,
+    attributes: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    let bindings = parse_macro_input!(bindings as JsonPaths);
+    let attributes = parse_macro_input!(attributes as Attributes);
     let ItemStruct { ident, .. } = {
         let item = item.clone();
         parse_macro_input!(item as ItemStruct)
@@ -88,7 +63,13 @@ pub fn orm_bind(
     );
     let insert_sql = format!("insert into {} (data) values (:data)", table_name);
     let query_id_sql = format!("select data from {} where id = :id", table_name);
-    let queries_by_ident = TokenStream::from_iter(bindings.as_quotes(&table_name));
+
+    let bindings_queries = TokenStream::from_iter(attributes.bindings.as_tokenstreams(&table_name));
+    let products_queries = TokenStream::from_iter(
+        attributes
+            .products
+            .as_tokenstreams(&table_name, &attributes.bindings),
+    );
 
     quote! {
         #item
@@ -122,7 +103,9 @@ pub fn orm_bind(
                     .next())
             }
 
-            #queries_by_ident
+            #bindings_queries
+
+            #products_queries
         }
     }.into()
 }
