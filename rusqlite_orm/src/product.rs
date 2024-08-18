@@ -1,12 +1,9 @@
-use std::{collections::BTreeMap, vec::Vec};
+use std::{collections::BTreeMap, iter::zip, vec::Vec};
 
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parenthesized,
-    parse::{Parse, ParseStream},
-    punctuated::Punctuated,
-    Ident, LitStr, Result, Token,
+    parenthesized, parse::{Parse, ParseStream}, punctuated::Punctuated, Ident, Lifetime, LitStr, Result, Token
 };
 
 use crate::binding::Bindings;
@@ -42,7 +39,7 @@ impl Product {
             .collect::<Vec<_>>();
 
         format!(
-            "select data from {} where {}",
+            "select id, data from {} where {}",
             table_name,
             bindings.join(" and ")
         )
@@ -84,24 +81,29 @@ impl Products {
                     quote! { #bind: serde_json::to_value(#ident).unwrap() }
                 })
                 .collect::<Vec<_>>();
-            let generics = (0..named_params.len()).map(|i| {
+            let generic_lifes = (0..named_params.len()).map(|i| {
+                Lifetime::new(format!("'t{}", i).as_str(), Span::call_site())
+            }).collect::<Vec<_>>();
+            let generic_types = (0..named_params.len()).map(|i| {
                 let vartype = format_ident!("T{}", i);
                 quote! { #vartype }
             }).collect::<Vec<_>>();
-            let type_bounds = generics.iter().map(|vartype| {
-                quote! {#vartype: Serialize}
+            let type_bounds = zip(generic_lifes.clone(), generic_types.clone()).map(|(varlife, vartype)| {
+                quote! { #vartype: serde::Serialize + serde::Deserialize<#varlife> }
             }).collect::<Vec<_>>();
-            let arguments = product.idents.iter().enumerate().map(|(i, ident)| {
-                let vartype = format_ident!("T{}", i);
-                quote! { #ident: &#vartype }
+            let arguments = zip(product.idents.clone(), zip(generic_lifes.clone(), generic_types.clone())).map(|(ident, (varlife, vartype))| {
+                quote! { #ident: &#varlife #vartype }
             }).collect::<Vec<_>>();
 
             quote! {
-                pub fn #query_by_ident<#(#generics),*>(conn: &rusqlite::Connection, #(#arguments),*) -> rusqlite::Result<std::vec::Vec<Self>> where #(#type_bounds),* {
+                pub fn #query_by_ident<#(#generic_lifes),* , #(#generic_types),*>(conn: &rusqlite::Connection, #(#arguments),*) -> rusqlite::Result<std::vec::Vec<(i64, Self)>> where #(#type_bounds),* {
                     Ok(conn.prepare(#query_sql)?
-                        .query_and_then(rusqlite::named_params! {#(#named_params),*}, serde_rusqlite::from_row::<String>)?
-                        .map(|data| serde_json::from_str::<Self>(data.unwrap().as_str()).unwrap())
-                        .collect::<Vec<Self>>())
+                        .query_and_then(rusqlite::named_params! {#(#named_params),*}, serde_rusqlite::from_row::<(i64, String)>)?
+                        .map(|res| {
+                            let (id, data) = res.unwrap();
+                            (id, serde_json::from_str::<Self>(data.as_str()).unwrap())
+                        })
+                        .collect::<Vec<(i64, Self)>>())
                 }
             }
         }).collect()

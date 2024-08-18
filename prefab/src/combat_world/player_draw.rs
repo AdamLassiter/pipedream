@@ -1,17 +1,23 @@
 use std::{iter::repeat_n, time::Duration};
 
-use crate::combat_world::{PLAYER_DRAW, PLAYER_PLAY};
+use crate::combat_world::{HUMAN_DRAW, HUMAN_PLAY};
 use pipedream_engine::{
     core::{
-        action::Action, choice::Choices, description::Description, effect::{Effect, Transition}, scene::Scene, state::State, tag::{Tag, TagKey, TagValue, FI64}
+        action::Action,
+        choice::Choices,
+        description::Description,
+        effect::{Effect, Transition},
+        scene::Scene,
+        state::State,
+        tag::{Tag, TagKey, TagValue, FI64},
     },
     domain::{entity::Ent, target::Target},
     log::debug,
     rand::{prelude::SliceRandom, thread_rng},
-    state::combat_state_machine::CombatStateMachine,
+    state::combat_state_machine::StateMachine,
 };
 
-pub fn player_draw(machine: &CombatStateMachine) -> State {
+pub fn player_draw(machine: &StateMachine) -> State {
     let player_draw_count = machine
         .tag_engine
         .find(&Target::Me.ent(Ent::DrawCount))
@@ -40,13 +46,13 @@ pub fn player_draw(machine: &CombatStateMachine) -> State {
         .collect::<Vec<_>>();
 
     State {
-        location: PLAYER_DRAW.clone(),
+        location: HUMAN_DRAW.clone(),
         scene: Scene {
             descriptions: vec![Description::always("Draw!")],
         },
         choices: Choices::timed(
             Effect {
-                transition: Transition::Goto(PLAYER_PLAY.clone()),
+                transition: Transition::Goto(HUMAN_PLAY.clone()),
                 actions: player_draw_cards
                     .into_iter()
                     .map(|draw| Action::Subtract(draw.0.into()))

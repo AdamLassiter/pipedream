@@ -1,14 +1,12 @@
 use std::time::Duration;
 
-use pipedream_engine::{
-    core::state_machine::StateMachine,
-    core::{
-        choice::Choices,
-        description::Description,
-        effect::{Effect, Transition},
-        scene::Scene,
-        state::State,
-    },
+use pipedream_engine::core::{
+    choice::Choices,
+    description::Description,
+    effect::{Effect, Transition},
+    scene::Scene,
+    state::State,
+    state_machine::StateMachine,
 };
 
 use crate::combat_world::COMBAT_DEFEAT;

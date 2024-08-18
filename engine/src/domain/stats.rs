@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 
+use rusqlite_orm::orm_bind;
 use serde::{Deserialize, Serialize};
+
+use super::encounter::Player;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stats {
@@ -8,12 +11,26 @@ pub struct Stats {
     pub max_resources: BTreeMap<Resource, f64>,
     pub assisstances: BTreeMap<Assistance, f64>,
     pub resistances: BTreeMap<Resistance, f64>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EphemeralStats {
     pub buffs: BTreeMap<Buff, f64>,
     pub debuffs: BTreeMap<Debuff, f64>,
+}
+
+#[derive(Clone, Debug)]
+#[orm_bind ({ source: "$.source", target: "$.target", stat: "$.stat" }, [])]
+pub struct StatChange {
+    pub source: Player,
+    pub target: Player,
+    pub stat: Stat,
+    pub change: f64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Stat {
+    Element(Element),
+    Assistance(Assistance),
+    Resistance(Resistance),
+    Buff(Buff),
+    Debuff(Debuff),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -68,7 +85,7 @@ pub enum Buff {
     Overwhelm,
     Guard,
     Crush,
-    Unfalter,
+    Endure,
 
     Stab,
     Sneak,

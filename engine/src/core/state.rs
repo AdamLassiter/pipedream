@@ -6,8 +6,8 @@ use super::choice::Choices;
 use super::state_machine::StateMachine;
 use super::{location::Location, scene::Scene};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[orm_bind {location: "$.location.location"}]
+#[derive(Clone, Debug)]
+#[orm_bind ({location: "$.location.location"}, [])]
 pub struct State {
     pub location: Location,
     pub scene: Scene,

@@ -9,17 +9,17 @@ pub enum Player {
     Cpu,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[orm_bind {player: "$.player", place: "$.place", name: "$.card.choice.summary"}]
+#[derive(Clone, Debug)]
+#[orm_bind ({player: "$.player", place: "$.place", name: "$.card.choice.summary"}, [])]
 pub struct EncounterCard {
-    player: Player,
-    place: FieldPlace,
-    card: Card,
+    pub player: Player,
+    pub place: FieldPlace,
+    pub card: Card,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[orm_bind {player: "$.player", name: "$.character.name"}]
-pub struct EncounterCharacter {
-    player: Player,
-    character: Character,
+#[derive(Clone, Debug)]
+#[orm_bind ({player: "$.player", name: "$.character.name"}, [])]
+pub struct PlayerCharacter {
+    pub player: Player,
+    pub character: Character,
 }

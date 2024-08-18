@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::choice::Choice;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[orm_bind {name: "$.choice.summary"}]
+#[derive(Clone, Debug)]
+#[orm_bind ({name: "$.choice.summary"}, [])]
 pub struct Card {
-    choice: Choice,
+    pub choice: Choice,
 }

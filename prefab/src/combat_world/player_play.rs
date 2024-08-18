@@ -2,7 +2,7 @@ use std::iter::repeat_n;
 
 use pipedream_engine::{core::description::Description, log::debug};
 
-use crate::combat_world::{PLAYER_DAMAGE, PLAYER_PLAY};
+use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
 use pipedream_engine::{
     core::{
         action::Action,
@@ -13,15 +13,15 @@ use pipedream_engine::{
         tag::Tag,
     },
     domain::{card::Card, entity::Ent, target::Target},
-    state::combat_state_machine::CombatStateMachine,
+    state::combat_state_machine::StateMachine,
 };
 
-pub fn player_play(machine: &CombatStateMachine) -> State {
+pub fn player_play(machine: &StateMachine) -> State {
     let player_hand_slice = machine.tag_engine.find(&Target::Me.ent(Ent::Hand));
     debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand_slice);
 
     State {
-        location: PLAYER_PLAY.clone(),
+        location: HUMAN_PLAY.clone(),
         scene: Scene {
             descriptions: vec![Description::always("Play")],
         },
@@ -49,7 +49,7 @@ pub fn player_play(machine: &CombatStateMachine) -> State {
                         cost: Some(cost.clone()),
                         predicate: Some(predicate.clone()),
                         effect: Effect {
-                            transition: Transition::Goto(PLAYER_DAMAGE.clone()),
+                            transition: Transition::Goto(HUMAN_DAMAGE.clone()),
                             actions: actions
                                 .clone()
                                 .into_iter()

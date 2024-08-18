@@ -9,13 +9,23 @@ pub struct Location {
 }
 
 impl Location {
-    fn from<T>(location: T, ui_mode: UiMode) -> Self
+    pub fn combat<T>(location: T) -> Self
     where
         T: Into<String>,
     {
         Self {
             location: location.into(),
-            ui_mode,
+            ui_mode: UiMode::Combat,
+        }
+    }
+
+    pub fn campaign<T>(location: T) -> Self
+    where
+        T: Into<String>,
+    {
+        Self {
+            location: location.into(),
+            ui_mode: UiMode::Campaign,
         }
     }
 }

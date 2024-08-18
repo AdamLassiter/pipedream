@@ -2,7 +2,7 @@ use rusqlite::{Connection, Result};
 use rusqlite_orm::orm_bind;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 #[orm_bind ({ foo: "$.foo", bar: "$.bar", baz: "$.baz[0]" }, [ (foo, bar) ])]
 struct Orm {
     foo: Foo,
@@ -39,25 +39,25 @@ fn setup() -> Result<Connection> {
 }
 
 #[test]
-fn test_query_by_id() -> Result<()> {
+fn query() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::query_by_id(&conn, 1)?, Some(foobar()));
+    assert_eq!(Orm::query(&conn, 1)?, Some(foobar()));
 
-    assert_eq!(Orm::query_by_id(&conn, 2)?, None);
+    assert_eq!(Orm::query(&conn, 2)?, None);
 
     Ok(())
 }
 #[test]
-fn test_query_by_binding() -> Result<()> {
+fn binding() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::query_by_foo(&conn, &"foo1")?, vec![foobar()]);
+    assert_eq!(Orm::query_by_foo(&conn, &"foo1")?, vec![(1, foobar())]);
     assert_eq!(
         Orm::query_by_bar(&conn, &Bar { bar: "bar1".into() })?,
-        vec![foobar()]
+        vec![(1, foobar())]
     );
-    assert_eq!(Orm::query_by_baz(&conn, &"baz1")?, vec![foobar()]);
+    assert_eq!(Orm::query_by_baz(&conn, &"baz1")?, vec![(1, foobar())]);
 
     assert_eq!(Orm::query_by_foo(&conn, &"foo2")?, vec![]);
     assert_eq!(
@@ -69,12 +69,12 @@ fn test_query_by_binding() -> Result<()> {
     Ok(())
 }
 #[test]
-fn test_query_by_product() -> Result<()> {
+fn product() -> Result<()> {
     let conn = setup()?;
 
     assert_eq!(
         Orm::query_by_foo_and_bar(&conn, &"foo1", &Bar { bar: "bar1".into() })?,
-        vec![foobar()]
+        vec![(1, foobar())]
     );
 
     assert_eq!(
@@ -85,6 +85,40 @@ fn test_query_by_product() -> Result<()> {
         Orm::query_by_foo_and_bar(&conn, &"foo1", &Bar { bar: "bar2".into() })?,
         vec![]
     );
+
+    Ok(())
+}
+#[test]
+fn insert() -> Result<()> {
+    let conn = setup()?;
+
+    assert_eq!(Orm::query(&conn, 2)?, None);
+    assert_eq!(foobar().insert(&conn)?, 2);
+    assert_eq!(Orm::query(&conn, 2)?, Some(foobar()));
+
+    Ok(())
+}
+#[test]
+fn update() -> Result<()> {
+    let conn = setup()?;
+
+    let update = Bar {
+        bar: "updated".into(),
+    };
+    let mut updated = foobar();
+    assert_eq!(Orm::update_bar(&conn, 1, &update)?, ());
+    updated.bar = update;
+    assert_eq!(Orm::query(&conn, 1)?, Some(updated));
+
+    Ok(())
+}
+#[test]
+fn delete() -> Result<()> {
+    let conn = setup()?;
+
+    assert_eq!(Orm::delete(&conn, 1)?, ());
+    assert_eq!(Orm::query(&conn, 1)?, None);
+    assert_eq!(Orm::delete(&conn, 1)?, ());
 
     Ok(())
 }

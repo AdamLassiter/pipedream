@@ -3,14 +3,21 @@ use std::collections::BTreeMap;
 use log::debug;
 use rusqlite::Connection;
 
-use crate::core::{
-    choice::{Choice, Choices},
-    command::UiCommand,
-    description::Description,
-    effect::Effect,
-    location::Location,
-    predicate::Predicate,
-    state::State,
+use crate::{
+    core::{
+        choice::{Choice, Choices},
+        command::UiCommand,
+        description::Description,
+        effect::Effect,
+        location::Location,
+        predicate::Predicate,
+        state::State,
+    },
+    domain::{
+        character::Character,
+        encounter::{Player, PlayerCharacter},
+        stats::StatChange,
+    },
 };
 
 use super::{action::Action, effect::Transition, state::DynamicStateFn};
@@ -104,13 +111,46 @@ impl StateMachine {
         if let Some(state_fn) = self.dynamic_states.get(location) {
             state_fn.apply(self)
         } else {
-            State::query_by_location(&self.connection, &location.location)
-                .expect("Failed to query db")
-                .pop()
-                .unwrap_or_else(|| panic!(
-                    "Failed to query states by location {}",
-                    location.location
-                ))
+            let (_id, state) = State::query_by_location(&self.connection, &location.location)
+                .ok()
+                .and_then(|mut res| res.pop())
+                .unwrap_or_else(|| {
+                    panic!("Failed to query states by location {}", location.location)
+                });
+            state
         }
+    }
+
+    pub fn get_character(&self, player: &Player) -> Character {
+        let (_id, PlayerCharacter { character, .. }) =
+            PlayerCharacter::query_by_player(&self.connection, &player)
+                .ok()
+                .and_then(|mut res| res.pop())
+                .unwrap_or_else(|| panic!("Failed to find EncounterCharacter for {:?}", player));
+        character
+    }
+
+    pub fn update_character(&self, player: &Player, update_fn: fn(&mut Character)) {
+        let (id, PlayerCharacter { mut character, .. }) =
+            PlayerCharacter::query_by_player(&self.connection, &player)
+                .ok()
+                .and_then(|mut res| res.pop())
+                .unwrap_or_else(|| panic!("Failed to find EncounterCharacter for {:?}", player));
+        update_fn(&mut character);
+        
+    }
+
+    pub fn get_source_stat_changes(&self, source: &Player) -> Vec<StatChange> {
+        let (_id, stat_changes) = StatChange::query_by_source(&self.connection, &source)
+            .ok()
+            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source)).into_iter().unzip::<i64, StatChange, Vec<_>, Vec<_>>();
+        stat_changes
+    }
+
+    pub fn get_target_stat_changes(&self, target: &Player) -> Vec<StatChange> {
+        let (_id, stat_changes) = StatChange::query_by_target(&self.connection, &target)
+            .ok()
+            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target)).into_iter().unzip::<i64, StatChange, Vec<_>, Vec<_>>();
+        stat_changes
     }
 }

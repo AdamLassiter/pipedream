@@ -1,43 +1,41 @@
-use pipedream_engine::core::choice::Choices;
-use pipedream_engine::log::debug;
-
 use pipedream_engine::{
-    core::state_machine::StateMachine,
     core::{
+        choice::Choices,
         effect::{Effect, Transition},
         scene::Scene,
         state::State,
-        tag::Tag,
+        state_machine::StateMachine,
     },
-    domain::{entity::Ent, target::Target},
+    domain::{encounter::Player, stats::Resource},
+    log::debug,
 };
 
-use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, PLAYER_PLAY};
+use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, HUMAN_PLAY};
 
 pub fn combat_end(machine: &StateMachine) -> State {
-    let player_health_slice = machine
-        .tag_engine
-        .find(&Target::Player.ent(Ent::ResourceHealth));
-    let enemy_health_slice = machine
-        .tag_engine
-        .find(&Target::Enemy.ent(Ent::ResourceHealth));
+    let human = machine.get_character(&Player::Human);
+    let cpu = machine.get_character(&Player::Cpu);
 
-    debug!(target:"Prefab/Combat/End", "{:?} vs {:?}", player_health_slice, enemy_health_slice);
+    debug!(target:"Prefab/Combat/End", "{:?} vs {:?}", human, cpu);
 
-    let next = match player_health_slice.first() {
-        None => &COMBAT_DEFEAT,
-        Some(Tag {
-            value: TagValue::Number(health),
-            ..
-        }) if !health.is_positive() => &COMBAT_DEFEAT,
-        _ => match enemy_health_slice.first() {
-            None => &COMBAT_VICTORY,
-            Some(Tag {
-                value: TagValue::Number(health),
-                ..
-            }) if !health.is_positive() => &COMBAT_VICTORY,
-            _ => &PLAYER_PLAY,
-        },
+    let next = if *human
+        .stats
+        .resources
+        .get(&Resource::Health)
+        .expect("Failed to find Human health")
+        <= 0.
+    {
+        &COMBAT_DEFEAT
+    } else if *cpu
+        .stats
+        .resources
+        .get(&Resource::Health)
+        .expect("Failed to find Cpu health")
+        <= 0.
+    {
+        &COMBAT_VICTORY
+    } else {
+        &HUMAN_PLAY
     };
 
     State {

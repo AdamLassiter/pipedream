@@ -6,7 +6,5 @@
 pub mod core;
 pub mod domain;
 
-// Extern log for arbitrary provider
-pub extern crate fixed;
 pub extern crate log;
 pub extern crate rand;

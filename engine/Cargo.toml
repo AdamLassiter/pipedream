@@ -15,7 +15,6 @@ rusqlite = { version = "0.31.0", features = ["serde_json", "bundled", "trace"] }
 serde_rusqlite = "0.35.0"
 
 rand = "0.8.5"
-fixed = { version = "1.27.0", features = ["serde", "serde-str"]}
 
 log = { version = "0.4.21", features = ["kv"] }
 
