@@ -9,6 +9,11 @@ struct Orm {
     bar: Bar,
     baz: Baz,
 }
+impl Orm {
+    pub fn nice_baz(conn: &Connection) -> Result<()> {
+        Self::execute_raw(conn, &format!("update {} set data = json_replace(data, '$.baz[1]', json(69))", Self::table_name()), &[])
+    }
+}
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 struct Foo(String);
@@ -48,6 +53,7 @@ fn query() -> Result<()> {
 
     Ok(())
 }
+
 #[test]
 fn binding() -> Result<()> {
     let conn = setup()?;
@@ -68,6 +74,7 @@ fn binding() -> Result<()> {
 
     Ok(())
 }
+
 #[test]
 fn product() -> Result<()> {
     let conn = setup()?;
@@ -88,6 +95,7 @@ fn product() -> Result<()> {
 
     Ok(())
 }
+
 #[test]
 fn insert() -> Result<()> {
     let conn = setup()?;
@@ -98,6 +106,7 @@ fn insert() -> Result<()> {
 
     Ok(())
 }
+
 #[test]
 fn update() -> Result<()> {
     let conn = setup()?;
@@ -105,13 +114,14 @@ fn update() -> Result<()> {
     let update = Bar {
         bar: "updated".into(),
     };
-    let mut updated = foobar();
     assert_eq!(Orm::update_bar(&conn, 1, &update)?, ());
+    let mut updated = foobar();
     updated.bar = update;
     assert_eq!(Orm::query(&conn, 1)?, Some(updated));
 
     Ok(())
 }
+
 #[test]
 fn delete() -> Result<()> {
     let conn = setup()?;
@@ -119,6 +129,18 @@ fn delete() -> Result<()> {
     assert_eq!(Orm::delete(&conn, 1)?, ());
     assert_eq!(Orm::query(&conn, 1)?, None);
     assert_eq!(Orm::delete(&conn, 1)?, ());
+
+    Ok(())
+}
+
+#[test]
+fn execute() -> Result<()> {
+    let conn = setup()?;
+
+    assert_eq!(Orm::nice_baz(&conn)?, ());
+    let mut updated = foobar();
+    updated.baz.1 = 69;
+    assert_eq!(Orm::query(&conn, 1)?, Some(updated));
 
     Ok(())
 }

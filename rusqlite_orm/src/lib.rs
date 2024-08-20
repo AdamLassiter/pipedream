@@ -78,6 +78,10 @@ pub fn orm_bind(
 
         #[automatically_derived]
         impl #ident {
+            pub fn table_name() -> &'static str {
+                #table_name
+            }
+
             pub fn create_table(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
                 conn.execute(#create_sql, [])?;
                 Ok(())
