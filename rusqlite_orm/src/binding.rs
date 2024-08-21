@@ -22,7 +22,7 @@ impl Parse for Binding {
     }
 }
 impl Binding {
-    pub fn as_query_sql(&self, table_name: &String) -> String {
+    fn as_query_sql(&self, table_name: &String) -> String {
         format!(
             "select id, data from {} where data->'{}' = :{}",
             table_name,
@@ -31,13 +31,39 @@ impl Binding {
         )
     }
 
-    pub fn as_update_sql(&self, table_name: &String) -> String {
+    fn as_update_sql(&self, table_name: &String) -> String {
         format!(
             "update {} set data = json_replace(data, '{}', json(:{})) where id = :id",
             table_name,
             self.path.value(),
             self.ident
         )
+    }
+
+    pub fn as_orm_method(&self, table_name: &String) -> TokenStream {
+        let query_sql = self.as_query_sql(table_name);
+        let update_sql = self.as_update_sql(table_name);
+        let query_by_ident = format_ident!("query_by_{}", self.ident);
+        let update_ident = format_ident!("update_{}", self.ident);
+        let ident_key = format!(":{}", self.ident);
+
+        quote! {
+            pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<std::vec::Vec<(i64, Self)>> where T: serde::Serialize {
+                Ok(conn.prepare(#query_sql)?
+                    .query_and_then(rusqlite::named_params! {#ident_key: serde_json::to_value(value).unwrap()}, serde_rusqlite::from_row::<(i64, String)>)?
+                    .map(|res| {
+                        let (id, data) = res.unwrap();
+                        (id, serde_json::from_str::<Self>(data.as_str()).unwrap())
+                    })
+                    .collect::<std::vec::Vec<(i64, Self)>>())
+            }
+
+            pub fn #update_ident<T>(conn: &rusqlite::Connection, id: i64, value: &T) -> rusqlite::Result<()> where T: serde::Serialize {
+                conn.prepare(#update_sql)?
+                    .execute(rusqlite::named_params! {":id": id, #ident_key: serde_json::to_value(value).unwrap()})?;
+                Ok(())
+            }
+        }
     }
 }
 
@@ -55,31 +81,10 @@ impl Parse for Bindings {
 }
 impl Bindings {
     pub fn as_tokenstreams(&self, table_name: &String) -> Vec<TokenStream> {
-        self.bindings.iter().map(|bind| {
-            let query_sql = bind.as_query_sql(table_name);
-            let update_sql = bind.as_update_sql(table_name);
-            let query_by_ident = format_ident!("query_by_{}", bind.ident);
-            let update_ident = format_ident!("update_{}", bind.ident);
-            let ident_key = format!(":{}", bind.ident);
-
-            quote! {
-                pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<std::vec::Vec<(i64, Self)>> where T: serde::Serialize {
-                    Ok(conn.prepare(#query_sql)?
-                        .query_and_then(rusqlite::named_params! {#ident_key: serde_json::to_value(value).unwrap()}, serde_rusqlite::from_row::<(i64, String)>)?
-                        .map(|res| {
-                            let (id, data) = res.unwrap();
-                            (id, serde_json::from_str::<Self>(data.as_str()).unwrap())
-                        })
-                        .collect::<std::vec::Vec<(i64, Self)>>())
-                }
-
-                pub fn #update_ident<T>(conn: &rusqlite::Connection, id: i64, value: &T) -> rusqlite::Result<()> where T: serde::Serialize {
-                    conn.prepare(#update_sql)?
-                        .execute(rusqlite::named_params! {":id": id, #ident_key: serde_json::to_value(value).unwrap()})?;
-                    Ok(())
-                }
-            }
-        }).collect()
+        self.bindings
+            .iter()
+            .map(|bind| bind.as_orm_method(table_name))
+            .collect()
     }
 
     pub fn as_map(&self) -> BTreeMap<&Ident, &LitStr> {
