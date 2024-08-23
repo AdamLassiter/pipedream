@@ -130,27 +130,33 @@ impl StateMachine {
         character
     }
 
-    pub fn update_character(&self, player: &Player, update_fn: fn(&mut Character)) {
+    pub fn update_character<T>(&self, player: &Player, update_fn: T) where T: FnOnce(&mut Character) {
         let (id, PlayerCharacter { mut character, .. }) =
             PlayerCharacter::query_by_player(&self.connection, &player)
                 .ok()
                 .and_then(|mut res| res.pop())
                 .unwrap_or_else(|| panic!("Failed to find EncounterCharacter for {:?}", player));
         update_fn(&mut character);
-        
+        character.update(&self.connection, id)
+            .ok()
+            .unwrap_or_else(|| panic!("Failed to save EncounterCharacter for {:?}", player));
     }
 
     pub fn get_source_stat_changes(&self, source: &Player) -> Vec<StatChange> {
         let (_id, stat_changes) = StatChange::query_by_source(&self.connection, &source)
             .ok()
-            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source)).into_iter().unzip::<i64, StatChange, Vec<_>, Vec<_>>();
+            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source))
+            .into_iter()
+            .unzip::<i64, StatChange, Vec<_>, Vec<_>>();
         stat_changes
     }
 
     pub fn get_target_stat_changes(&self, target: &Player) -> Vec<StatChange> {
         let (_id, stat_changes) = StatChange::query_by_target(&self.connection, &target)
             .ok()
-            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target)).into_iter().unzip::<i64, StatChange, Vec<_>, Vec<_>>();
+            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target))
+            .into_iter()
+            .unzip::<i64, StatChange, Vec<_>, Vec<_>>();
         stat_changes
     }
 }

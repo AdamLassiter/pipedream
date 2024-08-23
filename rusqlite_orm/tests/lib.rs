@@ -114,6 +114,21 @@ fn update() -> Result<()> {
     let update = Bar {
         bar: "updated".into(),
     };
+    let mut updated = foobar();
+    updated.bar = update;
+    assert_eq!(updated.update(&conn, 1)?, ());
+    assert_eq!(Orm::query(&conn, 1)?, Some(updated));
+
+    Ok(())
+}
+
+#[test]
+fn update_bind() -> Result<()> {
+    let conn = setup()?;
+
+    let update = Bar {
+        bar: "updated".into(),
+    };
     assert_eq!(Orm::update_bar(&conn, 1, &update)?, ());
     let mut updated = foobar();
     updated.bar = update;

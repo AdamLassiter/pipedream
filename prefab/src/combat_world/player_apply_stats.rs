@@ -19,14 +19,11 @@ fn calculate_damage(assist_stat: f64, resist_stat: f64, damage_val: f64) -> f64 
 }
 
 pub fn player_apply_stats(player: &Player, machine: &StateMachine) -> State {
-    let mut target_char = machine.get_character(player);
     let stat_changes = machine.get_target_stat_changes(player);
-
     debug!(target:"Prefab/Combat/ApplyStats", "{:?} {:?}", player, stat_changes);
 
-    stat_changes
-        .into_iter()
-        .for_each(
+    machine.update_character(player, |target_char| {
+        stat_changes.into_iter().for_each(
             |StatChange {
                  stat,
                  source,
@@ -56,14 +53,12 @@ pub fn player_apply_stats(player: &Player, machine: &StateMachine) -> State {
                             .resources
                             .get_mut(&Resource::Health)
                             .map(|health| *health -= damage);
-                        
                     }
                     _ => todo!(),
                 }
             },
-        );
-
-    let mut target_char = machine.get_character(player);
+        )
+    });
 
     State {
         location: HUMAN_DAMAGE.clone(),

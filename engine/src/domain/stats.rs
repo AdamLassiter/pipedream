@@ -7,12 +7,13 @@ use super::encounter::Player;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stats {
-    pub resources: BTreeMap<Resource, f64>,
-    pub max_resources: BTreeMap<Resource, f64>,
-    pub assisstances: BTreeMap<Assistance, f64>,
-    pub resistances: BTreeMap<Resistance, f64>,
-    pub buffs: BTreeMap<Buff, f64>,
-    pub debuffs: BTreeMap<Debuff, f64>,
+    pub resources: BTreeMap<Resource, i64>,
+    pub max_resources: BTreeMap<Resource, i64>,
+    pub sleight_of_hand: BTreeMap<SleightOfHand, i16>,
+    pub assisstances: BTreeMap<Assistance, i16>,
+    pub resistances: BTreeMap<Resistance, i16>,
+    pub buffs: BTreeMap<Buff, i16>,
+    pub debuffs: BTreeMap<Debuff, i16>,
 }
 
 #[derive(Clone, Debug)]
@@ -26,6 +27,7 @@ pub struct StatChange {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Stat {
+    SleightOfHand(SleightOfHand),
     Element(Element),
     Assistance(Assistance),
     Resistance(Resistance),
@@ -39,6 +41,14 @@ pub enum Resource {
     Stamina,
     Mana,
     Favour,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub enum SleightOfHand {
+    Inspiration,  // Draw count
+    Versatility,  // Hand size
+    Tranquility,  // Deck min
+    Recollection, // Deck max
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -59,21 +69,25 @@ pub enum Resistance {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Element {
+    // Physical
     Bludgeoning,
     Piercing,
     Slashing,
     Force,
 
+    // Poisons
     Toxic,
     Lethargy,
     Bloodhex,
     Manaburn,
 
+    // Magic
     Cold,
     Acid,
     Lightning,
     Fire,
 
+    // Divine
     Radiant,
     Psychic,
     Vampiric,
