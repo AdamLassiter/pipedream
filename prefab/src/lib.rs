@@ -12,6 +12,8 @@ pub mod npcs;
 pub mod tag_engine;
 pub mod tags;
 
+extern crate log;
+
 pub trait Generatable {
     fn generate() -> Self;
 }

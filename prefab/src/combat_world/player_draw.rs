@@ -6,9 +6,9 @@ use pipedream_engine::{
         action::Action, choice::Choices, description::Description, effect::{Effect, Transition}, scene::Scene, state::State, state_machine::StateMachine, tag::Tag
     },
     domain::target::Target,
-    log::debug,
-    rand::{prelude::SliceRandom, thread_rng},
 };
+use log::debug;
+use rand::{prelude::SliceRandom, thread_rng};
 
 pub fn player_draw(machine: &StateMachine) -> State {
     let player_draw_count = machine

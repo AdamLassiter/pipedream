@@ -6,5 +6,4 @@
 pub mod core;
 pub mod domain;
 
-pub extern crate log;
-pub extern crate rand;
+extern crate log;

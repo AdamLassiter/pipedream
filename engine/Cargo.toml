@@ -9,14 +9,14 @@ edition = "2024"
 
 [dependencies]
 rusqlite_orm = { path = "../rusqlite_orm" }
-serde = { version = "1.0.201", features = ["derive"] }
-serde_json = "1.0.122"
-rusqlite = { version = "0.31.0", features = ["serde_json", "bundled", "trace"] }
-serde_rusqlite = "0.35.0"
+serde.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+serde_rusqlite.workspace = true
 
-rand = "0.8.5"
+rand.workspace = true
 
-log = { version = "0.4.21", features = ["kv"] }
+log.workspace = true
 
-strum = "0.26.2"
-strum_macros = "0.26.4"
+strum.workspace = true
+strum_macros.workspace = true

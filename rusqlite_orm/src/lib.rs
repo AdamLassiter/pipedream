@@ -2,11 +2,6 @@ mod binding;
 mod crud;
 mod product;
 
-extern crate rusqlite;
-extern crate serde;
-extern crate serde_json;
-extern crate serde_rusqlite;
-
 extern crate proc_macro;
 
 use binding::Bindings;

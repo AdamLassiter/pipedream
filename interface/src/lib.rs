@@ -13,6 +13,8 @@ pub mod log_utils;
 pub mod tui;
 pub mod widget;
 
+extern crate log;
+
 pub trait Controllable {
     fn handle_key_event(&mut self, key_event: KeyEvent);
 

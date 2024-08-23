@@ -3,8 +3,8 @@ use std::time::Duration;
 use pipedream_engine::{
     core::{choice::Choices, description::Description, state_machine::StateMachine},
     domain::encounter::Player,
-    log::debug,
 };
+use log::debug;
 
 use crate::combat_world::{COMBAT_INIT, HUMAN_DRAW};
 use pipedream_engine::core::{

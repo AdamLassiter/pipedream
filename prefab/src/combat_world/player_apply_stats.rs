@@ -4,8 +4,8 @@ use pipedream_engine::{
         encounter::Player,
         stats::{Assistance, Element, Resistance, Resource, Stat, StatChange},
     },
-    log::debug,
 };
+use log::debug;
 
 use crate::combat_world::{COMBAT_END, HUMAN_DAMAGE};
 use pipedream_engine::core::{

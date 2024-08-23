@@ -9,3 +9,7 @@ edition = "2024"
 
 [dependencies]
 pipedream-engine = { path = "../engine" }
+
+rand.workspace = true
+
+log.workspace = true

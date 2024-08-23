@@ -4,9 +4,9 @@ use std::fmt::Debug;
 use std::iter::zip;
 use std::path::Path;
 
-use image::io::Reader;
+use image::ImageReader;
 use image::{DynamicImage, GenericImageView, Pixel};
-use pipedream_engine::log::debug;
+use log::debug;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span, Text};
 
@@ -210,7 +210,7 @@ where
     P: AsRef<Path> + Debug + Clone,
 {
     fn from(value: P) -> Self {
-        let open_file = Reader::open(value.clone())
+        let open_file = ImageReader::open(value.clone())
             .unwrap_or_else(|_| panic!("No such file or directory {:?}", value));
         let image = open_file
             .decode()

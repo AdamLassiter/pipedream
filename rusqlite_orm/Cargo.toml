@@ -12,12 +12,12 @@ proc-macro = true
 
 
 [dependencies]
-quote = "1.0.36"
-syn = { version = "2.0.72", features = ["full"] }
-proc-macro2 = "1.0.86"
+quote.workspace = true
+syn.workspace = true
+proc-macro2.workspace = true
 
-serde = { version = "1.0.201", features = ["derive"] }
-serde_json = "1.0.122"
+serde.workspace = true
+serde_json.workspace = true
 
-rusqlite = { version = "0.31.0", features = ["serde_json", "bundled", "trace"] }
-serde_rusqlite = "0.35.0"
+rusqlite.workspace = true
+serde_rusqlite.workspace = true

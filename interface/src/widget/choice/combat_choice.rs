@@ -13,12 +13,10 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::{
-    core::{
-        choice::{Choice, Choices}, description::Description, effect::Effect
-    },
-    log::debug,
+use pipedream_engine::core::{
+    choice::{Choice, Choices}, description::Description, effect::Effect
 };
+use log::debug;
 
 use crate::{Controllable, Renderable};
 

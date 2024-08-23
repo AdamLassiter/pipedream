@@ -1,5 +1,4 @@
 use rusqlite_orm::orm_bind;
-use serde::{Deserialize, Serialize};
 
 use super::{card::Card, stats::Stats};
 use crate::core::{image::Image, tag::Tag};

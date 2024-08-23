@@ -7,8 +7,8 @@ use pipedream_engine::{
         state_machine::StateMachine,
     },
     domain::{encounter::Player, stats::Resource},
-    log::debug,
 };
+use log::debug;
 
 use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, HUMAN_PLAY};
 
@@ -23,7 +23,7 @@ pub fn combat_end(machine: &StateMachine) -> State {
         .resources
         .get(&Resource::Health)
         .expect("Failed to find Human health")
-        <= 0.
+        <= 0
     {
         &COMBAT_DEFEAT
     } else if *cpu
@@ -31,7 +31,7 @@ pub fn combat_end(machine: &StateMachine) -> State {
         .resources
         .get(&Resource::Health)
         .expect("Failed to find Cpu health")
-        <= 0.
+        <= 0
     {
         &COMBAT_VICTORY
     } else {

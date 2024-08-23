@@ -1,5 +1,4 @@
 use rusqlite_orm::orm_bind;
-use serde::{Deserialize, Serialize};
 
 use super::choice::Choices;
 

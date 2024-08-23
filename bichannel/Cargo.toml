@@ -8,4 +8,4 @@ edition = "2024"
 
 
 [dependencies]
-crossbeam = "0.8.1"
+crossbeam.workspace = true

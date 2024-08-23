@@ -1,5 +1,5 @@
 use crossterm::event::{KeyCode, KeyEvent};
-use pipedream_engine::log::LevelFilter;
+use log::LevelFilter;
 use ratatui::{
     prelude::{Buffer, Rect},
     style::{Color, Style},
