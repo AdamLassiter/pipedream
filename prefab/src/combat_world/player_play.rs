@@ -1,19 +1,17 @@
 use std::iter::repeat_n;
 
-use pipedream_engine::{core::description::Description, log::debug};
+use pipedream_engine::{description::Description, log::debug};
 
 use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
+use pipedream_domain::{card::Card, entity::Ent, target::Target};
 use pipedream_engine::{
-    core::{
-        action::Action,
-        choice::Choice,
-        effect::{Effect, Transition},
-        scene::Scene,
-        state::State,
-        tag::Tag,
-    },
-    domain::{card::Card, entity::Ent, target::Target},
+    action::Action,
+    choice::Choice,
+    effect::{Effect, Transition},
+    scene::Scene,
     state::combat_state_machine::StateMachine,
+    state::State,
+    tag::Tag,
 };
 
 pub fn player_play(machine: &StateMachine) -> State {

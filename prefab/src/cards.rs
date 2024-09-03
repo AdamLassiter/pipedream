@@ -1,8 +1,6 @@
 use crate::{Buildable, Generatable};
-use pipedream_engine::{
-    domain::card::{Card, Cards},
-    core::{action::Action, predicate::Predicate, tag::Tags},
-};
+use pipedream_domain::card::{Card, Cards};
+use pipedream_engine::{action::Action, predicate::Predicate, tag::Tags};
 
 impl Generatable for Cards {
     fn generate() -> Self {

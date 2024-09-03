@@ -1,10 +1,8 @@
 use ratatui::{prelude::*, widgets::*};
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::{
-    core::{description::Description, scene::Scene},
-};
 use log::debug;
+use pipedream_engine::{description::Description, scene::Scene};
 
 use crate::Renderable;
 

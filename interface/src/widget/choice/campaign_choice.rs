@@ -13,7 +13,7 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::core::{
+use pipedream_engine::{
     choice::{Choice, Choices}, description::Description, effect::Effect
 };
 use log::debug;
@@ -83,7 +83,7 @@ impl Controllable for CampaignChoices {
 
 impl Renderable for CampaignChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let details_size_hint = self.details.len() as u16;
+        let details_size_hint = self.0.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
         let [_, area, _] = Layout::horizontal([

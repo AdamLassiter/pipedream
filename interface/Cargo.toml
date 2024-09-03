@@ -2,14 +2,15 @@ cargo-features = ["edition2024", "codegen-backend"]
 
 
 [package]
-name = "pipedream-interface"
+name = "pipedream_interface"
 version = "0.3.0"
 edition = "2024"
 
 
 [dependencies]
 bichannel = { path = "../bichannel" }
-pipedream-engine = { path = "../engine" }
+pipedream_engine = { path = "../engine" }
+pipedream_domain = { path = "../domain" }
 
 log4rs.workspace = true
 tui-logger.workspace = true

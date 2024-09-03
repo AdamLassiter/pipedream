@@ -41,7 +41,7 @@ serde_json = "1.0.122"
 rusqlite = { version = "0.31.0", features = ["serde_json", "bundled", "trace"] }
 serde_rusqlite = "0.35.0"
 
-image = "0.25.1"
+image = "0.25.2"
 
 crossterm = "0.27.0"
 ratatui = { version = "0.26.3", features = ["all-widgets"] }
@@ -51,6 +51,7 @@ tui-markup = { version = "0.4.0", features = ["ratatui"] }
 [dependencies]
 bichannel = { path = "bichannel" }
 rusqlite_orm = { path = "rusqlite_orm" }
-pipedream-engine = { path = "engine" }
-pipedream-interface = { path = "interface" }
-pipedream-prefab = { path = "prefab" }
+pipedream_engine = { path = "engine" }
+pipedream_domain = { path = "domain" }
+pipedream_interface = { path = "interface" }
+pipedream_prefab = { path = "prefab" }

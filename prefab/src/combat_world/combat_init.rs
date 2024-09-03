@@ -1,20 +1,18 @@
 use std::time::Duration;
 
-use pipedream_engine::{
-    core::{choice::Choices, description::Description, state_machine::StateMachine},
-    domain::encounter::Player,
-};
 use log::debug;
+use pipedream_domain::{character::Character, encounter::Player};
+use pipedream_engine::{choice::Choices, description::Description, state_machine::StateMachine};
 
 use crate::combat_world::{COMBAT_INIT, HUMAN_DRAW};
-use pipedream_engine::core::{
+use pipedream_engine::{
     effect::{Effect, Transition},
     scene::Scene,
     state::State,
 };
 
 pub fn combat_init(machine: &StateMachine) -> State {
-    let cpu = machine.get_character(&Player::Cpu);
+    let cpu = Character::get_player(&machine.conn, &Player::Cpu);
     debug!(target:"Prefab/Combat/Init", "{:?}", cpu.name);
 
     State {
@@ -28,7 +26,7 @@ pub fn combat_init(machine: &StateMachine) -> State {
         choices: Choices::timed(
             Effect {
                 transition: Transition::Goto(HUMAN_DRAW.clone()),
-                actions: vec![],
+                ..Default::default()
             },
             Duration::from_secs(2),
         ),

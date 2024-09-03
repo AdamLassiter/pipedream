@@ -1,20 +1,18 @@
-use pipedream_engine::{
-    core::{
-        choice::Choices,
-        effect::{Effect, Transition},
-        scene::Scene,
-        state::State,
-        state_machine::StateMachine,
-    },
-    domain::{encounter::Player, stats::Resource},
-};
 use log::debug;
+use pipedream_domain::{character::Character, encounter::Player, stats::Resource};
+use pipedream_engine::{
+    choice::Choices,
+    effect::{Effect, Transition},
+    scene::Scene,
+    state::State,
+    state_machine::StateMachine,
+};
 
 use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, HUMAN_PLAY};
 
 pub fn combat_end(machine: &StateMachine) -> State {
-    let human = machine.get_character(&Player::Human);
-    let cpu = machine.get_character(&Player::Cpu);
+    let human = Character::get_player(&machine.conn, &Player::Human);
+    let cpu = Character::get_player(&machine.conn, &Player::Cpu);
 
     debug!(target:"Prefab/Combat/End", "{:?} vs {:?}", human, cpu);
 
@@ -45,7 +43,7 @@ pub fn combat_end(machine: &StateMachine) -> State {
         },
         choices: Choices::skip(Effect {
             transition: Transition::Goto((*next).clone()),
-            actions: vec![],
+            ..Default::default()
         }),
     }
 }

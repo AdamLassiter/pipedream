@@ -2,13 +2,14 @@ cargo-features = ["edition2024", "codegen-backend"]
 
 
 [package]
-name = "pipedream-prefab"
+name = "pipedream_prefab"
 version = "0.3.0"
 edition = "2024"
 
 
 [dependencies]
-pipedream-engine = { path = "../engine" }
+pipedream_engine = { path = "../engine" }
+pipedream_domain = { path = "../domain" }
 
 rand.workspace = true
 

@@ -1,32 +1,31 @@
 use std::{iter::repeat_n, time::Duration};
 
 use crate::combat_world::{HUMAN_DRAW, HUMAN_PLAY};
-use pipedream_engine::{
-    core::{
-        action::Action, choice::Choices, description::Description, effect::{Effect, Transition}, scene::Scene, state::State, state_machine::StateMachine, tag::Tag
-    },
-    domain::target::Target,
-};
 use log::debug;
+use pipedream_domain::{
+    card::Card, character::Character, encounter::Player, stats::SleightOfHand, target::Target,
+};
+use pipedream_engine::{
+    action::Action,
+    choice::Choices,
+    description::Description,
+    effect::{Effect, Transition},
+    scene::Scene,
+    state::State,
+    state_machine::StateMachine,
+    tag::Tag,
+};
 use rand::{prelude::SliceRandom, thread_rng};
 
-pub fn player_draw(machine: &StateMachine) -> State {
-    let player_draw_count = machine
-        .tag_engine
-        .find(&Target::Me.ent(Ent::DrawCount))
-        .iter()
-        .filter_map(|tag| {
-            if let TagValue::Number(n) = tag.value {
-                Some(n)
-            } else {
-                None
-            }
-        })
-        .next()
-        .expect("Failed to find player draw count");
+pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
+    let mut player = Character::get_player(&machine.conn, player);
+    let draw_count = player
+        .stats
+        .sleight_of_hand
+        .get(&SleightOfHand::Inspiration)
+        .expect("Failed to find Player Inspration");
 
-    let player_deck_slice = machine.tag_engine.find(&Target::Me.ent(Ent::Deck));
-    let player_draw_cards = draw_cards(player_deck_slice, player_draw_count);
+    let player_draw_cards = draw_cards(&mut player.deck, draw_count);
 
     let player_hand_cards = player_draw_cards
         .iter()
@@ -46,7 +45,7 @@ pub fn player_draw(machine: &StateMachine) -> State {
         choices: Choices::timed(
             Effect {
                 transition: Transition::Goto(HUMAN_PLAY.clone()),
-                actions: player_draw_cards
+                action: player_draw_cards
                     .into_iter()
                     .map(|draw| Action::Subtract(draw.0.into()))
                     .chain(
@@ -61,27 +60,10 @@ pub fn player_draw(machine: &StateMachine) -> State {
     }
 }
 
-fn draw_cards(player_deck_slice: Vec<Tag>, player_draw_count: FI64) -> Vec<TagKey> {
-    let mut player_deck_slice = player_deck_slice
-        .iter()
-        .flat_map(|tag| {
-            repeat_n(
-                tag.key.clone(),
-                tag.value
-                    .number()
-                    .expect("Failed to get a Number of cards to draw")
-                    .to_num(),
-            )
-        })
-        .collect::<Vec<_>>();
+fn draw_cards(deck: &mut Vec<Card>, draw_count: i16) -> Vec<Card> {
+    // player_deck_slice.shuffle(&mut thread_rng());
+    let draw = deck.split_off(deck.len().saturating_sub(draw_count as usize));
 
-    player_deck_slice.shuffle(&mut thread_rng());
-
-    let player_draw_cards = player_deck_slice
-        .into_iter()
-        .take(player_draw_count.to_num())
-        .collect::<Vec<_>>();
-
-    debug!(target:"Prefab/Combat/Draw", "{:?}", player_draw_cards);
-    player_draw_cards
+    debug!(target:"Prefab/Combat/Draw", "{:?}", draw);
+    draw
 }

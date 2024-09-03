@@ -1,14 +1,13 @@
-use pipedream_engine::{
-    core::{choice::Choices, state_machine::StateMachine},
-    domain::{
-        encounter::Player,
-        stats::{Assistance, Element, Resistance, Resource, Stat, StatChange},
-    },
-};
 use log::debug;
+use pipedream_domain::character::Character;
+use pipedream_domain::{
+    encounter::Player,
+    stats::{Assistance, Element, Resistance, Resource, Stat, StatChange},
+};
+use pipedream_engine::{choice::Choices, state_machine::StateMachine};
 
 use crate::combat_world::{COMBAT_END, HUMAN_DAMAGE};
-use pipedream_engine::core::{
+use pipedream_engine::{
     effect::{Effect, Transition},
     scene::Scene,
     state::State,
@@ -19,55 +18,76 @@ fn calculate_damage(assist_stat: f64, resist_stat: f64, damage_val: f64) -> f64 
 }
 
 pub fn player_apply_stats(player: &Player, machine: &StateMachine) -> State {
-    let stat_changes = machine.get_target_stat_changes(player);
+    let stat_changes = StatChange::find_target(&machine.conn, player);
     debug!(target:"Prefab/Combat/ApplyStats", "{:?} {:?}", player, stat_changes);
 
-    machine.update_character(player, |target_char| {
-        stat_changes.into_iter().for_each(
-            |StatChange {
-                 stat,
-                 source,
-                 change,
-                 ..
-             }| {
-                match stat {
-                    Stat::Element(Element::Bludgeoning) => {
-                        let source_char = machine.get_character(&source);
-                        let assistance = *source_char
-                            .stats
-                            .assisstances
-                            .get(&Assistance::Strength)
-                            .unwrap_or_else(|| {
-                                panic!("Failed to get {:?} for {:?}", Assistance::Strength, source)
-                            });
-                        let resistance = *target_char
-                            .stats
-                            .resistances
-                            .get(&Resistance::Endurance)
-                            .unwrap_or_else(|| {
-                                panic!("Failed to get {:?} for {:?}", Resistance::Endurance, player)
-                            });
-                        let damage = calculate_damage(assistance, resistance, change);
-                        target_char
-                            .stats
-                            .resources
-                            .get_mut(&Resource::Health)
-                            .map(|health| *health -= damage);
-                    }
-                    _ => todo!(),
-                }
+    let transition = Transition::Goto(COMBAT_END.clone());
+    let action =
+        Some(Character::update_player(
+            &machine.conn,
+            player,
+            |mut target_char| {
+                (&stat_changes).into_iter().for_each(
+                    |StatChange {
+                         stat,
+                         source,
+                         change,
+                         ..
+                     }| {
+                        match stat {
+                            Stat::Element(Element::Bludgeoning) => {
+                                let source_char = Character::get_player(&machine.conn, &source);
+                                let assistance = *source_char
+                                    .stats
+                                    .assisstances
+                                    .get(&Assistance::Strength)
+                                    .unwrap_or_else(|| {
+                                        panic!(
+                                            "Failed to get {:?} for {:?}",
+                                            Assistance::Strength,
+                                            source
+                                        )
+                                    });
+                                let resistance = *target_char
+                                    .stats
+                                    .resistances
+                                    .get(&Resistance::Endurance)
+                                    .unwrap_or_else(|| {
+                                        panic!(
+                                            "Failed to get {:?} for {:?}",
+                                            Resistance::Endurance,
+                                            player
+                                        )
+                                    });
+                                let damage = calculate_damage(
+                                    assistance as f64,
+                                    resistance as f64,
+                                    *change as f64,
+                                ) as i64;
+                                let max_health = *target_char
+                                    .stats
+                                    .max_resources
+                                    .get(&Resource::Health)
+                                    .expect("Failed to get Player max health");
+                                target_char.stats.resources.get_mut(&Resource::Health).map(
+                                    |health| {
+                                        *health = (*health - damage).clamp(0, max_health as i64)
+                                    },
+                                );
+                            }
+                            _ => todo!(),
+                        }
+                    },
+                );
+                target_char
             },
-        )
-    });
+        ));
 
     State {
         location: HUMAN_DAMAGE.clone(),
         scene: Scene {
             descriptions: vec![],
         },
-        choices: Choices::skip(Effect {
-            transition: Transition::Goto(COMBAT_END.clone()),
-            actions: vec![],
-        }),
+        choices: Choices::skip(Effect { transition, action }),
     }
 }

@@ -1,6 +1,6 @@
 use campaign_choice::CampaignChoices;
 use combat_choice::CombatChoices;
-use pipedream_engine::core::{choice::Choices, command::UiMode};
+use pipedream_engine::{choice::Choices, command::UiMode};
 
 use crate::{Controllable, Renderable};
 

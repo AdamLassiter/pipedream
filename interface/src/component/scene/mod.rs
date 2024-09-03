@@ -4,15 +4,15 @@ mod combat_scene;
 use std::time::Instant;
 
 use crate::{widget::choice::ChoicesWidget, Handler, Renderable, TickResult};
-use crossterm::event::{KeyCode, KeyEvent};
 use bichannel::Bichannel;
-use pipedream_engine::core::{
+use crossterm::event::{KeyCode, KeyEvent};
+use log::debug;
+use pipedream_engine::{
     choice::Choices,
     command::{EngineCommand, UiCommand, UiMode},
     image::Image,
     scene::Scene,
 };
-use log::debug;
 use ratatui::prelude::*;
 
 use super::Component;

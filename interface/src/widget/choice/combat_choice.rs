@@ -13,10 +13,12 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::core::{
-    choice::{Choice, Choices}, description::Description, effect::Effect
-};
 use log::debug;
+use pipedream_engine::{
+    choice::{Choice, Choices},
+    description::Description,
+    effect::Effect,
+};
 
 use crate::{Controllable, Renderable};
 
@@ -153,7 +155,7 @@ impl Renderable for CombatChoices {
             height: area.height - 1,
             ..area
         };
-        let Self (choices, cursor) = self;
+        let Self(choices, cursor) = self;
 
         if let Choices::Manual(choices) = choices {
             let card_size_hint = 32 + 2;

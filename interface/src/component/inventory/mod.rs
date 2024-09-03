@@ -2,14 +2,12 @@ mod campaign;
 mod combat;
 
 use crate::{Handler, Renderable, TickResult};
-use crossterm::event::KeyEvent;
 use bichannel::Bichannel;
+use crossterm::event::KeyEvent;
+use pipedream_domain::stats::Stats;
 use pipedream_engine::{
-    core::{
-        command::{EngineCommand, UiCommand, UiMode},
-        image::Image,
-    },
-    domain::stats::Stats,
+    command::{EngineCommand, UiCommand, UiMode},
+    image::Image,
 };
 use ratatui::prelude::*;
 

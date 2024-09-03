@@ -3,7 +3,7 @@ use std::io;
 use pipedream::game_coordinator::GameCoordinator;
 use pipedream_bichannel::BichannelMonitor;
 use pipedream_engine::{
-    core::location::Location,
+    location::Location,
     state::{
         campaign_state_machine::StateMachine, campaign_world::CampaignWorld,
         tag_engine::TagEngine,

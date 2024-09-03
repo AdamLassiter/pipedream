@@ -1,8 +1,8 @@
+use log::debug;
+use pipedream_domain::{entity::Ent, target::Target};
 use pipedream_engine::{
-    core::tag::{Static, TagKey, Tags},
-    domain::{entity::Ent, target::Target},
-    log::debug,
     state::tag_engine::TagEngine,
+    tag::{Static, TagKey, Tags},
 };
 
 use crate::{npcs::generate_player, Buildable, Generatable};

@@ -1,4 +1,4 @@
-use pipedream_engine::core::{
+use pipedream_engine::{
     action::Action,
     effect::{Effect, Transition},
     state_machine::StateMachine,

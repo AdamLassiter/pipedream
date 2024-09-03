@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use pipedream_engine::core::{
+use pipedream_engine::{
     choice::Choices,
     description::Description,
     effect::{Effect, Transition},
@@ -20,7 +20,7 @@ pub fn combat_defeat(_machine: &StateMachine) -> State {
         choices: Choices::timed(
             Effect {
                 transition: Transition::Leave,
-                actions: vec![],
+                ..Default::default()
             },
             Duration::from_secs(2),
         )

@@ -20,37 +20,54 @@ impl Crud {
                 #table_name
             }
 
+            pub fn create_sql() -> &'static str {
+                #create_sql
+            }
+
             pub fn create_table(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
-                conn.execute(#create_sql, [])?;
+                conn.execute(Self::create_sql(), [])?;
                 Ok(())
             }
 
+            pub fn insert_sql() -> &'static str {
+                #insert_sql
+            }
+
             pub fn insert(&self, conn: &rusqlite::Connection) -> rusqlite::Result<i64> {
-                let id = conn.execute(
-                    #insert_sql,
+                Self::execute_raw(
+                    conn,
+                    Self::insert_sql(),
                     rusqlite::named_params! {":data": serde_json::to_value(self).unwrap()},
                 )?;
                 Ok(conn.last_insert_rowid())
             }
 
+            pub fn update_sql() -> &'static str {
+                #update_sql
+            }
+
             pub fn update(&self, conn: &rusqlite::Connection, id: i64) -> rusqlite::Result<()> {
-                let id = conn.execute(
-                    #update_sql,
+                Self::execute_raw(
+                    conn,
+                    Self::update_sql(),
                     rusqlite::named_params! {":id": id, ":data": serde_json::to_value(self).unwrap()},
-                )?;
-                Ok(())
+                )
+            }
+
+            pub fn query_sql() -> &'static str {
+                #query_id_sql
             }
 
             pub fn query(conn: &rusqlite::Connection, id: i64) -> rusqlite::Result<Option<Self>> {
-                Ok(conn.prepare(#query_id_sql)?
-                    .query_and_then(rusqlite::named_params! {":id": id}, serde_rusqlite::from_row::<String>)?
-                    .map(|data| serde_json::from_str::<Self>(data.unwrap().as_str()).unwrap())
-                    .next())
+                Self::query_raw(conn, Self::query_sql(), rusqlite::named_params! {":id": id})
+            }
+
+            pub fn delete_sql() -> &'static str {
+                #delete_id_sql
             }
 
             pub fn delete(conn: &rusqlite::Connection, id: i64) -> rusqlite::Result<()> {
-                conn.execute(#delete_id_sql, rusqlite::named_params! {":id": id})?;
-                Ok(())
+                Self::execute_raw(conn, Self::delete_sql(), rusqlite::named_params! {":id": id})
             }
 
             pub fn query_raw(conn: &rusqlite::Connection, raw_sql: &str, params: &[(&str, &dyn rusqlite::ToSql)]) -> rusqlite::Result<Option<Self>> {

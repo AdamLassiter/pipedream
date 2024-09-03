@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use pipedream_engine::{
     domain::target::Target,
-    core::tag::{Static, Tag, TagKey, Tags},
+    tag::{Static, Tag, TagKey, Tags},
 };
 
 use crate::Buildable;
@@ -19,8 +19,12 @@ pub static SUBSTITUTIONS: Static<Vec<(String, TagKey)>> = Static::new(|| {
     ]
 });
 
-pub static VARIANTS: Static<Vec<(String, Vec<String>)>> =
-    Static::new(|| vec![(Target::Any.into(), vec![Target::Player.into(), Target::Enemy.into()])]);
+pub static VARIANTS: Static<Vec<(String, Vec<String>)>> = Static::new(|| {
+    vec![(
+        Target::Any.into(),
+        vec![Target::Player.into(), Target::Enemy.into()],
+    )]
+});
 
 impl Buildable<Tag> for Tags {
     fn build(tags: Vec<Tag>) -> Self {

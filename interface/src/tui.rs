@@ -3,9 +3,9 @@ use std::{
     time::Duration,
 };
 
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use bichannel::{Bichannel, BichannelMonitor};
-use pipedream_engine::core::command::{EngineCommand, UiCommand};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
+use pipedream_engine::command::{EngineCommand, UiCommand};
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},

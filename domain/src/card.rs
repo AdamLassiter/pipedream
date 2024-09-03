@@ -1,6 +1,6 @@
 use rusqlite_orm::orm_bind;
 
-use crate::core::choice::Choice;
+use pipedream_engine::choice::Choice;
 
 #[derive(Clone, Debug)]
 #[orm_bind ({name: "$.choice.summary"}, [])]
