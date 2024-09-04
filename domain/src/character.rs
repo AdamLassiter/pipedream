@@ -1,10 +1,10 @@
 use rusqlite::Connection;
 use rusqlite_orm::orm_bind;
 
-use crate::encounter::{Player, PlayerCharacter};
+use crate::player::Player;
 
-use super::{card::Card, stats::Stats};
-use pipedream_engine::{action::Action, image::Image, tag::Tag};
+use super::stats::Stats;
+use pipedream_engine::{action::Action, choice::CardId, image::Image, tag::Tag};
 
 #[derive(Clone, Debug)]
 #[orm_bind ({name: "$.name"}, [])]
@@ -12,34 +12,50 @@ pub struct Character {
     pub name: String,
     pub image: Image,
     pub tags: Vec<Tag>,
-    pub deck: Vec<Card>,
+    pub deck: Vec<CardId>,
     pub stats: Stats,
 }
 
-impl Character {
-    pub fn get_player(conn: &Connection, player: &Player) -> Self {
-        let (_id, PlayerCharacter { character, .. }) =
+#[derive(Clone, Debug)]
+#[orm_bind ({player: "$.player"}, [])]
+pub struct PlayerCharacter {
+    pub player: Player,
+    pub character_id: CharacterId,
+}
+
+impl PlayerCharacter {
+    pub fn get_player_character(conn: &Connection, player: &Player) -> (CharacterId, Character) {
+        let (_id, PlayerCharacter { character_id, .. }) =
             PlayerCharacter::query_by_player(conn, player)
                 .ok()
                 .and_then(|mut res| res.pop())
-                .unwrap_or_else(|| panic!("Failed to find EncounterCharacter for {:?}", player));
-        character
+                .unwrap_or_else(|| panic!("Failed to find Character for {:?}", player));
+        let character = Character::query(conn, &character_id)
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| panic!("Failed to find Character for {:?}", character_id));
+        (character_id, character)
     }
 
-    pub fn update_player(
+    pub fn update_player_character(
         conn: &Connection,
         player: &Player,
-        update: impl Fn(Character) -> Self,
+        update: impl Fn(Character) -> Character,
     ) -> Action {
-        let (id, PlayerCharacter { character, .. }) =
-            PlayerCharacter::query_by_player(conn, player)
-                .ok()
-                .and_then(|mut res| res.pop())
-                .unwrap_or_else(|| panic!("Failed to find EncounterCharacter for {:?}", player));
+        let (character_id, character) = Self::get_player_character(conn, player);
         let updated = update(character);
         Action {
             sql_batch: vec![Character::update_sql().to_string()],
-            params: vec![],
+            params: vec![
+                (
+                    ":id".to_string(),
+                    serde_json::to_value(character_id.0).expect("Failed to serialize Id to json"),
+                ),
+                (
+                    ":data".to_string(),
+                    serde_json::to_value(updated).expect("Failed to serialize Character to json"),
+                ),
+            ],
         }
     }
 }

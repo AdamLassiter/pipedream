@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use rusqlite_orm::orm_bind;
 use serde::{Deserialize, Serialize};
 
-use super::encounter::Player;
+use super::player::Player;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stats {
@@ -31,7 +31,7 @@ impl StatChange {
             .ok()
             .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source))
             .into_iter()
-            .unzip::<i64, StatChange, Vec<_>, Vec<_>>();
+            .unzip::<StatChangeId, StatChange, Vec<_>, Vec<_>>();
         stat_changes
     }
 
@@ -40,7 +40,7 @@ impl StatChange {
             .ok()
             .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target))
             .into_iter()
-            .unzip::<i64, StatChange, Vec<_>, Vec<_>>();
+            .unzip::<StatChangeId, StatChange, Vec<_>, Vec<_>>();
         stat_changes
     }
 }

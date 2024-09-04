@@ -1,61 +1,38 @@
 use std::iter::repeat_n;
 
-use pipedream_engine::{description::Description, log::debug};
+use log::debug;
+use pipedream_engine::{choice::Card, description::Description, state_machine::StateMachine};
 
 use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
-use pipedream_domain::{card::Card, entity::Ent, target::Target};
+use pipedream_domain::{card::PlacedCard, field::FieldPlace, player::Player, target::Target};
 use pipedream_engine::{
     action::Action,
     choice::Choice,
     effect::{Effect, Transition},
     scene::Scene,
-    state::combat_state_machine::StateMachine,
     state::State,
     tag::Tag,
 };
 
-pub fn player_play(machine: &StateMachine) -> State {
-    let player_hand_slice = machine.tag_engine.find(&Target::Me.ent(Ent::Hand));
-    debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand_slice);
+pub fn player_play(player: &Player, machine: &StateMachine) -> State {
+    let player_hand = PlacedCard::get_placed_cards(&machine.conn, player, &FieldPlace::Hand);
+    debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand);
 
     State {
         location: HUMAN_PLAY.clone(),
         scene: Scene {
             descriptions: vec![Description::always("Play")],
         },
-        choices: player_hand_slice
-            .iter()
-            .map(|Tag { key: card, value }| (machine.combat_world.cards.find(card), value))
+        choices: player_hand
+            .into_iter()
+            .flat_map(|(_id, PlacedCard { card: card_id, .. })| {
+                Card::get_card(&machine.conn, &card_id).into_iter()
+            })
             .flat_map(
-                |(
-                    Card {
-                        name,
-                        image,
-                        details,
-                        cost,
-                        predicate,
-                        actions,
-                        ..
-                    },
-                    value,
-                )| {
-                    let selectable = machine.tag_engine.satisfies(predicate);
+                |card| {
+                    let selectable = machine.tag_engine.satisfies(card.predicate);
                     let choice = Choice {
-                        summary: name.clone(),
-                        image: Some(image.clone()),
-                        details: details.clone(),
-                        cost: Some(cost.clone()),
-                        predicate: Some(predicate.clone()),
-                        effect: Effect {
-                            transition: Transition::Goto(HUMAN_DAMAGE.clone()),
-                            actions: actions
-                                .clone()
-                                .into_iter()
-                                .chain(vec![Action::Subtract(
-                                    format!("{}:{}:{}", Target::Me, Ent::Hand, name).into(),
-                                )])
-                                .collect(),
-                        },
+                        card,
                         selectable,
                     };
                     repeat_n(

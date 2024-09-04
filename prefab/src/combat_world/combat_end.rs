@@ -1,5 +1,5 @@
 use log::debug;
-use pipedream_domain::{character::Character, encounter::Player, stats::Resource};
+use pipedream_domain::{character::PlayerCharacter, player::Player, stats::Resource};
 use pipedream_engine::{
     choice::Choices,
     effect::{Effect, Transition},
@@ -11,8 +11,8 @@ use pipedream_engine::{
 use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, HUMAN_PLAY};
 
 pub fn combat_end(machine: &StateMachine) -> State {
-    let human = Character::get_player(&machine.conn, &Player::Human);
-    let cpu = Character::get_player(&machine.conn, &Player::Cpu);
+    let (_, human) = PlayerCharacter::get_player_character(&machine.conn, &Player::Human);
+    let (_, cpu) = PlayerCharacter::get_player_character(&machine.conn, &Player::Cpu);
 
     debug!(target:"Prefab/Combat/End", "{:?} vs {:?}", human, cpu);
 

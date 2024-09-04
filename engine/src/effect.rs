@@ -6,7 +6,7 @@ use super::{action::Action, location::Location};
 pub struct Effect {
     #[serde(default = "none")]
     pub transition: Transition,
-    pub action: Option<Action>,
+    pub actions: Vec<Action>,
 }
 
 fn none() -> Transition {
@@ -25,7 +25,7 @@ impl Default for Effect {
     fn default() -> Self {
         Self {
             transition: Transition::None,
-            action: None,
+            actions: vec![],
         }
     }
 }

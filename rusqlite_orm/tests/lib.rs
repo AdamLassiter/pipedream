@@ -11,7 +11,14 @@ struct Orm {
 }
 impl Orm {
     pub fn nice_baz(conn: &Connection) -> Result<()> {
-        Self::execute_raw(conn, &format!("update {} set data = json_replace(data, '$.baz[1]', json(69))", Self::table_name()), &[])
+        Self::execute_raw(
+            conn,
+            &format!(
+                "update {} set data = json_replace(data, '$.baz[1]', json(69))",
+                Self::table_name()
+            ),
+            &[],
+        )
     }
 }
 
@@ -47,9 +54,15 @@ fn setup() -> Result<Connection> {
 fn query() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::query(&conn, 1)?, Some(foobar()));
+    assert_eq!(Orm::query(&conn, &OrmId(1))?, Some(foobar()));
 
-    assert_eq!(Orm::query(&conn, 2)?, None);
+    assert_eq!(Orm::query(&conn, &OrmId(2))?, None);
+
+    let value = serde_json::to_value(1).unwrap();
+    assert_eq!(
+        Orm::query_raw(&conn, Orm::query_sql(), &[(":id", &value)])?,
+        Some(foobar())
+    );
 
     Ok(())
 }
@@ -58,12 +71,18 @@ fn query() -> Result<()> {
 fn binding() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::query_by_foo(&conn, &"foo1")?, vec![(1, foobar())]);
+    assert_eq!(
+        Orm::query_by_foo(&conn, &"foo1")?,
+        vec![(OrmId(1), foobar())]
+    );
     assert_eq!(
         Orm::query_by_bar(&conn, &Bar { bar: "bar1".into() })?,
-        vec![(1, foobar())]
+        vec![(OrmId(1), foobar())]
     );
-    assert_eq!(Orm::query_by_baz(&conn, &"baz1")?, vec![(1, foobar())]);
+    assert_eq!(
+        Orm::query_by_baz(&conn, &"baz1")?,
+        vec![(OrmId(1), foobar())]
+    );
 
     assert_eq!(Orm::query_by_foo(&conn, &"foo2")?, vec![]);
     assert_eq!(
@@ -81,7 +100,7 @@ fn product() -> Result<()> {
 
     assert_eq!(
         Orm::query_by_foo_and_bar(&conn, &"foo1", &Bar { bar: "bar1".into() })?,
-        vec![(1, foobar())]
+        vec![(OrmId(1), foobar())]
     );
 
     assert_eq!(
@@ -100,9 +119,9 @@ fn product() -> Result<()> {
 fn insert() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::query(&conn, 2)?, None);
-    assert_eq!(foobar().insert(&conn)?, 2);
-    assert_eq!(Orm::query(&conn, 2)?, Some(foobar()));
+    assert_eq!(Orm::query(&conn, &OrmId(2))?, None);
+    assert_eq!(foobar().insert(&conn)?, OrmId(2));
+    assert_eq!(Orm::query(&conn, &OrmId(2))?, Some(foobar()));
 
     Ok(())
 }
@@ -116,8 +135,8 @@ fn update() -> Result<()> {
     };
     let mut updated = foobar();
     updated.bar = update;
-    assert_eq!(updated.update(&conn, 1)?, ());
-    assert_eq!(Orm::query(&conn, 1)?, Some(updated));
+    assert_eq!(updated.update(&conn, &OrmId(1))?, ());
+    assert_eq!(Orm::query(&conn, &OrmId(1))?, Some(updated));
 
     Ok(())
 }
@@ -129,10 +148,10 @@ fn update_bind() -> Result<()> {
     let update = Bar {
         bar: "updated".into(),
     };
-    assert_eq!(Orm::update_bar(&conn, 1, &update)?, ());
+    assert_eq!(Orm::update_bar(&conn, &OrmId(1), &update)?, ());
     let mut updated = foobar();
     updated.bar = update;
-    assert_eq!(Orm::query(&conn, 1)?, Some(updated));
+    assert_eq!(Orm::query(&conn, &OrmId(1))?, Some(updated));
 
     Ok(())
 }
@@ -141,9 +160,9 @@ fn update_bind() -> Result<()> {
 fn delete() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::delete(&conn, 1)?, ());
-    assert_eq!(Orm::query(&conn, 1)?, None);
-    assert_eq!(Orm::delete(&conn, 1)?, ());
+    assert_eq!(Orm::delete(&conn, &OrmId(1))?, ());
+    assert_eq!(Orm::query(&conn, &OrmId(1))?, None);
+    assert_eq!(Orm::delete(&conn, &OrmId(1))?, ());
 
     Ok(())
 }
@@ -155,7 +174,7 @@ fn execute() -> Result<()> {
     assert_eq!(Orm::nice_baz(&conn)?, ());
     let mut updated = foobar();
     updated.baz.1 = 69;
-    assert_eq!(Orm::query(&conn, 1)?, Some(updated));
+    assert_eq!(Orm::query(&conn, &OrmId(1))?, Some(updated));
 
     Ok(())
 }

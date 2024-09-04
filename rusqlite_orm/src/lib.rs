@@ -8,7 +8,7 @@ use binding::Bindings;
 use crud::Crud;
 use proc_macro2::TokenStream;
 use product::Products;
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::{
     braced, bracketed,
     parse::{Parse, ParseStream},
@@ -60,18 +60,24 @@ pub fn orm_bind(
 
     let item: TokenStream = item.into();
 
+    let ident_id = format_ident!("{}Id", ident);
     let table_name = format!("{}s", ident).to_lowercase();
-    let crud_queries = TokenStream::from_iter(attributes.crud.as_tokenstreams(&table_name));
-    let bindings_queries = TokenStream::from_iter(attributes.bindings.as_tokenstreams(&table_name));
-    let products_queries = TokenStream::from_iter(
-        attributes
-            .products
-            .as_tokenstreams(&table_name, &attributes.bindings),
-    );
+    let crud_queries =
+        TokenStream::from_iter(attributes.crud.as_tokenstreams(&ident_id, &table_name));
+    let bindings_queries =
+        TokenStream::from_iter(attributes.bindings.as_tokenstreams(&ident_id, &table_name));
+    let products_queries = TokenStream::from_iter(attributes.products.as_tokenstreams(
+        &ident_id,
+        &table_name,
+        &attributes.bindings,
+    ));
 
     quote! {
         #[derive(serde::Serialize, serde::Deserialize)]
         #item
+
+        #[derive(Clone, Copy, PartialEq, Eq, std::fmt::Debug, serde::Serialize, serde::Deserialize)]
+        pub struct #ident_id(pub i64);
 
         #[automatically_derived]
         impl #ident {

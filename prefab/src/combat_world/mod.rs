@@ -8,7 +8,7 @@ mod player_play;
 
 use std::{collections::BTreeMap, sync::LazyLock};
 
-use pipedream_domain::encounter::Player;
+use pipedream_domain::player::Player;
 use pipedream_engine::{location::Location, state::DynamicStateFn};
 
 use combat_defeat::combat_defeat;
@@ -44,7 +44,10 @@ impl Generatable for BTreeMap<Location, DynamicStateFn> {
                 HUMAN_DRAW.clone(),
                 DynamicStateFn::new(|machine| player_draw(&Player::Human, machine)),
             ),
-            (HUMAN_PLAY.clone(), DynamicStateFn::new(player_play)),
+            (
+                HUMAN_PLAY.clone(),
+                DynamicStateFn::new(|machine| player_play(&Player::Human, machine)),
+            ),
             (
                 HUMAN_DAMAGE.clone(),
                 DynamicStateFn::new(|machine| player_apply_stats(&Player::Human, machine)),

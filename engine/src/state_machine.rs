@@ -4,7 +4,7 @@ use log::debug;
 use rusqlite::Connection;
 
 use crate::{
-    choice::{Choice, Choices},
+    choice::{Card, Choice, Choices},
     command::UiCommand,
     description::Description,
     effect::Effect,
@@ -35,17 +35,18 @@ impl StateMachine {
     }
 
     pub fn handle_effect(&mut self, effect: Effect) -> Vec<UiCommand> {
-        self.handle_action(effect.action);
+        effect
+            .actions
+            .into_iter()
+            .for_each(|action| self.handle_action(action));
         self.handle_transition(effect.transition);
         self.next_options()
     }
 
-    fn handle_action(&mut self, action: Option<Action>) {
+    fn handle_action(&mut self, action: Action) {
         debug!(target:"Engine/StateMachine/HandleActions", "{:?}", action);
 
-        if let Some(action) = action {
-            action.run(&mut self.conn).expect("Failed to run action");
-        }
+        action.run(&mut self.conn).expect("Failed to run action");
     }
 
     fn handle_transition(&mut self, transition: Transition) {
@@ -86,7 +87,12 @@ impl StateMachine {
             .retain(|Description { predicate, .. }| test(predicate));
 
         if let Choices::Manual(ref mut choices) = choices {
-            choices.retain(|Choice { predicate, .. }| test(predicate));
+            choices.retain(
+                |Choice {
+                     card: Card { predicate, .. },
+                     ..
+                 }| test(predicate),
+            );
         }
 
         debug!(target:"Engine/StateMachine/ShowScene", "{:?}", &scene);

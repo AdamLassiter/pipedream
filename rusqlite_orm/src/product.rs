@@ -58,7 +58,12 @@ impl Product {
         format_ident!("query_by_{}", idents.join("_and_"))
     }
 
-    pub fn as_orm_method(&self, table_name: &String, bindings: &Bindings) -> TokenStream {
+    pub fn as_orm_method(
+        &self,
+        ident_id: &Ident,
+        table_name: &String,
+        bindings: &Bindings,
+    ) -> TokenStream {
         let bindings = bindings.as_map();
         let query_sql = self.as_sql(table_name, &bindings);
         let query_by_ident = self.as_query_by_ident();
@@ -94,14 +99,14 @@ impl Product {
         .collect::<Vec<_>>();
 
         quote! {
-            pub fn #query_by_ident<#(#generic_lifes),* , #(#generic_types),*>(conn: &rusqlite::Connection, #(#arguments),*) -> rusqlite::Result<std::vec::Vec<(i64, Self)>> where #(#type_bounds),* {
+            pub fn #query_by_ident<#(#generic_lifes),* , #(#generic_types),*>(conn: &rusqlite::Connection, #(#arguments),*) -> rusqlite::Result<std::vec::Vec<(#ident_id, Self)>> where #(#type_bounds),* {
                 Ok(conn.prepare(#query_sql)?
                     .query_and_then(rusqlite::named_params! {#(#named_params),*}, serde_rusqlite::from_row::<(i64, String)>)?
                     .map(|res| {
                         let (id, data) = res.unwrap();
-                        (id, serde_json::from_str::<Self>(data.as_str()).unwrap())
+                        (#ident_id(id), serde_json::from_str::<Self>(data.as_str()).unwrap())
                     })
-                    .collect::<Vec<(i64, Self)>>())
+                    .collect::<Vec<(#ident_id, Self)>>())
             }
         }
     }
@@ -121,10 +126,15 @@ impl Parse for Products {
     }
 }
 impl Products {
-    pub fn as_tokenstreams(&self, table_name: &String, bindings: &Bindings) -> Vec<TokenStream> {
+    pub fn as_tokenstreams(
+        &self,
+        ident_id: &Ident,
+        table_name: &String,
+        bindings: &Bindings,
+    ) -> Vec<TokenStream> {
         self.products
             .iter()
-            .map(|product| product.as_orm_method(table_name, bindings))
+            .map(|product| product.as_orm_method(ident_id, table_name, bindings))
             .collect()
     }
 }

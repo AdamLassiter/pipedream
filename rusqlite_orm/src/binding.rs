@@ -40,7 +40,7 @@ impl Binding {
         )
     }
 
-    pub fn as_orm_method(&self, table_name: &String) -> TokenStream {
+    pub fn as_orm_method(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
         let query_sql = self.as_query_sql(table_name);
         let update_sql = self.as_update_sql(table_name);
         let query_by_ident = format_ident!("query_by_{}", self.ident);
@@ -48,19 +48,19 @@ impl Binding {
         let ident_key = format!(":{}", self.ident);
 
         quote! {
-            pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<std::vec::Vec<(i64, Self)>> where T: serde::Serialize {
+            pub fn #query_by_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<std::vec::Vec<(#ident_id, Self)>> where T: serde::Serialize {
                 Ok(conn.prepare(#query_sql)?
                     .query_and_then(rusqlite::named_params! {#ident_key: serde_json::to_value(value).unwrap()}, serde_rusqlite::from_row::<(i64, String)>)?
                     .map(|res| {
                         let (id, data) = res.unwrap();
-                        (id, serde_json::from_str::<Self>(data.as_str()).unwrap())
+                        (#ident_id(id), serde_json::from_str::<Self>(data.as_str()).unwrap())
                     })
-                    .collect::<std::vec::Vec<(i64, Self)>>())
+                    .collect::<std::vec::Vec<(#ident_id, Self)>>())
             }
 
-            pub fn #update_ident<T>(conn: &rusqlite::Connection, id: i64, value: &T) -> rusqlite::Result<()> where T: serde::Serialize {
+            pub fn #update_ident<T>(conn: &rusqlite::Connection, id: &#ident_id, value: &T) -> rusqlite::Result<()> where T: serde::Serialize {
                 conn.prepare(#update_sql)?
-                    .execute(rusqlite::named_params! {":id": id, #ident_key: serde_json::to_value(value).unwrap()})?;
+                    .execute(rusqlite::named_params! {":id": id.0, #ident_key: serde_json::to_value(value).unwrap()})?;
                 Ok(())
             }
         }
@@ -80,10 +80,10 @@ impl Parse for Bindings {
     }
 }
 impl Bindings {
-    pub fn as_tokenstreams(&self, table_name: &String) -> Vec<TokenStream> {
+    pub fn as_tokenstreams(&self, ident_id: &Ident, table_name: &String) -> Vec<TokenStream> {
         self.bindings
             .iter()
-            .map(|bind| bind.as_orm_method(table_name))
+            .map(|bind| bind.as_orm_method(ident_id, table_name))
             .collect()
     }
 

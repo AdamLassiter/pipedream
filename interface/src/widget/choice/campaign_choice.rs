@@ -13,10 +13,12 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use pipedream_engine::{
-    choice::{Choice, Choices}, description::Description, effect::Effect
-};
 use log::debug;
+use pipedream_engine::{
+    choice::{Card, Choice, Choices},
+    description::Description,
+    effect::Effect,
+};
 
 use crate::{Controllable, Renderable};
 
@@ -75,7 +77,7 @@ impl Controllable for CampaignChoices {
             Choices::Manual(choices) => choices
                 .get(self.1)
                 .filter(|&c| c.selectable)
-                .map(|c| c.effect.clone()),
+                .map(|c| c.card.effect.clone()),
             Choices::Auto(transition, _) => Some(transition.clone()),
         }
     }
@@ -83,7 +85,7 @@ impl Controllable for CampaignChoices {
 
 impl Renderable for CampaignChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let details_size_hint = self.0.details.len() as u16;
+        let details_size_hint = self.card.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
         let [_, area, _] = Layout::horizontal([
@@ -109,7 +111,7 @@ impl Renderable for CampaignChoice {
         ])
         .areas(block.inner(area));
 
-        let padded_summary = format!(" {} ", self.summary);
+        let padded_summary = format!(" {} ", self.card.summary);
         let mut title_text = compile::<RatatuiTextGenerator>(&padded_summary)
             .expect("Failed to compile tui text markup for summaries");
         if let Some(title_line) = title_text.lines.pop() {
@@ -122,7 +124,7 @@ impl Renderable for CampaignChoice {
 
         // Must live long enough
         let padded_cost;
-        if let Some(cost) = &self.cost {
+        if let Some(cost) = &self.card.cost {
             padded_cost = format!(" {} ", cost);
             let mut cost_lines = compile::<RatatuiTextGenerator>(&padded_cost)
                 .expect("Failed to compile tui text markup for cost")
@@ -136,9 +138,10 @@ impl Renderable for CampaignChoice {
             }
         }
 
-        self.image.render(ascii_area, buf);
+        self.card.image.render(ascii_area, buf);
 
         let details_lines = self
+            .card
             .details
             .iter()
             .flat_map(|Description { descriptor, .. }| {
@@ -159,7 +162,7 @@ impl Renderable for CampaignChoice {
 impl Renderable for CampaignChoices {
     fn render(&self, area: Rect, buf: &mut Buffer) {
         debug!(target:"Interface/Render/CampaignChoices", "{:?} at {:?}", self.0, area);
-        let Self (choices, cursor) = self;
+        let Self(choices, cursor) = self;
         let mut state = ListState::default().with_selected(Some(*cursor));
 
         if let Choices::Manual(choices) = choices {
@@ -167,7 +170,7 @@ impl Renderable for CampaignChoices {
                 .iter()
                 .map(|choice| {
                     let Choice {
-                        summary,
+                        card: Card { summary, .. },
                         selectable,
                         ..
                     } = choice;

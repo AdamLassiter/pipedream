@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use log::debug;
-use pipedream_domain::{character::Character, encounter::Player};
+use pipedream_domain::{character::PlayerCharacter, player::Player};
 use pipedream_engine::{choice::Choices, description::Description, state_machine::StateMachine};
 
 use crate::combat_world::{COMBAT_INIT, HUMAN_DRAW};
@@ -12,7 +12,7 @@ use pipedream_engine::{
 };
 
 pub fn combat_init(machine: &StateMachine) -> State {
-    let cpu = Character::get_player(&machine.conn, &Player::Cpu);
+    let (_, cpu) = PlayerCharacter::get_player_character(&machine.conn, &Player::Cpu);
     debug!(target:"Prefab/Combat/Init", "{:?}", cpu.name);
 
     State {

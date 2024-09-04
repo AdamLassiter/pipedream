@@ -79,7 +79,7 @@ impl Controllable for CombatChoices {
             Choices::Manual(choices) => choices
                 .get(self.1)
                 .filter(|&c| c.selectable)
-                .map(|c| c.effect.clone()),
+                .map(|c| c.card.effect.clone()),
             Choices::Auto(transition, _) => Some(transition.clone()),
         }
     }
@@ -87,7 +87,7 @@ impl Controllable for CombatChoices {
 
 impl Renderable for CombatChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let details_size_hint = self.details.len() as u16;
+        let details_size_hint = self.card.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 + 2 } else { 0 } as u16;
 
         let mut block = Block::default()
@@ -101,7 +101,7 @@ impl Renderable for CombatChoice {
         ])
         .areas(block.inner(area));
 
-        let padded_summary = format!(" {} ", self.summary);
+        let padded_summary = format!(" {} ", self.card.summary);
         let mut title_text = compile::<RatatuiTextGenerator>(&padded_summary)
             .expect("Failed to compile tui text markup for summaries");
         if let Some(title_line) = title_text.lines.pop() {
@@ -113,7 +113,7 @@ impl Renderable for CombatChoice {
         }
 
         let padded_cost; // Must live long enough
-        if let Some(cost) = &self.cost {
+        if let Some(cost) = &self.card.cost {
             padded_cost = format!(" {} ", cost);
             let mut cost_lines = compile::<RatatuiTextGenerator>(&padded_cost)
                 .expect("Failed to compile tui text markup for cost")
@@ -127,9 +127,10 @@ impl Renderable for CombatChoice {
             }
         }
 
-        self.image.render(ascii_area, buf);
+        self.card.image.render(ascii_area, buf);
 
         let details_lines = self
+            .card
             .details
             .iter()
             .flat_map(|Description { descriptor, .. }| {
