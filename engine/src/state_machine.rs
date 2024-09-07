@@ -75,23 +75,28 @@ impl StateMachine {
         let mut scene = scene.clone();
         let mut choices = choices.clone();
 
-        let test = |predicate: &Option<Predicate>| {
+        let test = |conn: &Connection, predicate: &Option<Predicate>| {
             predicate
                 .as_ref()
-                .map(|predicate| predicate.test())
+                .map(|predicate| {
+                    predicate
+                        .clone()
+                        .test(conn)
+                        .unwrap_or_else(|_| panic!("Failed to execute predicate {:?}", predicate))
+                })
                 .unwrap_or(true)
         };
 
         scene
             .descriptions
-            .retain(|Description { predicate, .. }| test(predicate));
+            .retain(|Description { predicate, .. }| test(&self.conn, predicate));
 
         if let Choices::Manual(ref mut choices) = choices {
             choices.retain(
                 |Choice {
                      card: Card { predicate, .. },
                      ..
-                 }| test(predicate),
+                 }| test(&self.conn, predicate),
             );
         }
 

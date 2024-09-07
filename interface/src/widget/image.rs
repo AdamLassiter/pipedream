@@ -5,8 +5,8 @@ use crate::{
     Renderable,
 };
 
-use pipedream_engine::image::Image;
 use log::debug;
+use pipedream_engine::image::Image;
 use ratatui::{prelude::*, widgets::Paragraph};
 
 impl Renderable for Image {

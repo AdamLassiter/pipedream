@@ -4,11 +4,11 @@
 #![feature(let_chains)]
 
 pub mod card;
+pub mod character;
 pub mod class;
 pub mod field;
-pub mod character;
+pub mod player;
 pub mod stats;
 pub mod target;
-pub mod player;
 
 extern crate log;

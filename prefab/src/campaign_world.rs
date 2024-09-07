@@ -1,14 +1,12 @@
 use crate::Generatable;
 use pipedream_engine::{
-    {
-        action::Action,
-        choice::Choice,
-        location::Location,
-        predicate::Predicate,
-        scene::Scene,
-        state::State,
-        effect::{Effect, Transition},
-    },
+    action::Action,
+    choice::Choice,
+    effect::{Effect, Transition},
+    location::Location,
+    predicate::Predicate,
+    scene::Scene,
+    state::State,
 };
 
 pub static CAMPAIGN_DEFEAT: Static<Location> = Static::new(|| "campaign:defeat".into());
@@ -170,7 +168,6 @@ impl Generatable for CampaignWorld {
                 .into(),
             },
         ];
-        vec
-        .into()
+        vec.into()
     }
 }

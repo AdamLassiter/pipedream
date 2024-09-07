@@ -9,18 +9,6 @@ struct Orm {
     bar: Bar,
     baz: Baz,
 }
-impl Orm {
-    pub fn nice_baz(conn: &Connection) -> Result<()> {
-        Self::execute_raw(
-            conn,
-            &format!(
-                "update {} set data = json_replace(data, '$.baz[1]', json(69))",
-                Self::table_name()
-            ),
-            &[],
-        )
-    }
-}
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 struct Foo(String);
@@ -171,10 +159,26 @@ fn delete() -> Result<()> {
 fn execute() -> Result<()> {
     let conn = setup()?;
 
-    assert_eq!(Orm::nice_baz(&conn)?, ());
+    Orm::execute_raw(
+        &conn,
+        &format!(
+            "update {} set data = json_replace(data, '$.baz[1]', json(69))",
+            Orm::table_name()
+        ),
+        &[],
+    )?;
     let mut updated = foobar();
     updated.baz.1 = 69;
     assert_eq!(Orm::query(&conn, &OrmId(1))?, Some(updated));
+
+    Ok(())
+}
+
+#[test]
+fn count() -> Result<()> {
+    let conn = setup()?;
+
+    assert_eq!(Orm::count_foo(&conn, &"foo1")?, 1);
 
     Ok(())
 }

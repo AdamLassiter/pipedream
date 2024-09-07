@@ -14,6 +14,7 @@ impl Crud {
         let insert_sql = format!("insert into {} (data) values (:data)", table_name);
         let update_sql = format!("update {} set data = (:data) where id = :id", table_name);
         let query_id_sql = format!("select data from {} where id = :id", table_name);
+        let count_sql = format!("select count(*) from {}", table_name);
         let delete_id_sql = format!("delete from {} where id = :id", table_name);
 
         quote! {
@@ -52,7 +53,8 @@ impl Crud {
                     conn,
                     Self::update_sql(),
                     rusqlite::named_params! {":id": id.0, ":data": serde_json::to_value(self).unwrap()},
-                )
+                )?;
+                Ok(())
             }
 
             pub fn query_sql() -> &'static str {
@@ -63,12 +65,20 @@ impl Crud {
                 Self::query_raw(conn, Self::query_sql(), rusqlite::named_params! {":id": id.0})
             }
 
+            pub fn count(conn: &rusqlite::Connection) -> rusqlite::Result<i64> {
+                Ok(conn.prepare(#count_sql)?
+                    .query_and_then([], serde_rusqlite::from_row::<i64>)?
+                    .map(|data| data.unwrap())
+                    .next().unwrap_or(0))
+            }
+
             pub fn delete_sql() -> &'static str {
                 #delete_id_sql
             }
 
             pub fn delete(conn: &rusqlite::Connection, id: &#ident_id) -> rusqlite::Result<()> {
-                Self::execute_raw(conn, Self::delete_sql(), rusqlite::named_params! {":id": id.0})
+                Self::execute_raw(conn, Self::delete_sql(), rusqlite::named_params! {":id": id.0})?;
+                Ok(())
             }
 
             pub fn query_raw(conn: &rusqlite::Connection, raw_sql: &str, params: &[(&str, &dyn rusqlite::ToSql)]) -> rusqlite::Result<Option<Self>> {
@@ -78,9 +88,11 @@ impl Crud {
                     .next())
             }
 
-            pub fn execute_raw(conn: &rusqlite::Connection, raw_sql: &str, params: &[(&str, &dyn rusqlite::ToSql)]) -> rusqlite::Result<()> {
-                conn.execute(raw_sql, params)?;
-                Ok(())
+            pub fn execute_raw(conn: &rusqlite::Connection, raw_sql: &str, params: &[(&str, &dyn rusqlite::ToSql)]) -> rusqlite::Result<Vec<serde_json::Value>> {
+                Ok(conn.prepare(raw_sql)?
+                    .query_and_then(params, serde_rusqlite::from_row::<String>)?
+                    .map(|data| serde_json::from_str::<serde_json::Value>(data.unwrap().as_str()).unwrap())
+                    .collect::<Vec<_>>())
             }
         }
     }

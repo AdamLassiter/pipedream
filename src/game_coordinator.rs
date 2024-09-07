@@ -4,12 +4,12 @@ use std::time;
 
 use pipedream_bichannel::{Bichannel, BichannelMonitor};
 use pipedream_engine::{
+    log::debug,
+    state::campaign_state_machine::StateMachine,
     {
         command::{EngineCommand, UiCommand},
         effect::Effect,
     },
-    log::debug,
-    state::campaign_state_machine::StateMachine,
 };
 
 pub struct GameCoordinator {

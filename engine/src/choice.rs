@@ -22,6 +22,17 @@ impl Card {
             .ok()
             .unwrap_or_else(|| panic!("Failed to find Card for {:?}", card_id))
     }
+
+    pub fn predicate_satisfied(&self, conn: &Connection) -> bool {
+        self.predicate
+            .as_ref()
+            .map(|pred| {
+                pred.test(conn)
+                    .ok()
+                    .unwrap_or_else(|| panic!("Failed to test Predicate for {:?}", self))
+            })
+            .unwrap_or(true)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

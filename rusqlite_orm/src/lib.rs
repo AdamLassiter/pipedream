@@ -72,7 +72,7 @@ pub fn orm_bind(
         &attributes.bindings,
     ));
 
-    quote! {
+    let code = quote! {
         #[derive(serde::Serialize, serde::Deserialize)]
         #item
 
@@ -94,6 +94,7 @@ pub fn orm_bind(
         impl #ident {
             #products_queries
         }
-    }
-    .into()
+    };
+    println!("{}", code);
+    code.into()
 }

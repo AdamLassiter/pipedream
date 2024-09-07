@@ -31,6 +31,15 @@ impl Binding {
         )
     }
 
+    fn as_count_sql(&self, table_name: &String) -> String {
+        format!(
+            "select count(*) from {} where data->'{}' = :{}",
+            table_name,
+            self.path.value(),
+            self.ident
+        )
+    }
+
     fn as_update_sql(&self, table_name: &String) -> String {
         format!(
             "update {} set data = json_replace(data, '{}', json(:{})) where id = :id",
@@ -42,8 +51,10 @@ impl Binding {
 
     pub fn as_orm_method(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
         let query_sql = self.as_query_sql(table_name);
+        let count_sql = self.as_count_sql(table_name);
         let update_sql = self.as_update_sql(table_name);
         let query_by_ident = format_ident!("query_by_{}", self.ident);
+        let count_ident = format_ident!("count_{}", self.ident);
         let update_ident = format_ident!("update_{}", self.ident);
         let ident_key = format!(":{}", self.ident);
 
@@ -56,6 +67,13 @@ impl Binding {
                         (#ident_id(id), serde_json::from_str::<Self>(data.as_str()).unwrap())
                     })
                     .collect::<std::vec::Vec<(#ident_id, Self)>>())
+            }
+
+            pub fn #count_ident<T>(conn: &rusqlite::Connection, value: &T) -> rusqlite::Result<i64> where T: serde::Serialize {
+                Ok(conn.prepare(#count_sql)?
+                    .query_and_then(rusqlite::named_params! {#ident_key: serde_json::to_value(value).unwrap()}, serde_rusqlite::from_row::<i64>)?
+                    .map(|data| data.unwrap())
+                    .next().unwrap_or(0))
             }
 
             pub fn #update_ident<T>(conn: &rusqlite::Connection, id: &#ident_id, value: &T) -> rusqlite::Result<()> where T: serde::Serialize {

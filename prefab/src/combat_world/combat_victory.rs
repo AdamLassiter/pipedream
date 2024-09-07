@@ -1,8 +1,13 @@
 use std::time::Duration;
 
 use pipedream_engine::{
-        choice::Choices, description::Description, effect::{Effect, Transition}, scene::Scene, state::State, state_machine::StateMachine
-    };
+    choice::Choices,
+    description::Description,
+    effect::{Effect, Transition},
+    scene::Scene,
+    state::State,
+    state_machine::StateMachine,
+};
 
 use crate::combat_world::COMBAT_VICTORY;
 
