@@ -22,8 +22,8 @@ pub fn init() -> io::Result<Tui> {
     if true {
         tui_logger::init_logger(LevelFilter::Trace).expect("Failed to initialise logger");
         tui_logger::set_default_level(LevelFilter::Trace);
-    } else {
-        init_logfile();
+    // } else {
+    //     init_logfile();
     }
 
     panic::update_hook(move |prev, info| {
@@ -54,25 +54,25 @@ pub fn finish_and_panic_threads(threads: Vec<JoinHandle<()>>) {
         .for_each(|err| panic::resume_unwind(err));
 }
 
-fn init_logfile() {
-    use log4rs::{
-        append::file::FileAppender,
-        config::{Appender, Root},
-        encode::pattern::PatternEncoder,
-        Config,
-    };
+// fn init_logfile() {
+//     use log4rs::{
+//         append::file::FileAppender,
+//         config::{Appender, Root},
+//         encode::pattern::PatternEncoder,
+//         Config,
+//     };
 
-    let logfile = FileAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{l} {t} - {m}\n")))
-        .build("./log")
-        .unwrap();
-    let config = Config::builder()
-        .appender(Appender::builder().build("logfile", Box::new(logfile)))
-        .build(
-            Root::builder()
-                .appender("logfile")
-                .build(LevelFilter::Trace),
-        )
-        .unwrap();
-    log4rs::init_config(config).unwrap();
-}
+//     let logfile = FileAppender::builder()
+//         .encoder(Box::new(PatternEncoder::new("{l} {t} - {m}\n")))
+//         .build("./log")
+//         .unwrap();
+//     let config = Config::builder()
+//         .appender(Appender::builder().build("logfile", Box::new(logfile)))
+//         .build(
+//             Root::builder()
+//                 .appender("logfile")
+//                 .build(LevelFilter::Trace),
+//         )
+//         .unwrap();
+//     log4rs::init_config(config).unwrap();
+// }

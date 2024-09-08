@@ -9,7 +9,7 @@ use std::{
     time::Duration,
 };
 
-use crossbeam::channel::{
+use crossbeam_channel::{
     unbounded, Receiver, RecvError, SendError, Sender, TryRecvError, TrySendError,
 };
 

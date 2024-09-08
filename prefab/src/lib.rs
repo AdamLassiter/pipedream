@@ -9,8 +9,6 @@ pub mod campaign_world;
 pub mod cards;
 pub mod combat_world;
 pub mod npcs;
-pub mod tag_engine;
-pub mod tags;
 
 extern crate log;
 
