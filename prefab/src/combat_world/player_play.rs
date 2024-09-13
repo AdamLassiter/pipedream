@@ -7,11 +7,12 @@ use pipedream_engine::{
 };
 
 use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
-use pipedream_domain::{card::PlacedCard, field::FieldPlace, player::Player};
+use pipedream_domain::{card::PlacedCard, character::PlayerCharacter, field::FieldPlace, player::Player};
 use pipedream_engine::{choice::Choice, scene::Scene, state::State};
 
 pub fn player_play(player: &Player, machine: &StateMachine) -> State {
-    let player_hand = PlacedCard::get_placed_cards(&machine.conn, player, &FieldPlace::Hand);
+    let (character_id, _character) = PlayerCharacter::get_player_character(&machine.conn, player);
+    let player_hand = PlacedCard::get_placed_cards(&machine.conn, &character_id, &FieldPlace::Hand);
     debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand);
 
     State {

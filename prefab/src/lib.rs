@@ -4,11 +4,14 @@
 #![feature(let_chains)]
 #![feature(iter_repeat_n)]
 
-pub mod campaign_state_machine;
-pub mod campaign_world;
+use std::sync::LazyLock;
+
+use rusqlite::Connection;
+
 pub mod cards;
+pub mod characters;
 pub mod combat_world;
-pub mod npcs;
+pub mod states;
 
 extern crate log;
 
@@ -16,6 +19,8 @@ pub trait Generatable {
     fn generate() -> Self;
 }
 
-pub trait Buildable<T> {
-    fn build(components: Vec<T>) -> Self;
+pub trait Prefabricated {
+    fn initialise(connection: &Connection);
 }
+
+pub type Static<T> = LazyLock<T>;

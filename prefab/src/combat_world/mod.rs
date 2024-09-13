@@ -6,7 +6,7 @@ mod player_apply_stats;
 mod player_draw;
 mod player_play;
 
-use std::{collections::BTreeMap, sync::LazyLock};
+use std::collections::BTreeMap;
 
 use pipedream_domain::player::Player;
 use pipedream_engine::{location::Location, state::DynamicStateFn};
@@ -19,9 +19,7 @@ use player_apply_stats::player_apply_stats;
 use player_draw::player_draw;
 use player_play::player_play;
 
-use crate::Generatable;
-
-pub type Static<T> = LazyLock<T>;
+use crate::{Generatable, Static};
 
 pub static COMBAT_INIT: Static<Location> = Static::new(|| Location::combat("combat:init"));
 pub static COMBAT_END: Static<Location> = Static::new(|| Location::combat("combat:end"));

@@ -111,7 +111,7 @@ impl Renderable for CampaignChoice {
         ])
         .areas(block.inner(area));
 
-        let padded_summary = format!(" {} ", self.card.summary);
+        let padded_summary = format!(" {} ", self.card.title);
         let mut title_text = compile::<RatatuiTextGenerator>(&padded_summary)
             .expect("Failed to compile tui text markup for summaries");
         if let Some(title_line) = title_text.lines.pop() {
@@ -170,7 +170,7 @@ impl Renderable for CampaignChoices {
                 .iter()
                 .map(|choice| {
                     let Choice {
-                        card: Card { summary, .. },
+                        card: Card { title: summary, .. },
                         selectable,
                         ..
                     } = choice;

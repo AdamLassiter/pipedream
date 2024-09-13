@@ -11,7 +11,7 @@ impl Generatable for Cards {
 fn generate_vec() -> Vec<Card> {
     vec![
         Card {
-            name: "Anathema Device".into(),
+            title: "Anathema Device".into(),
             image: "resources/legacy/tile269.png".into(),
             details: vec!["Apply <blue 0.5 anathema> [Self]".into()],
             cost: "<blue 10 mana>".into(),

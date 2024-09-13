@@ -6,7 +6,7 @@ pub struct Image {
 }
 
 impl Image {
-    fn new<T>(value: T) -> Self
+    pub fn new<T>(value: T) -> Self
     where
         T: Into<String>,
     {

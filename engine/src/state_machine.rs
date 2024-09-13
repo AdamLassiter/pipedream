@@ -17,7 +17,7 @@ use super::{action::Action, effect::Transition, state::DynamicStateFn};
 
 pub struct StateMachine {
     pub conn: Connection,
-    pub locations: Vec<Location>,
+    pub location_stack: Vec<Location>,
     pub dynamic_states: BTreeMap<Location, DynamicStateFn>,
 }
 
@@ -29,7 +29,7 @@ impl StateMachine {
     ) -> Self {
         Self {
             conn: connection,
-            locations: vec![start],
+            location_stack: vec![start],
             dynamic_states,
         }
     }
@@ -54,19 +54,19 @@ impl StateMachine {
 
         match transition {
             Transition::Leave => {
-                self.locations.pop();
+                self.location_stack.pop();
             }
             Transition::Enter(next) => {
-                self.locations.push(next);
+                self.location_stack.push(next);
             }
             Transition::Goto(next) => {
-                self.locations.pop();
-                self.locations.push(next);
+                self.location_stack.pop();
+                self.location_stack.push(next);
             }
             Transition::None => {}
         };
 
-        debug!(target:"Engine/StateMachine/LocationState", "{:?}", self.locations);
+        debug!(target:"Engine/StateMachine/LocationState", "{:?}", self.location_stack);
     }
 
     pub fn next_options(&mut self) -> Vec<UiCommand> {
@@ -110,7 +110,7 @@ impl StateMachine {
     }
 
     fn location(&self) -> &Location {
-        self.locations.last().expect("Location stack empty")
+        self.location_stack.last().expect("Location stack empty")
     }
 
     fn state(&self, location: &Location) -> State {

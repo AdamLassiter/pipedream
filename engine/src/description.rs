@@ -10,10 +10,10 @@ pub struct Description {
 }
 
 impl Description {
-    pub fn predicated<T, U>(descriptor: U, predicate: T) -> Self
+    pub fn predicated<T, U>(descriptor: T, predicate: U) -> Self
     where
-        U: Into<String>,
-        T: Into<Predicate>,
+        T: Into<String>,
+        U: Into<Predicate>,
     {
         Self {
             descriptor: descriptor.into(),

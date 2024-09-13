@@ -4,15 +4,13 @@ use rusqlite_orm::orm_bind;
 use crate::player::Player;
 
 use super::stats::Stats;
-use pipedream_engine::{action::Action, choice::CardId, image::Image, tag::Tag};
+use pipedream_engine::{action::Action, image::Image};
 
 #[derive(Clone, Debug)]
 #[orm_bind ({name: "$.name"}, [])]
 pub struct Character {
     pub name: String,
     pub image: Image,
-    pub tags: Vec<Tag>,
-    pub deck: Vec<CardId>,
     pub stats: Stats,
 }
 
@@ -20,12 +18,12 @@ pub struct Character {
 #[orm_bind ({player: "$.player"}, [])]
 pub struct PlayerCharacter {
     pub player: Player,
-    pub character_id: CharacterId,
+    pub character: CharacterId,
 }
 
 impl PlayerCharacter {
     pub fn get_player_character(conn: &Connection, player: &Player) -> (CharacterId, Character) {
-        let (_id, PlayerCharacter { character_id, .. }) =
+        let (_id, PlayerCharacter { character: character_id, .. }) =
             PlayerCharacter::query_by_player(conn, player)
                 .ok()
                 .and_then(|mut res| res.pop())

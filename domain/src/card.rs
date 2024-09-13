@@ -3,37 +3,37 @@ use rusqlite_orm::orm_bind;
 
 use pipedream_engine::{action::Action, choice::CardId};
 
-use crate::{field::FieldPlace, player::Player};
+use crate::{character::CharacterId, field::FieldPlace};
 
 #[derive(Clone, Debug)]
-#[orm_bind ({player: "$.player", place: "$.place"}, [ (player, place) ])]
+#[orm_bind ({character: "$.character", place: "$.place"}, [ (character, place) ])]
 pub struct PlacedCard {
-    pub player: Player,
-    pub place: FieldPlace,
+    pub character: CharacterId,
     pub card: CardId,
+    pub place: FieldPlace,
 }
 
 impl PlacedCard {
     pub fn get_placed_cards(
         conn: &Connection,
-        player: &Player,
+        character: &CharacterId,
         place: &FieldPlace,
     ) -> Vec<(PlacedCardId, Self)> {
-        PlacedCard::query_by_player_and_place(conn, player, place)
+        PlacedCard::query_by_character_and_place(conn, character, place)
             .ok()
-            .unwrap_or_else(|| panic!("Failed to find PlacedCard for {:?} and {:?}", player, place))
+            .unwrap_or_else(|| panic!("Failed to find PlacedCard for {:?} and {:?}", character, place))
     }
 
     pub fn update_placed_cards(
         conn: &Connection,
-        player: &Player,
+        character: &CharacterId,
         place: &FieldPlace,
         update: impl Fn(Vec<Self>) -> Vec<Self>,
     ) -> Vec<Action> {
-        let placed_cards = PlacedCard::query_by_player_and_place(conn, player, place)
+        let placed_cards = PlacedCard::query_by_character_and_place(conn, character, place)
             .ok()
             .unwrap_or_else(|| {
-                panic!("Failed to find PlacedCard for {:?} and {:?}", player, place)
+                panic!("Failed to find PlacedCard for {:?} and {:?}", character, place)
             });
 
         let (ids, cards): (Vec<_>, Vec<_>) = placed_cards.into_iter().unzip();

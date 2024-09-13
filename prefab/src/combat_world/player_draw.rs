@@ -16,7 +16,7 @@ use pipedream_engine::{
 };
 
 pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
-    let (_id, character) = PlayerCharacter::get_player_character(&machine.conn, player);
+    let (character_id, character) = PlayerCharacter::get_player_character(&machine.conn, player);
     let draw_count = character
         .stats
         .sleight_of_hand
@@ -25,13 +25,13 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
 
     let cards_drawn = RefCell::new(vec![]);
     let deck_remove =
-        PlacedCard::update_placed_cards(&machine.conn, player, &FieldPlace::Deck, |mut deck| {
+        PlacedCard::update_placed_cards(&machine.conn, &character_id, &FieldPlace::Deck, |mut deck| {
             let mut drawn_from_deck = draw_cards(&mut deck, *draw_count);
             cards_drawn.borrow_mut().append(&mut drawn_from_deck);
             deck
         });
     let hand_add =
-        PlacedCard::update_placed_cards(&machine.conn, player, &FieldPlace::Hand, |mut hand| {
+        PlacedCard::update_placed_cards(&machine.conn, &character_id, &FieldPlace::Hand, |mut hand| {
             hand.append(&mut cards_drawn.borrow_mut());
             hand
         });

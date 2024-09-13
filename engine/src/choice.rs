@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 use super::{description::Description, effect::Effect, image::Image, predicate::Predicate};
 
 #[derive(Debug, Clone, Default)]
-#[orm_bind ({name: "$.summary"}, [])]
+#[orm_bind ({title: "$.title"}, [])]
 pub struct Card {
-    pub summary: String,
+    pub title: String,
     pub cost: Option<String>,
     pub details: Vec<Description>,
     pub image: Image,
@@ -57,6 +57,18 @@ pub enum Choices {
 }
 
 impl Choices {
+    pub fn cards(value: Vec<Card>) -> Self {
+        Self::Manual(
+            value
+                .into_iter()
+                .map(|card| Choice {
+                    card,
+                    ..Default::default()
+                })
+                .collect(),
+        )
+    }
+
     pub fn manual(value: Vec<Choice>) -> Self {
         Self::Manual(value)
     }
