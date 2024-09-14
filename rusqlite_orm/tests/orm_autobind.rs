@@ -3,7 +3,7 @@ use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize};
 
 #[derive(PartialEq, Eq, Debug)]
-#[orm_autobind]
+#[orm_autobind[(foo, bar)]]
 struct Orm {
     foo: String,
     bar: i32,
@@ -39,9 +39,7 @@ fn select() -> Result<()> {
     let conn = setup()?;
 
     let daos = OrmDao::select_bar(&conn, &42)?;
-    let res = daos.into_iter().map(|res| {
-        res.into()
-    }).collect::<Vec<Orm>>();
+    let res = daos.into_iter().map(OrmDao::into).collect::<Vec<Orm>>();
     assert_eq!(res, vec![foobar().into()]);
 
     assert_eq!(OrmDao::select_bar(&conn, &1)?, vec![]);
@@ -71,6 +69,20 @@ fn update() -> Result<()> {
 
     let daos = OrmDao::select_bar(&conn, &69)?;
     assert_eq!(daos.len(), 1);
+
+    Ok(())
+}
+
+#[test]
+fn product() -> Result<()> {
+    let conn = setup()?;
+
+    let daos = OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &42)?;
+    let res = daos.into_iter().map(OrmDao::into).collect::<Vec<Orm>>();
+    assert_eq!(res, vec![foobar().into()]);
+
+    assert_eq!(OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &1)?, vec![]);
+    assert_eq!(OrmDao::select_foo_and_bar(&conn, &"foo2".into(), &42)?, vec![]);
 
     Ok(())
 }

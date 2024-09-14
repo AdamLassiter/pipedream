@@ -32,7 +32,7 @@ impl Column {
         }
     }
 
-    fn as_method_arg(&self) -> TokenStream {
+    pub fn as_method_arg(&self) -> TokenStream {
         let ident = &self.ident;
         let typ = self.typ.as_method_arg();
         quote! { #ident: &#typ }

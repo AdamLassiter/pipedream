@@ -6,11 +6,13 @@ use quote::{format_ident, quote};
 use syn::{Fields, Ident, ItemStruct};
 
 use crate::column::Column;
+use crate::product::Products;
 use crate::sql_type::Type;
 
 pub struct Dao {
     ident: Ident,
     columns: Vec<Column>,
+    products: Products,
 }
 impl Dao {
     fn as_table_defn(&self) -> String {
@@ -84,10 +86,8 @@ impl Dao {
         }
     }
 
-    pub fn as_tokenstream(&self) -> TokenStream {
-        let Self { ident, columns } = self;
-        let table_name = format!("{}s", ident).to_lowercase();
-        let ident_id = format_ident!("{}Id", ident);
+    pub fn as_orm_methods(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
+        let Self { ident, columns, products } = self;
         let ident_dao = format_ident!("{}Dao", ident);
 
         let create = self.create(&table_name);
@@ -98,6 +98,7 @@ impl Dao {
                 .iter()
                 .map(|col| col.as_orm_methods(&ident_id, &table_name, &self.as_columns())),
         );
+        let product_methods = products.as_orm_methods(&table_name, &self.columns);
         let ident_fieldnames = TokenStream::from_iter(
             columns
                 .iter()
@@ -132,6 +133,7 @@ impl Dao {
                 #create
                 #insert
                 #methods
+                #product_methods
             }
             #[automatically_derived]
             impl From<#ident> for #ident_dao {
@@ -182,10 +184,10 @@ impl Dao {
         }
     }
 }
-impl From<ItemStruct> for Dao {
-    fn from(value: ItemStruct) -> Self {
+impl From<(Products, ItemStruct)> for Dao {
+    fn from((products, value): (Products, ItemStruct)) -> Self {
         let ident = value.ident;
-        let mut columns = match value.fields {
+        let mut cols_no_id = match value.fields {
             Fields::Named(fs) => fs,
             _ => panic!("Not a NamedFields struct"),
         }
@@ -194,15 +196,16 @@ impl From<ItemStruct> for Dao {
         .map(|field| field.into())
         .collect::<Vec<Column>>();
 
-        let mut cols_with_id = vec![Column {
+        let mut columns = vec![Column {
             ident: format_ident!("id"),
             typ: Type::PrimaryKey,
         }];
-        cols_with_id.append(&mut columns);
+        columns.append(&mut cols_no_id);
 
         Self {
             ident,
-            columns: cols_with_id,
+            products,
+            columns,
         }
     }
 }
