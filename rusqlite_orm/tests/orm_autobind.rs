@@ -38,11 +38,39 @@ fn setup() -> Result<Connection> {
 fn select() -> Result<()> {
     let conn = setup()?;
 
-    let mut ress = OrmDao::select_by_bar(&conn, &42)?;
-    ress.iter_mut().for_each(|res| res.id = None);
-    assert_eq!(ress, vec![foobar().into()]);
+    let daos = OrmDao::select_bar(&conn, &42)?;
+    let res = daos.into_iter().map(|res| {
+        res.into()
+    }).collect::<Vec<Orm>>();
+    assert_eq!(res, vec![foobar().into()]);
 
-    assert_eq!(OrmDao::select_by_bar(&conn, &1)?, vec![]);
+    assert_eq!(OrmDao::select_bar(&conn, &1)?, vec![]);
+
+    Ok(())
+}
+
+#[test]
+fn count() -> Result<()> {
+    let conn = setup()?;
+
+    assert_eq!(OrmDao::count_bar(&conn, &42)?, 1);
+
+    assert_eq!(OrmDao::count_bar(&conn, &1)?, 0);
+
+    Ok(())
+}
+
+#[test]
+fn update() -> Result<()> {
+    let conn = setup()?;
+
+    let (id, _dao) = OrmDao::select_bar(&conn, &42)?.pop().unwrap().into();
+    OrmDao::update_bar(&conn, &id.unwrap(), &69)?;
+
+    assert_eq!(OrmDao::select_bar(&conn, &42)?, vec![]);
+
+    let daos = OrmDao::select_bar(&conn, &69)?;
+    assert_eq!(daos.len(), 1);
 
     Ok(())
 }
