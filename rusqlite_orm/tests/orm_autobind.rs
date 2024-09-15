@@ -15,6 +15,13 @@ struct Baz {
     bazzes: Vec<i32>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+#[orm_autobind]
+struct Qux {
+    orm_id: OrmId,
+    qux: String,
+}
+
 fn foobar() -> Orm {
     Orm {
         foo: "foo1".into(),
@@ -24,12 +31,22 @@ fn foobar() -> Orm {
         },
     }
 }
+fn qux(orm_id: OrmId) -> Qux {
+    Qux {
+        orm_id,
+        qux: "qux1".into(),
+    }
+}
 
 fn setup() -> Result<Connection> {
-    let mut conn = Connection::open_in_memory()?;
+    let mut conn = Connection::open("test.db")?;
     conn.trace(Some(|query| println!("{}", query)));
+
     OrmDao::create_table(&conn)?;
-    OrmDao::from(foobar()).insert(&conn)?;
+    let orm_id = OrmDao::from(foobar()).insert(&conn)?;
+
+    QuxDao::create_table(&conn)?;
+    QuxDao::from(qux(orm_id)).insert(&conn)?;
 
     Ok(conn)
 }
@@ -83,6 +100,19 @@ fn product() -> Result<()> {
 
     assert_eq!(OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &1)?, vec![]);
     assert_eq!(OrmDao::select_foo_and_bar(&conn, &"foo2".into(), &42)?, vec![]);
+
+    Ok(())
+}
+
+#[test]
+fn left_join() -> Result<()> {
+    let conn = setup()?;
+
+    let left_join_orms = conn.prepare("select * from orms where id = (select orm_id from quxs where qux = 'qux1')")?
+        .query_and_then((), serde_rusqlite::from_row::<OrmDao>)?
+        .map(|res| res.unwrap().into())
+        .collect::<Vec<Orm>>();
+    assert_eq!(left_join_orms, vec![foobar()]);
 
     Ok(())
 }

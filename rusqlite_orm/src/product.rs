@@ -11,6 +11,7 @@ use syn::{
 };
 use crate::column::Column;
 
+#[derive(Debug)]
 pub struct Product {
     pub idents: Vec<Ident>,
 }
@@ -79,7 +80,7 @@ impl Product {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Products {
     products: Vec<Product>,
 }
