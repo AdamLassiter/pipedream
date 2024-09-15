@@ -47,10 +47,10 @@ impl Product {
         format_ident!("select_{}", idents.join("_and_"))
     }
 
-    pub fn as_orm_method(&self, table_name: &String, columns: &Vec<Column>) -> TokenStream {
+    pub fn as_orm_method(&self, table_name: &String, bindings: &Vec<Column>, columns: &TokenStream) -> TokenStream {
         let query_sql = self.as_sql(table_name);
         let select_ident = self.as_select_ident();
-        let column_types = columns.iter()
+        let column_types = bindings.iter()
             .map(|col| (col.ident.clone(), col))
             .collect::<BTreeMap<_,_>>();
         let column_args = self.idents
@@ -71,7 +71,7 @@ impl Product {
         quote! {
             pub fn #select_ident(conn: &rusqlite::Connection, #(#arguments),*) -> rusqlite::Result<std::vec::Vec<Self>> {
                 Ok(conn.prepare(#query_sql)?
-                    .query_and_then(rusqlite::named_params! {#(#serde_exprs),*}, serde_rusqlite::from_row::<Self>)?
+                    .query_and_then(rusqlite::named_params! {#(#serde_exprs),*}, |row| serde_rusqlite::from_row_with_columns::<Self>(row, #columns))?
                     .map(|row| row.expect("Sql for Product was not valid Json"))
                     .collect::<Vec<Self>>())
             }
@@ -93,11 +93,11 @@ impl Parse for Products {
     }
 }
 impl Products {
-    pub fn as_orm_methods(&self, table_name: &String, columns: &Vec<Column>) -> TokenStream {
+    pub fn as_orm_methods(&self, table_name: &String, bindings: &Vec<Column>, columns: &TokenStream) -> TokenStream {
         TokenStream::from_iter(
             self.products
                 .iter()
-                .map(|product| product.as_orm_method(table_name, columns)),
+                .map(|product| product.as_orm_method(table_name, bindings, columns)),
         )
     }
 }

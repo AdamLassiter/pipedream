@@ -11,12 +11,12 @@ use crate::sql_type::Type;
 
 pub struct Dao {
     ident: Ident,
-    columns: Vec<Column>,
+    bindings: Vec<Column>,
     products: Products,
 }
 impl Dao {
     fn as_table_defn(&self) -> String {
-        self.columns
+        self.bindings
             .iter()
             .map(|col| col.as_table_defn())
             .intersperse(", ".into())
@@ -24,7 +24,7 @@ impl Dao {
     }
 
     fn as_row_defn(&self) -> String {
-        self.columns
+        self.bindings
             .iter()
             .map(|col| format!(":{}", col.ident))
             .intersperse(", ".into())
@@ -33,11 +33,12 @@ impl Dao {
 
     fn as_columns(&self) -> TokenStream {
         let arguments = self
-            .columns
+            .bindings
             .iter()
             .map(|col| {
                 let col_name = format!("\"{}\".to_string()", col.ident);
-                TokenStream::from_str(col_name.as_str()).unwrap()
+                TokenStream::from_str(col_name.as_str()).expect("Could not prepare static Column definition")
+                    
             })
             .collect::<Vec<_>>();
         quote! { &[ #(#arguments),* ] }
@@ -45,7 +46,7 @@ impl Dao {
 
     fn as_values(&self) -> TokenStream {
         let arguments = self
-            .columns
+            .bindings
             .iter()
             .map(Column::as_value)
             .collect::<Vec<_>>();
@@ -68,7 +69,7 @@ impl Dao {
         let row_defn = self.as_row_defn();
         let update_sql = format!("insert into {} values ({})", table_name, row_defn);
         let dao_fieldnames = TokenStream::from_iter(
-            self.columns
+            self.bindings
                 .iter()
                 .map(|Column { ident, .. }| quote! { #ident, }),
         );
@@ -87,37 +88,38 @@ impl Dao {
     }
 
     pub fn as_orm_methods(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
-        let Self { ident, columns, products } = self;
+        let Self { ident, bindings, products } = self;
         let ident_dao = format_ident!("{}Dao", ident);
 
         let create = self.create(&table_name);
         let insert = self.insert(&ident_id, &table_name);
-        let fields = TokenStream::from_iter(columns.iter().map(Column::as_struct_defn));
+        let fields = TokenStream::from_iter(bindings.iter().map(Column::as_struct_defn));
+        let columns = self.as_columns();
         let methods = TokenStream::from_iter(
-            columns
+            bindings
                 .iter()
-                .map(|col| col.as_orm_methods(&ident_id, &table_name, &self.as_columns())),
+                .map(|col| col.as_orm_methods(&ident_id, &table_name, &columns)),
         );
-        let product_methods = products.as_orm_methods(&table_name, &self.columns);
+        let product_methods = products.as_orm_methods(&table_name, &self.bindings, &columns);
         let ident_fieldnames = TokenStream::from_iter(
-            columns
+            bindings
                 .iter()
                 .filter(|col| col.typ != Type::PrimaryKey)
                 .map(|Column { ident, .. }| quote! { #ident, }),
         );
         let dao_fieldnames = TokenStream::from_iter(
-            columns
+            bindings
                 .iter()
                 .map(|Column { ident, .. }| quote! { #ident, }),
         );
         let dao_values = TokenStream::from_iter(
-            columns
+            bindings
                 .iter()
                 .filter(|col| col.typ != Type::PrimaryKey)
                 .map(Column::as_into_value),
         );
         let ident_values = TokenStream::from_iter(
-            columns
+            bindings
                 .iter()
                 .filter(|col| col.typ != Type::PrimaryKey)
                 .map(Column::as_from_value),
@@ -205,7 +207,7 @@ impl From<(Products, ItemStruct)> for Dao {
         Self {
             ident,
             products,
-            columns,
+            bindings: columns,
         }
     }
 }

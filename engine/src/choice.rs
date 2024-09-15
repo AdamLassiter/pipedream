@@ -1,13 +1,13 @@
 use std::time::Duration;
 
 use rusqlite::Connection;
-use rusqlite_orm::orm_bind;
+use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize};
 
 use super::{description::Description, effect::Effect, image::Image, predicate::Predicate};
 
 #[derive(Debug, Clone, Default)]
-#[orm_bind ({title: "$.title"}, [])]
+#[orm_autobind]
 pub struct Card {
     pub title: String,
     pub cost: Option<String>,
@@ -18,7 +18,7 @@ pub struct Card {
 }
 impl Card {
     pub fn get_card(conn: &Connection, card_id: &CardId) -> Option<Self> {
-        Self::query(conn, card_id)
+        Self::select_id(conn, card_id)
             .ok()
             .unwrap_or_else(|| panic!("Failed to find Card for {:?}", card_id))
     }

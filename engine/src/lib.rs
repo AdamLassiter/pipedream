@@ -9,7 +9,6 @@ pub mod command;
 pub mod description;
 pub mod effect;
 pub mod image;
-pub mod location;
 pub mod predicate;
 pub mod scene;
 pub mod state;

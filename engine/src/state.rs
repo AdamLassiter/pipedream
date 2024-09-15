@@ -1,14 +1,17 @@
-use rusqlite_orm::orm_bind;
+use rusqlite_orm::orm_autobind;
+
+use crate::command::UiMode;
 
 use super::choice::Choices;
 
 use super::state_machine::StateMachine;
-use super::{location::Location, scene::Scene};
+use super::scene::Scene;
 
 #[derive(Clone, Debug)]
-#[orm_bind ({location: "$.location.location"}, [])]
+#[orm_autobind]
 pub struct State {
-    pub location: Location,
+    pub location: String,
+    pub ui_mode: UiMode,
     pub scene: Scene,
     pub choices: Choices,
 }

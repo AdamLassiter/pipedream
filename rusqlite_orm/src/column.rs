@@ -27,7 +27,7 @@ impl Column {
         let ident = &self.ident;
         let ident_key = self.ident_key();
         match self.typ {
-            Type::Json(_) => quote! { #ident_key: serde_json::to_value(#ident).unwrap() },
+            Type::Json(_) => quote! { #ident_key: serde_json::to_value(#ident).expect("Failed to serialize Column to Json Value") },
             _ => quote! { #ident_key: #ident },
         }
     }
@@ -70,7 +70,7 @@ impl Column {
             pub fn #count_ident(conn: &rusqlite::Connection, #method_arg) -> rusqlite::Result<i64> {
                 Ok(conn.prepare(#count_sql)?
                     .query_and_then(rusqlite::named_params! {#serde_expr}, |row| serde_rusqlite::from_row_with_columns::<i64>(row, &["count(*)".to_string()]))?
-                    .map(|row| row.unwrap())
+                    .map(|row| row.expect("Failed to deserialize Column from Sql"))
                     .next().unwrap_or(0))
             }
         }

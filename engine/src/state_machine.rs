@@ -5,27 +5,26 @@ use rusqlite::Connection;
 
 use crate::{
     choice::{Card, Choice, Choices},
-    command::UiCommand,
+    command::{UiCommand, UiMode},
     description::Description,
     effect::Effect,
-    location::Location,
     predicate::Predicate,
-    state::State,
+    state::{State, StateDao},
 };
 
 use super::{action::Action, effect::Transition, state::DynamicStateFn};
 
 pub struct StateMachine {
     pub conn: Connection,
-    pub location_stack: Vec<Location>,
-    pub dynamic_states: BTreeMap<Location, DynamicStateFn>,
+    pub location_stack: Vec<(String, UiMode)>,
+    pub dynamic_states: BTreeMap<String, DynamicStateFn>,
 }
 
 impl StateMachine {
     pub fn new(
         connection: Connection,
-        start: Location,
-        dynamic_states: BTreeMap<Location, DynamicStateFn>,
+        start: (String, UiMode),
+        dynamic_states: BTreeMap<String, DynamicStateFn>,
     ) -> Self {
         Self {
             conn: connection,
@@ -66,11 +65,11 @@ impl StateMachine {
             Transition::None => {}
         };
 
-        debug!(target:"Engine/StateMachine/LocationState", "{:?}", self.location_stack);
+        debug!(target:"Engine/StateMachine/(String, UiMode)State", "{:?}", self.location_stack);
     }
 
     pub fn next_options(&mut self) -> Vec<UiCommand> {
-        let location = self.location();
+        let (location, ui_mode) = self.location();
         let State { scene, choices, .. } = self.state(location);
         let mut scene = scene.clone();
         let mut choices = choices.clone();
@@ -105,25 +104,25 @@ impl StateMachine {
         vec![
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(choices),
-            UiCommand::ChangeMode(location.ui_mode.clone()),
+            UiCommand::ChangeMode(ui_mode.clone()),
         ]
     }
 
-    fn location(&self) -> &Location {
-        self.location_stack.last().expect("Location stack empty")
+    fn location(&self) -> &(String, UiMode) {
+        self.location_stack.last().expect("(String, UiMode) stack empty")
     }
 
-    fn state(&self, location: &Location) -> State {
+    fn state(&self, location: &String) -> State {
         if let Some(state_fn) = self.dynamic_states.get(location) {
             state_fn.apply(self)
         } else {
-            let (_id, state) = State::query_by_location(&self.conn, &location.location)
+            let state = StateDao::select_location(&self.conn, &location)
                 .ok()
                 .and_then(|mut res| res.pop())
                 .unwrap_or_else(|| {
-                    panic!("Failed to query states by location {}", location.location)
+                    panic!("Failed to query states by location {}", location)
                 });
-            state
+            state.into()
         }
     }
 }

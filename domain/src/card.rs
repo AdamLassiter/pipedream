@@ -1,12 +1,12 @@
 use rusqlite::Connection;
-use rusqlite_orm::orm_bind;
+use rusqlite_orm::orm_autobind;
 
 use pipedream_engine::{action::Action, choice::CardId};
 
 use crate::{character::CharacterId, field::FieldPlace};
 
 #[derive(Clone, Debug)]
-#[orm_bind ({character: "$.character", place: "$.place"}, [ (character, place) ])]
+#[orm_autobind]
 pub struct PlacedCard {
     pub character: CharacterId,
     pub card: CardId,

@@ -13,7 +13,7 @@ edition = "2024"
 
 
 [workspace]
-members = ["bichannel", "engine", "interface", "prefab"]
+members = ["bichannel", "domain", "engine", "interface", "prefab", "rusqlite_orm"]
 
 
 [workspace.dependencies]

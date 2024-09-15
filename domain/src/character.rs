@@ -1,5 +1,5 @@
 use rusqlite::Connection;
-use rusqlite_orm::orm_bind;
+use rusqlite_orm::orm_autobind;
 
 use crate::player::Player;
 
@@ -7,7 +7,7 @@ use super::stats::Stats;
 use pipedream_engine::{action::Action, image::Image};
 
 #[derive(Clone, Debug)]
-#[orm_bind ({name: "$.name"}, [])]
+#[orm_autobind]
 pub struct Character {
     pub name: String,
     pub image: Image,
@@ -15,7 +15,7 @@ pub struct Character {
 }
 
 #[derive(Clone, Debug)]
-#[orm_bind ({player: "$.player"}, [])]
+#[orm_autobind]
 pub struct PlayerCharacter {
     pub player: Player,
     pub character: CharacterId,
@@ -24,11 +24,11 @@ pub struct PlayerCharacter {
 impl PlayerCharacter {
     pub fn get_player_character(conn: &Connection, player: &Player) -> (CharacterId, Character) {
         let (_id, PlayerCharacter { character: character_id, .. }) =
-            PlayerCharacter::query_by_player(conn, player)
+            PlayerCharacter::select_player(conn, player)
                 .ok()
                 .and_then(|mut res| res.pop())
                 .unwrap_or_else(|| panic!("Failed to find Character for {:?}", player));
-        let character = Character::query(conn, &character_id)
+        let character = Character::select_id(conn, &character_id)
             .ok()
             .flatten()
             .unwrap_or_else(|| panic!("Failed to find Character for {:?}", character_id));

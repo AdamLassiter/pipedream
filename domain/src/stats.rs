@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use rusqlite::Connection;
-use rusqlite_orm::orm_bind;
+use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize};
 
 use super::player::Player;
@@ -18,7 +18,7 @@ pub struct Stats {
 }
 
 #[derive(Clone, Debug)]
-#[orm_bind ({ source: "$.source", target: "$.target", stat: "$.stat" }, [])]
+#[orm_autobind]
 pub struct StatChange {
     pub source: Player,
     pub target: Player,
@@ -27,7 +27,7 @@ pub struct StatChange {
 }
 impl StatChange {
     pub fn find_source(conn: &Connection, source: &Player) -> Vec<Self> {
-        let (_id, stat_changes) = StatChange::query_by_source(conn, source)
+        let (_id, stat_changes) = StatChange::select_source(conn, source)
             .ok()
             .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source))
             .into_iter()
@@ -36,7 +36,7 @@ impl StatChange {
     }
 
     pub fn find_target(conn: &Connection, target: &Player) -> Vec<Self> {
-        let (_id, stat_changes) = StatChange::query_by_target(conn, target)
+        let (_id, stat_changes) = StatChange::selectt_target(conn, target)
             .ok()
             .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target))
             .into_iter()
