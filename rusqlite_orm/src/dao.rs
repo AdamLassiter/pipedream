@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::vec::Vec;
 
+use proc_macro::{Diagnostic, Level, Span};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{Fields, Ident, ItemStruct};
@@ -37,8 +38,8 @@ impl Dao {
             .iter()
             .map(|col| {
                 let col_name = format!("\"{}\".to_string()", col.ident);
-                TokenStream::from_str(col_name.as_str()).expect("Could not prepare static Column definition")
-                    
+                TokenStream::from_str(col_name.as_str())
+                    .expect("Could not prepare static Column definition")
             })
             .collect::<Vec<_>>();
         quote! { &[ #(#arguments),* ] }
@@ -88,23 +89,27 @@ impl Dao {
     }
 
     pub fn as_orm_methods(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
-        let Self { ident, bindings, products } = self;
+        let Self {
+            ident,
+            bindings,
+            products,
+        } = self;
         let ident_dao = format_ident!("{}Dao", ident);
 
-        let create = self.create(&table_name);
-        let insert = self.insert(&ident_id, &table_name);
+        let create = self.create(table_name);
+        let insert = self.insert(ident_id, table_name);
         let fields = TokenStream::from_iter(bindings.iter().map(Column::as_struct_defn));
         let columns = self.as_columns();
         let methods = TokenStream::from_iter(
             bindings
                 .iter()
-                .map(|col| col.as_orm_methods(&ident_id, &table_name, &columns)),
+                .map(|col| col.as_orm_methods(ident_id, table_name, &columns)),
         );
-        let product_methods = products.as_orm_methods(&table_name, &self.bindings, &columns);
+        let product_methods = products.as_orm_methods(table_name, &self.bindings, &columns);
         let ident_fieldnames = TokenStream::from_iter(
             bindings
                 .iter()
-                .filter(|col| col.typ != Type::PrimaryKey)
+                .filter(|col| !matches!(col.typ, Type::PrimaryKey))
                 .map(|Column { ident, .. }| quote! { #ident, }),
         );
         let dao_fieldnames = TokenStream::from_iter(
@@ -115,13 +120,13 @@ impl Dao {
         let dao_values = TokenStream::from_iter(
             bindings
                 .iter()
-                .filter(|col| col.typ != Type::PrimaryKey)
+                .filter(|col| !matches!(col.typ, Type::PrimaryKey))
                 .map(Column::as_into_value),
         );
         let ident_values = TokenStream::from_iter(
             bindings
                 .iter()
-                .filter(|col| col.typ != Type::PrimaryKey)
+                .filter(|col| !matches!(col.typ, Type::PrimaryKey))
                 .map(Column::as_from_value),
         );
 
@@ -188,10 +193,18 @@ impl Dao {
 }
 impl From<(Products, ItemStruct)> for Dao {
     fn from((products, value): (Products, ItemStruct)) -> Self {
-        let ident = value.ident;
+        let ident = value.ident.clone();
         let mut cols_no_id = match value.fields {
             Fields::Named(fs) => fs,
-            _ => panic!("Not a NamedFields struct"),
+            _ => {
+                Diagnostic::spanned(
+                    vec![Span::call_site(), value.ident.span().unwrap()],
+                    Level::Error,
+                    format!("Fields of {:?} not a NamedFields struct", value.ident),
+                )
+                .emit();
+                panic!("Fields not a NamedFields struct")
+            }
         }
         .named
         .into_iter()

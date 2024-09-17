@@ -1,6 +1,7 @@
+use proc_macro::{Diagnostic, Level, Span};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-use syn::{Field, Ident};
+use syn::{spanned::Spanned, Field, Ident};
 
 use crate::sql_type::Type;
 
@@ -27,7 +28,9 @@ impl Column {
         let ident = &self.ident;
         let ident_key = self.ident_key();
         match self.typ {
-            Type::Json(_) => quote! { #ident_key: serde_json::to_value(#ident).expect("Failed to serialize Column to Json Value") },
+            Type::Json(_) => {
+                quote! { #ident_key: serde_json::to_value(#ident).expect("Failed to serialize Column to Json Value") }
+            }
             _ => quote! { #ident_key: #ident },
         }
     }
@@ -43,7 +46,9 @@ impl Column {
         let select_ident = format_ident!("select_{}", self.ident);
         let select_sql = format!(
             "select * from {} where {} = {}",
-            table_name, self.ident, self.ident_key()
+            table_name,
+            self.ident,
+            self.ident_key()
         );
         let serde_expr = self.as_serde_value();
 
@@ -62,7 +67,9 @@ impl Column {
         let count_ident = format_ident!("count_{}", self.ident);
         let count_sql = format!(
             "select count(*) from {} where {} = {}",
-            table_name, self.ident, self.ident_key()
+            table_name,
+            self.ident,
+            self.ident_key()
         );
         let serde_expr = self.as_serde_value();
 
@@ -81,7 +88,9 @@ impl Column {
         let update_ident = format_ident!("update_{}", self.ident);
         let update_sql = format!(
             "update {} set {} = {} where id = :id",
-            table_name, self.ident, self.ident_key()
+            table_name,
+            self.ident,
+            self.ident_key()
         );
         let serde_expr = self.as_serde_value();
 
@@ -94,14 +103,19 @@ impl Column {
         }
     }
 
-    pub fn as_orm_methods(&self, ident_id: &Ident, table_name: &String, columns: &TokenStream) -> TokenStream {
+    pub fn as_orm_methods(
+        &self,
+        ident_id: &Ident,
+        table_name: &String,
+        columns: &TokenStream,
+    ) -> TokenStream {
         let select = self.select(table_name, columns);
-        let count = if self.typ != Type::PrimaryKey {
+        let count = if !matches!(self.typ, Type::PrimaryKey) {
             self.count(table_name)
         } else {
             quote! {}
         };
-        let update = if self.typ != Type::PrimaryKey {
+        let update = if !matches!(self.typ, Type::PrimaryKey) {
             self.update(ident_id, table_name)
         } else {
             quote! {}
@@ -151,7 +165,15 @@ impl Column {
 impl From<Field> for Column {
     fn from(field: Field) -> Self {
         Self {
-            ident: field.ident.expect("No Ident on Field in struct"),
+            ident: field.ident.clone().unwrap_or_else(|| {
+                Diagnostic::spanned(
+                    vec![Span::call_site(), field.span().unwrap()],
+                    Level::Error,
+                    format!("No Ident on Field {:?} in struct", field.ident),
+                )
+                .emit();
+                panic!("No Ident on Field in struct")
+            }),
             typ: field.ty.into(),
         }
     }

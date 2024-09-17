@@ -1,6 +1,8 @@
-use std::vec::Vec;
 use std::collections::BTreeMap;
+use std::vec::Vec;
 
+use crate::column::Column;
+use proc_macro::{Diagnostic, Level, Span};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
@@ -9,7 +11,6 @@ use syn::{
     punctuated::Punctuated,
     Ident, Result, Token,
 };
-use crate::column::Column;
 
 #[derive(Debug)]
 pub struct Product {
@@ -48,17 +49,32 @@ impl Product {
         format_ident!("select_{}", idents.join("_and_"))
     }
 
-    pub fn as_orm_method(&self, table_name: &String, bindings: &Vec<Column>, columns: &TokenStream) -> TokenStream {
+    pub fn as_orm_method(
+        &self,
+        table_name: &String,
+        bindings: &[Column],
+        columns: &TokenStream,
+    ) -> TokenStream {
         let query_sql = self.as_sql(table_name);
         let select_ident = self.as_select_ident();
-        let column_types = bindings.iter()
-            .map(|col| (col.ident.clone(), col))
-            .collect::<BTreeMap<_,_>>();
-        let column_args = self.idents
+        let column_types = bindings
             .iter()
-            .map(|ident| column_types
-                .get(ident)
-                .expect("Identifier was not bound to a Dao Column"))
+            .map(|col| (col.ident.clone(), col))
+            .collect::<BTreeMap<_, _>>();
+        let column_args = self
+            .idents
+            .iter()
+            .map(|ident| {
+                column_types.get(ident).unwrap_or_else(|| {
+                    Diagnostic::spanned(
+                        vec![Span::call_site(), ident.span().unwrap()],
+                        Level::Error,
+                        format!("Identifier {:?} was not bound to a Dao Column", ident),
+                    )
+                    .emit();
+                    panic!("Identifier was not bound to a Dao Column")
+                })
+            })
             .collect::<Vec<_>>();
         let arguments = column_args
             .iter()
@@ -94,7 +110,12 @@ impl Parse for Products {
     }
 }
 impl Products {
-    pub fn as_orm_methods(&self, table_name: &String, bindings: &Vec<Column>, columns: &TokenStream) -> TokenStream {
+    pub fn as_orm_methods(
+        &self,
+        table_name: &String,
+        bindings: &[Column],
+        columns: &TokenStream,
+    ) -> TokenStream {
         TokenStream::from_iter(
             self.products
                 .iter()

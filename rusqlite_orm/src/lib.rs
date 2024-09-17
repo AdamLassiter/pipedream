@@ -1,9 +1,10 @@
 #![feature(iter_intersperse)]
+#![feature(proc_macro_diagnostic)]
 
 mod column;
 mod dao;
-mod sql_type;
 mod product;
+mod sql_type;
 
 extern crate proc_macro;
 
@@ -11,9 +12,7 @@ use dao::Dao;
 use proc_macro2::TokenStream;
 use product::Products;
 use quote::{format_ident, quote};
-use syn::{
-    parse_macro_input, ItemStruct,
-};
+use syn::{parse_macro_input, ItemStruct};
 
 #[proc_macro_attribute]
 pub fn orm_autobind(

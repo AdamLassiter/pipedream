@@ -22,6 +22,16 @@ struct Qux {
     qux: String,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+#[orm_autobind]
+struct TrickyTypes {
+    generic: Option<Option<i32>>,
+    path: std::collections::BTreeSet<std::collections::BTreeSet<i32>>,
+    array: [[i32; 1]; 1],
+    byte_array: [u8; 1],
+    box_str: Box<str>,
+}
+
 fn foobar() -> Orm {
     Orm {
         foo: "foo1".into(),
@@ -39,7 +49,7 @@ fn qux(orm_id: OrmId) -> Qux {
 }
 
 fn setup() -> Result<Connection> {
-    let mut conn = Connection::open("test.db")?;
+    let mut conn = Connection::open_in_memory()?;
     conn.trace(Some(|query| println!("{}", query)));
 
     OrmDao::create_table(&conn)?;
@@ -98,8 +108,14 @@ fn product() -> Result<()> {
     let res = daos.into_iter().map(OrmDao::into).collect::<Vec<Orm>>();
     assert_eq!(res, vec![foobar().into()]);
 
-    assert_eq!(OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &1)?, vec![]);
-    assert_eq!(OrmDao::select_foo_and_bar(&conn, &"foo2".into(), &42)?, vec![]);
+    assert_eq!(
+        OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &1)?,
+        vec![]
+    );
+    assert_eq!(
+        OrmDao::select_foo_and_bar(&conn, &"foo2".into(), &42)?,
+        vec![]
+    );
 
     Ok(())
 }
@@ -108,7 +124,8 @@ fn product() -> Result<()> {
 fn left_join() -> Result<()> {
     let conn = setup()?;
 
-    let left_join_orms = conn.prepare("select * from orms where id = (select orm_id from quxs where qux = 'qux1')")?
+    let left_join_orms = conn
+        .prepare("select * from orms where id = (select orm_id from quxs where qux = 'qux1')")?
         .query_and_then((), serde_rusqlite::from_row::<OrmDao>)?
         .map(|res| res.unwrap().into())
         .collect::<Vec<Orm>>();
