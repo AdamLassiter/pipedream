@@ -23,15 +23,22 @@ pub struct PlayerCharacter {
 
 impl PlayerCharacter {
     pub fn get_player_character(conn: &Connection, player: &Player) -> (CharacterId, Character) {
-        let (_id, PlayerCharacter { character: character_id, .. }) =
-            PlayerCharacter::select_player(conn, player)
-                .ok()
-                .and_then(|mut res| res.pop())
-                .unwrap_or_else(|| panic!("Failed to find Character for {:?}", player));
-        let character = Character::select_id(conn, &character_id)
+        let (
+            _id,
+            PlayerCharacter {
+                character: character_id,
+                ..
+            },
+        ) = PlayerCharacterDao::select_player(conn, player)
             .ok()
-            .flatten()
-            .unwrap_or_else(|| panic!("Failed to find Character for {:?}", character_id));
+            .and_then(|mut res| res.pop())
+            .unwrap_or_else(|| panic!("Failed to find Character for {:?}", player))
+            .into();
+        let character = CharacterDao::select_id(conn, &character_id)
+            .ok()
+            .and_then(|mut res| res.pop())
+            .unwrap_or_else(|| panic!("Failed to find Character for {:?}", character_id))
+            .into();
         (character_id, character)
     }
 

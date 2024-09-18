@@ -6,7 +6,7 @@ use pipedream_engine::{action::Action, choice::CardId};
 use crate::{character::CharacterId, field::FieldPlace};
 
 #[derive(Clone, Debug)]
-#[orm_autobind]
+#[orm_autobind [(character, place)]]
 pub struct PlacedCard {
     pub character: CharacterId,
     pub card: CardId,
@@ -19,9 +19,20 @@ impl PlacedCard {
         character: &CharacterId,
         place: &FieldPlace,
     ) -> Vec<(PlacedCardId, Self)> {
-        PlacedCard::query_by_character_and_place(conn, character, place)
+        PlacedCardDao::select_character_and_place(conn, character, place)
             .ok()
-            .unwrap_or_else(|| panic!("Failed to find PlacedCard for {:?} and {:?}", character, place))
+            .unwrap_or_else(|| {
+                panic!(
+                    "Failed to find PlacedCard for {:?} and {:?}",
+                    character, place
+                )
+            })
+            .into_iter()
+            .map(|card| {
+                let (id, card) = card.into();
+                (id.expect("Selected PlacedCard with no Id"), card)
+            })
+            .collect::<Vec<_>>()
     }
 
     pub fn update_placed_cards(
@@ -30,11 +41,7 @@ impl PlacedCard {
         place: &FieldPlace,
         update: impl Fn(Vec<Self>) -> Vec<Self>,
     ) -> Vec<Action> {
-        let placed_cards = PlacedCard::query_by_character_and_place(conn, character, place)
-            .ok()
-            .unwrap_or_else(|| {
-                panic!("Failed to find PlacedCard for {:?} and {:?}", character, place)
-            });
+        let placed_cards = Self::get_placed_cards(conn, character, place);
 
         let (ids, cards): (Vec<_>, Vec<_>) = placed_cards.into_iter().unzip();
         let cards = update(cards);

@@ -18,9 +18,10 @@ pub struct Card {
 }
 impl Card {
     pub fn get_card(conn: &Connection, card_id: &CardId) -> Option<Self> {
-        Self::select_id(conn, card_id)
+        CardDao::select_id(conn, card_id)
             .ok()
-            .unwrap_or_else(|| panic!("Failed to find Card for {:?}", card_id))
+            .and_then(|mut cards| cards.pop())
+            .map(|card| card.into())
     }
 
     pub fn predicate_satisfied(&self, conn: &Connection) -> bool {

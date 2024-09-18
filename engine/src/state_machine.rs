@@ -8,6 +8,7 @@ use crate::{
     command::{UiCommand, UiMode},
     description::Description,
     effect::Effect,
+    location::Location,
     predicate::Predicate,
     state::{State, StateDao},
 };
@@ -16,15 +17,15 @@ use super::{action::Action, effect::Transition, state::DynamicStateFn};
 
 pub struct StateMachine {
     pub conn: Connection,
-    pub location_stack: Vec<(String, UiMode)>,
-    pub dynamic_states: BTreeMap<String, DynamicStateFn>,
+    pub location_stack: Vec<(Location, UiMode)>,
+    pub dynamic_states: BTreeMap<Location, DynamicStateFn>,
 }
 
 impl StateMachine {
     pub fn new(
         connection: Connection,
-        start: (String, UiMode),
-        dynamic_states: BTreeMap<String, DynamicStateFn>,
+        start: (Location, UiMode),
+        dynamic_states: BTreeMap<Location, DynamicStateFn>,
     ) -> Self {
         Self {
             conn: connection,
@@ -56,11 +57,14 @@ impl StateMachine {
                 self.location_stack.pop();
             }
             Transition::Enter(next) => {
-                self.location_stack.push(next);
+                self.location_stack.push((next, UiMode::Campaign));
+            }
+            Transition::Fight(next) => {
+                self.location_stack.push((next, UiMode::Combat));
             }
             Transition::Goto(next) => {
-                self.location_stack.pop();
-                self.location_stack.push(next);
+                let (_, ui_mode) = self.location_stack.pop().expect("Location stack empty");
+                self.location_stack.push((next, ui_mode));
             }
             Transition::None => {}
         };
@@ -108,20 +112,18 @@ impl StateMachine {
         ]
     }
 
-    fn location(&self) -> &(String, UiMode) {
-        self.location_stack.last().expect("(String, UiMode) stack empty")
+    fn location(&self) -> &(Location, UiMode) {
+        self.location_stack.last().expect("Location stack empty")
     }
 
-    fn state(&self, location: &String) -> State {
+    fn state(&self, location: &Location) -> State {
         if let Some(state_fn) = self.dynamic_states.get(location) {
             state_fn.apply(self)
         } else {
             let state = StateDao::select_location(&self.conn, &location)
                 .ok()
                 .and_then(|mut res| res.pop())
-                .unwrap_or_else(|| {
-                    panic!("Failed to query states by location {}", location)
-                });
+                .unwrap_or_else(|| panic!("Failed to query states by location {:?}", location));
             state.into()
         }
     }

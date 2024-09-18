@@ -18,6 +18,7 @@ pub enum Transition {
     None,
     Leave,
     Enter(Location),
+    Fight(Location),
     Goto(Location),
 }
 

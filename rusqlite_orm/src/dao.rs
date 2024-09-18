@@ -105,7 +105,8 @@ impl Dao {
                 .iter()
                 .map(|col| col.as_orm_methods(ident_id, table_name, &columns)),
         );
-        let product_methods = products.as_orm_methods(table_name, &self.bindings, &columns);
+        let product_methods =
+            products.as_orm_methods(ident_id, table_name, &self.bindings, &columns);
         let ident_fieldnames = TokenStream::from_iter(
             bindings
                 .iter()

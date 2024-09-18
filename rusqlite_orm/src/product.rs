@@ -51,6 +51,7 @@ impl Product {
 
     pub fn as_orm_method(
         &self,
+        ident_id: &Ident,
         table_name: &String,
         bindings: &[Column],
         columns: &TokenStream,
@@ -78,7 +79,7 @@ impl Product {
             .collect::<Vec<_>>();
         let arguments = column_args
             .iter()
-            .map(|col| col.as_method_arg())
+            .map(|col| col.as_method_arg(ident_id))
             .collect::<Vec<_>>();
         let serde_exprs = column_args
             .iter()
@@ -112,6 +113,7 @@ impl Parse for Products {
 impl Products {
     pub fn as_orm_methods(
         &self,
+        ident_id: &Ident,
         table_name: &String,
         bindings: &[Column],
         columns: &TokenStream,
@@ -119,7 +121,7 @@ impl Products {
         TokenStream::from_iter(
             self.products
                 .iter()
-                .map(|product| product.as_orm_method(table_name, bindings, columns)),
+                .map(|product| product.as_orm_method(ident_id, table_name, bindings, columns)),
         )
     }
 }

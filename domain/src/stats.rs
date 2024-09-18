@@ -27,19 +27,23 @@ pub struct StatChange {
 }
 impl StatChange {
     pub fn find_source(conn: &Connection, source: &Player) -> Vec<Self> {
-        let (_id, stat_changes) = StatChange::select_source(conn, source)
+        let (_id, stat_changes) = StatChangeDao::select_source(conn, source)
             .ok()
             .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source))
             .into_iter()
+            .map(|stat| stat.into())
+            .map(|(id, stat)| (id.expect("Selected StatChange with no Id"), stat))
             .unzip::<StatChangeId, StatChange, Vec<_>, Vec<_>>();
         stat_changes
     }
 
     pub fn find_target(conn: &Connection, target: &Player) -> Vec<Self> {
-        let (_id, stat_changes) = StatChange::selectt_target(conn, target)
+        let (_id, stat_changes) = StatChangeDao::select_target(conn, target)
             .ok()
             .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target))
             .into_iter()
+            .map(|stat| stat.into())
+            .map(|(id, stat)| (id.expect("Selected StatChange with no Id"), stat))
             .unzip::<StatChangeId, StatChange, Vec<_>, Vec<_>>();
         stat_changes
     }

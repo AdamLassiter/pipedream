@@ -31,18 +31,22 @@ impl Column {
             Type::Json(_) => {
                 quote! { #ident_key: serde_json::to_value(#ident).expect("Failed to serialize Column to Json Value") }
             }
+            Type::PrimaryKey => quote! { #ident_key: #ident.0 },
             _ => quote! { #ident_key: #ident },
         }
     }
 
-    pub fn as_method_arg(&self) -> TokenStream {
-        let ident = &self.ident;
-        let typ = self.typ.as_method_arg();
-        quote! { #ident: &#typ }
+    pub fn as_method_arg(&self, ident_id: &Ident) -> TokenStream {
+        let Self { ident, typ } = self;
+        let typ = typ.as_method_arg();
+        match self.typ {
+            Type::PrimaryKey => quote! { #ident: &#ident_id },
+            _ => quote! { #ident: &#typ },
+        }
     }
 
-    fn select(&self, table_name: &String, columns: &TokenStream) -> TokenStream {
-        let method_arg = self.as_method_arg();
+    fn select(&self, ident_id: &Ident, table_name: &String, columns: &TokenStream) -> TokenStream {
+        let method_arg = self.as_method_arg(ident_id);
         let select_ident = format_ident!("select_{}", self.ident);
         let select_sql = format!(
             "select * from {} where {} = {}",
@@ -62,8 +66,11 @@ impl Column {
         }
     }
 
-    fn count(&self, table_name: &String) -> TokenStream {
-        let method_arg = self.as_method_arg();
+    fn count(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
+        if matches!(self.typ, Type::PrimaryKey) {
+            return quote! {};
+        }
+        let method_arg = self.as_method_arg(ident_id);
         let count_ident = format_ident!("count_{}", self.ident);
         let count_sql = format!(
             "select count(*) from {} where {} = {}",
@@ -84,7 +91,10 @@ impl Column {
     }
 
     fn update(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
-        let method_arg = self.as_method_arg();
+        if matches!(self.typ, Type::PrimaryKey) {
+            return quote! {};
+        }
+        let method_arg = self.as_method_arg(ident_id);
         let update_ident = format_ident!("update_{}", self.ident);
         let update_sql = format!(
             "update {} set {} = {} where id = :id",
@@ -109,17 +119,9 @@ impl Column {
         table_name: &String,
         columns: &TokenStream,
     ) -> TokenStream {
-        let select = self.select(table_name, columns);
-        let count = if !matches!(self.typ, Type::PrimaryKey) {
-            self.count(table_name)
-        } else {
-            quote! {}
-        };
-        let update = if !matches!(self.typ, Type::PrimaryKey) {
-            self.update(ident_id, table_name)
-        } else {
-            quote! {}
-        };
+        let select = self.select(ident_id, table_name, columns);
+        let count = self.count(ident_id, table_name);
+        let update = self.update(ident_id, table_name);
 
         quote! {
             #select
