@@ -5,6 +5,8 @@ mod combat_victory;
 mod player_apply_stats;
 mod player_draw;
 mod player_play;
+mod turn_end;
+mod turn_start;
 
 use std::collections::BTreeMap;
 
@@ -21,18 +23,18 @@ use player_play::player_play;
 
 use crate::{Generatable, Static};
 
-pub static COMBAT_INIT: Static<Location> = Static::new(|| Location::combat("combat:init"));
-pub static COMBAT_END: Static<Location> = Static::new(|| Location::combat("combat:end"));
-pub static COMBAT_VICTORY: Static<Location> = Static::new(|| Location::combat("combat:victory"));
-pub static COMBAT_DEFEAT: Static<Location> = Static::new(|| Location::combat("combat:defeat"));
+pub static COMBAT_INIT: Static<Location> = Static::new(|| Location::new("combat:init"));
+pub static COMBAT_END: Static<Location> = Static::new(|| Location::new("combat:end"));
+pub static COMBAT_VICTORY: Static<Location> = Static::new(|| Location::new("combat:victory"));
+pub static COMBAT_DEFEAT: Static<Location> = Static::new(|| Location::new("combat:defeat"));
 
-pub static HUMAN_DRAW: Static<Location> = Static::new(|| Location::combat("human:draw"));
-pub static HUMAN_PLAY: Static<Location> = Static::new(|| Location::combat("human:play"));
-pub static HUMAN_DAMAGE: Static<Location> = Static::new(|| Location::combat("human:damage"));
+pub static HUMAN_DRAW: Static<Location> = Static::new(|| Location::new("human:draw"));
+pub static HUMAN_PLAY: Static<Location> = Static::new(|| Location::new("human:play"));
+pub static HUMAN_DAMAGE: Static<Location> = Static::new(|| Location::new("human:damage"));
 
-pub static CPU_DRAW: Static<Location> = Static::new(|| Location::combat("cpu:draw"));
-pub static CPU_PLAY: Static<Location> = Static::new(|| Location::combat("cpu:play"));
-pub static CPU_DAMAGE: Static<Location> = Static::new(|| Location::combat("cpu:damage"));
+pub static CPU_DRAW: Static<Location> = Static::new(|| Location::new("cpu:draw"));
+pub static CPU_PLAY: Static<Location> = Static::new(|| Location::new("cpu:play"));
+pub static CPU_DAMAGE: Static<Location> = Static::new(|| Location::new("cpu:damage"));
 
 impl Generatable for BTreeMap<Location, DynamicStateFn> {
     fn generate() -> Self {

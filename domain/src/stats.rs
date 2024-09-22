@@ -3,18 +3,42 @@ use std::collections::BTreeMap;
 use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize};
+use strum::{EnumIter, IntoEnumIterator};
 
-use super::player::Player;
+use crate::player::Player;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub resources: BTreeMap<Resource, i64>,
     pub max_resources: BTreeMap<Resource, u64>,
     pub sleight_of_hand: BTreeMap<SleightOfHand, u16>,
-    pub assisstances: BTreeMap<Assistance, u16>,
+    pub assistances: BTreeMap<Assistance, u16>,
     pub resistances: BTreeMap<Resistance, u16>,
     pub buffs: BTreeMap<Buff, u16>,
     pub debuffs: BTreeMap<Debuff, u16>,
+}
+impl Default for Stats {
+    fn default() -> Self {
+        Self {
+            resources: Resource::iter()
+                .map(|r| (r, 10))
+                .collect::<BTreeMap<_, _>>(),
+            max_resources: Resource::iter()
+                .map(|r| (r, 10))
+                .collect::<BTreeMap<_, _>>(),
+            sleight_of_hand: SleightOfHand::iter()
+                .map(|s| (s, 10))
+                .collect::<BTreeMap<_, _>>(),
+            assistances: Assistance::iter()
+                .map(|a| (a, 10))
+                .collect::<BTreeMap<_, _>>(),
+            resistances: Resistance::iter()
+                .map(|r| (r, 10))
+                .collect::<BTreeMap<_, _>>(),
+            buffs: Buff::iter().map(|b| (b, 0)).collect::<BTreeMap<_, _>>(),
+            debuffs: Debuff::iter().map(|d| (d, 0)).collect::<BTreeMap<_, _>>(),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -28,8 +52,7 @@ pub struct StatChange {
 impl StatChange {
     pub fn find_source(conn: &Connection, source: &Player) -> Vec<Self> {
         let (_id, stat_changes) = StatChangeDao::select_source(conn, source)
-            .ok()
-            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", source))
+            .unwrap_or_else(|e| panic!("Failed to find StatChanges for {:?}: {}", source, e))
             .into_iter()
             .map(|stat| stat.into())
             .map(|(id, stat)| (id.expect("Selected StatChange with no Id"), stat))
@@ -39,8 +62,7 @@ impl StatChange {
 
     pub fn find_target(conn: &Connection, target: &Player) -> Vec<Self> {
         let (_id, stat_changes) = StatChangeDao::select_target(conn, target)
-            .ok()
-            .unwrap_or_else(|| panic!("Failed to find StatChanges for {:?}", target))
+            .unwrap_or_else(|e| panic!("Failed to find StatChanges for {:?}: {}", target, e))
             .into_iter()
             .map(|stat| stat.into())
             .map(|(id, stat)| (id.expect("Selected StatChange with no Id"), stat))
@@ -59,7 +81,7 @@ pub enum Stat {
     Debuff(Debuff),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Resource {
     Health,
     Stamina,
@@ -67,7 +89,7 @@ pub enum Resource {
     Favour,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum SleightOfHand {
     Inspiration,  // Draw count
     Versatility,  // Hand size
@@ -75,15 +97,15 @@ pub enum SleightOfHand {
     Recollection, // Deck max
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Assistance {
-    Strength,
-    Dexterity,
-    Intelligence,
-    Faith,
+    Strength,     // Physical
+    Dexterity,    // Poisons
+    Intelligence, // Magic
+    Faith,        // Divine
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Resistance {
     Endurance,
     Vitality,
@@ -91,7 +113,7 @@ pub enum Resistance {
     Fortitude,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Element {
     // Physical
     Bludgeoning,
@@ -118,7 +140,7 @@ pub enum Element {
     Necrotic,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Buff {
     Overwhelm,
     Guard,
@@ -141,7 +163,7 @@ pub enum Buff {
     Protect,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Debuff {
     Stun,
     Bleed,

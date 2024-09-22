@@ -27,18 +27,6 @@ impl Parse for Product {
     }
 }
 impl Product {
-    fn as_sql(&self, table_name: &String) -> String {
-        format!(
-            "select * from {} where {}",
-            table_name,
-            self.idents
-                .iter()
-                .map(|ident| format!("{} = :{}", ident, ident))
-                .collect::<Vec<_>>()
-                .join(" and ")
-        )
-    }
-
     fn as_select_ident(&self) -> Ident {
         let idents = self
             .idents
@@ -52,12 +40,15 @@ impl Product {
     pub fn as_orm_method(
         &self,
         ident_id: &Ident,
-        table_name: &String,
         bindings: &[Column],
         columns: &TokenStream,
     ) -> TokenStream {
-        let query_sql = self.as_sql(table_name);
         let select_ident = self.as_select_ident();
+        let idents = self
+            .idents
+            .iter()
+            .map(|ident| ident.to_string())
+            .collect::<Vec<_>>();
         let column_types = bindings
             .iter()
             .map(|col| (col.ident.clone(), col))
@@ -88,7 +79,8 @@ impl Product {
 
         quote! {
             pub fn #select_ident(conn: &rusqlite::Connection, #(#arguments),*) -> rusqlite::Result<std::vec::Vec<Self>> {
-                Ok(conn.prepare(#query_sql)?
+                let select_sql = Self::select_sql(&["*"], &[#(#idents),*]);
+                Ok(conn.prepare(&select_sql)?
                     .query_and_then(rusqlite::named_params! {#(#serde_exprs),*}, |row| serde_rusqlite::from_row_with_columns::<Self>(row, #columns))?
                     .map(|row| row.expect("Sql for Product was not valid Json"))
                     .collect::<Vec<Self>>())
@@ -114,14 +106,13 @@ impl Products {
     pub fn as_orm_methods(
         &self,
         ident_id: &Ident,
-        table_name: &String,
         bindings: &[Column],
         columns: &TokenStream,
     ) -> TokenStream {
         TokenStream::from_iter(
             self.products
                 .iter()
-                .map(|product| product.as_orm_method(ident_id, table_name, bindings, columns)),
+                .map(|product| product.as_orm_method(ident_id, bindings, columns)),
         )
     }
 }

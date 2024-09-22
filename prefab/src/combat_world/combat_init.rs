@@ -1,14 +1,17 @@
 use std::time::Duration;
 
 use log::debug;
-use pipedream_domain::{character::PlayerCharacter, player::Player};
-use pipedream_engine::{choice::Choices, description::Description, state_machine::StateMachine};
 
 use crate::combat_world::{COMBAT_INIT, HUMAN_DRAW};
+use pipedream_domain::{player::Player, player::PlayerCharacter};
 use pipedream_engine::{
+    choice::Choices,
+    command::UiMode,
+    description::Description,
     effect::{Effect, Transition},
     scene::Scene,
     state::State,
+    state_machine::StateMachine,
 };
 
 pub fn combat_init(machine: &StateMachine) -> State {
@@ -30,5 +33,6 @@ pub fn combat_init(machine: &StateMachine) -> State {
             },
             Duration::from_secs(2),
         ),
+        ui_mode: UiMode::Combat,
     }
 }

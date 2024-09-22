@@ -1,60 +1,53 @@
-use pipedream_domain::character::{Npc, Npcs};
+use pipedream_domain::{
+    character::{Character, CharacterDao},
+    player::{Player::Human, PlayerCharacter, PlayerCharacterDao},
+    stats::{Resource, Stats},
+};
+use pipedream_engine::image::Image;
 
-use crate::{Buildable, Generatable};
+use crate::Prefabricated;
 
-impl Generatable for Npcs {
-    fn generate() -> Self {
-        generate_vec().into()
+impl Prefabricated for Character {
+    fn initialise(conn: &rusqlite::Connection) {
+        let human = Self {
+            name: "Plae-Yerr".into(),
+            image: Image::new("resources/avatars/fairy/png/transperent/icon24.png"),
+            stats: Stats::default(),
+        };
+        let characters = vec![
+            Self {
+                name: "Dave".into(),
+                image: Image::new("resources/rpg/demon/png/transperent/icon3.png"),
+                stats: {
+                    let mut stats = Stats::default();
+                    stats.resources.insert(Resource::Health, 1);
+                    stats.max_resources.insert(Resource::Health, 1);
+                    stats
+                },
+            },
+            Self {
+                name: "Slightly Larger Dave".into(),
+                image: Image::new("resources/rpg/demon/png/transperent/icon2.png"),
+                stats: Stats::default(),
+            },
+        ];
+
+        CharacterDao::drop_table(conn).expect("Failed to drop table for Character");
+        CharacterDao::create_table(conn).expect("Failed to create table for Character");
+        let human_id = CharacterDao::from(human).insert(conn).unwrap();
+        characters.into_iter().for_each(|c| {
+            CharacterDao::from(c)
+                .insert(conn)
+                .expect("Failed to prefabricate Character");
+        });
+
+        PlayerCharacterDao::drop_table(conn).expect("Failed to drop table for PlayerCharacter");
+        PlayerCharacterDao::create_table(conn).expect("Failed to create table for PlayerCharacter");
+        PlayerCharacterDao::from(PlayerCharacter {
+            player: Human,
+            character: human_id,
+        })
+        .insert(conn)
+        .expect("Failed to prefabricate PlayerCharacter");
     }
-}
-
-pub struct Pc(pub Npc);
-
-pub fn generate_player() -> Pc {
-    Pc(Npc {
-        name: "Plae-Yerr".into(),
-        image: "resources/avatars/fairy/png/transperent/icon24.png".into(),
-        tags: Tags::build(vec![
-            "player:name:Plae-Yerr".into(),
-            "player:draw:count=4".into(),
-            // Resources
-            "player:resource:health=20".into(),
-            "player:resource:stamina=20".into(),
-            "player:resource:mana=20".into(),
-            "player:resource:faith=20".into(),
-            // Deck
-            "player:deck:Anathema Device".into(),
-            "player:deck:Bag of Endless Bags".into(),
-            "player:deck:Regular Punch=3".into(),
-            "player:deck:Immolate".into(),
-        ]),
-    })
-}
-
-fn generate_vec() -> Vec<Npc> {
-    vec![
-        generate_player().0,
-        Npc {
-            name: "Slightly Larger Dave".into(),
-            image: "resources/rpg/demon/png/transperent/icon2.png".into(),
-            tags: Tags::build(vec![
-                "enemy:name:Slightly Larger Dave".into(),
-                "enemy:resource:health=10".into(),
-                "enemy:resource:stamina=10".into(),
-                "enemy:resource:mana=10".into(),
-                "enemy:resource:faith=10".into(),
-            ]),
-        },
-        Npc {
-            name: "Dave".into(),
-            image: "resources/rpg/demon/png/transperent/icon3.png".into(),
-            tags: Tags::build(vec![
-                "enemy:name:Dave".into(),
-                "enemy:resource:health=1".into(),
-                "enemy:resource:stamina=1".into(),
-                "enemy:resource:mana=1".into(),
-                "enemy:resource:faith=1".into(),
-            ]),
-        },
-    ]
 }

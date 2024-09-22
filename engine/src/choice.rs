@@ -29,8 +29,7 @@ impl Card {
             .as_ref()
             .map(|pred| {
                 pred.test(conn)
-                    .ok()
-                    .unwrap_or_else(|| panic!("Failed to test Predicate for {:?}", self))
+                    .unwrap_or_else(|e| panic!("Failed to test Predicate for {:?}: {}", self, e))
             })
             .unwrap_or(true)
     }

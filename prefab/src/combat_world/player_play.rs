@@ -1,13 +1,16 @@
 use log::debug;
 use pipedream_engine::{
     choice::{Card, Choices},
+    command::UiMode,
     description::Description,
     effect::{Effect, Transition},
     state_machine::StateMachine,
 };
 
 use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
-use pipedream_domain::{card::PlacedCard, character::PlayerCharacter, field::FieldPlace, player::Player};
+use pipedream_domain::{
+    card::PlacedCard, field::FieldPlace, player::Player, player::PlayerCharacter,
+};
 use pipedream_engine::{choice::Choice, scene::Scene, state::State};
 
 pub fn player_play(player: &Player, machine: &StateMachine) -> State {
@@ -31,9 +34,7 @@ pub fn player_play(player: &Player, machine: &StateMachine) -> State {
                     Choice {
                         card: Card {
                             effect: Effect {
-                                transition: Transition::Goto(
-                                    HUMAN_DAMAGE.clone(),
-                                ),
+                                transition: Transition::Goto(HUMAN_DAMAGE.clone()),
                                 ..card.effect
                             },
                             ..card
@@ -43,5 +44,6 @@ pub fn player_play(player: &Player, machine: &StateMachine) -> State {
                 })
                 .collect::<Vec<_>>(),
         ),
+        ui_mode: UiMode::Combat,
     }
 }

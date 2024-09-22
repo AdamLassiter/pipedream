@@ -101,6 +101,23 @@ fn update() -> Result<()> {
 }
 
 #[test]
+fn update_sql() -> Result<()> {
+    let conn = setup()?;
+
+    let (id, _dao) = OrmDao::select_bar(&conn, &42)?.pop().unwrap().into();
+
+    conn.prepare(&OrmDao::update_sql(&["bar"], &["id"]))?
+        .execute(rusqlite::named_params! {":id": id.unwrap().0, ":bar": 69})?;
+
+    assert_eq!(OrmDao::select_bar(&conn, &42)?, vec![]);
+
+    let daos = OrmDao::select_bar(&conn, &69)?;
+    assert_eq!(daos.len(), 1);
+
+    Ok(())
+}
+
+#[test]
 fn product() -> Result<()> {
     let conn = setup()?;
 
@@ -125,8 +142,8 @@ fn left_join() -> Result<()> {
     let conn = setup()?;
 
     let left_join_orms = conn
-        .prepare("select * from orms where id = (select orm_id from quxs where qux = 'qux1')")?
-        .query_and_then((), serde_rusqlite::from_row::<OrmDao>)?
+        .prepare("select orm.* from orms as orm left join quxs as qux on orm.id = qux.orm_id where qux.qux = :qux")?
+        .query_and_then(&[(":qux", "qux1")], serde_rusqlite::from_row::<OrmDao>)?
         .map(|res| res.unwrap().into())
         .collect::<Vec<Orm>>();
     assert_eq!(left_join_orms, vec![foobar()]);

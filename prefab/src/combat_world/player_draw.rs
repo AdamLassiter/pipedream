@@ -3,11 +3,12 @@ use std::{cell::RefCell, time::Duration};
 use crate::combat_world::{HUMAN_DRAW, HUMAN_PLAY};
 use log::debug;
 use pipedream_domain::{
-    card::PlacedCard, character::PlayerCharacter, field::FieldPlace, player::Player,
+    card::PlacedCard, field::FieldPlace, player::Player, player::PlayerCharacter,
     stats::SleightOfHand,
 };
 use pipedream_engine::{
     choice::Choices,
+    command::UiMode,
     description::Description,
     effect::{Effect, Transition},
     scene::Scene,
@@ -24,17 +25,25 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
         .expect("Failed to find Player Inspration");
 
     let cards_drawn = RefCell::new(vec![]);
-    let deck_remove =
-        PlacedCard::update_placed_cards(&machine.conn, &character_id, &FieldPlace::Deck, |mut deck| {
+    let deck_remove = PlacedCard::update_placed_cards(
+        &machine.conn,
+        &character_id,
+        &FieldPlace::Deck,
+        |mut deck| {
             let mut drawn_from_deck = draw_cards(&mut deck, *draw_count);
             cards_drawn.borrow_mut().append(&mut drawn_from_deck);
             deck
-        });
-    let hand_add =
-        PlacedCard::update_placed_cards(&machine.conn, &character_id, &FieldPlace::Hand, |mut hand| {
+        },
+    );
+    let hand_add = PlacedCard::update_placed_cards(
+        &machine.conn,
+        &character_id,
+        &FieldPlace::Hand,
+        |mut hand| {
             hand.append(&mut cards_drawn.borrow_mut());
             hand
-        });
+        },
+    );
 
     State {
         location: HUMAN_DRAW.clone(),
@@ -44,13 +53,11 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
         choices: Choices::timed(
             Effect {
                 transition: Transition::Goto(HUMAN_PLAY.clone()),
-                actions: deck_remove
-                    .into_iter()
-                    .chain(hand_add.into_iter())
-                    .collect::<Vec<_>>(),
+                actions: deck_remove.into_iter().chain(hand_add).collect::<Vec<_>>(),
             },
             Duration::from_secs(2),
         ),
+        ui_mode: UiMode::Combat,
     }
 }
 

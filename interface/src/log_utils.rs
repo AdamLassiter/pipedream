@@ -22,8 +22,8 @@ pub fn init() -> io::Result<Tui> {
     if true {
         tui_logger::init_logger(LevelFilter::Trace).expect("Failed to initialise logger");
         tui_logger::set_default_level(LevelFilter::Trace);
-    // } else {
-    //     init_logfile();
+        // } else {
+        //     init_logfile();
     }
 
     panic::update_hook(move |prev, info| {

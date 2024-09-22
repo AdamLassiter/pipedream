@@ -54,9 +54,17 @@ impl Dao {
         quote! { #(#arguments),* }
     }
 
+    fn table_name(&self, table_name: &String) -> TokenStream {
+        quote! {
+            pub fn table_name() -> &'static str {
+                #table_name
+            }
+        }
+    }
+
     fn create(&self, table_name: &String) -> TokenStream {
         let table_defn = self.as_table_defn();
-        let create_sql = format!("create table {} ({})", table_name, table_defn);
+        let create_sql = format!("create table if not exists {} ({})", table_name, table_defn);
 
         quote! {
             pub fn create_table(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
@@ -66,9 +74,20 @@ impl Dao {
         }
     }
 
+    fn drop(&self, table_name: &String) -> TokenStream {
+        let drop_sql = format!("drop table if exists {}", table_name);
+
+        quote! {
+            pub fn drop_table(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
+                conn.execute(#drop_sql, ())?;
+                Ok(())
+            }
+        }
+    }
+
     fn insert(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
         let row_defn = self.as_row_defn();
-        let update_sql = format!("insert into {} values ({})", table_name, row_defn);
+        let insert_sql = format!("insert into {} values ({})", table_name, row_defn);
         let dao_fieldnames = TokenStream::from_iter(
             self.bindings
                 .iter()
@@ -81,9 +100,41 @@ impl Dao {
                 let Self {
                     #dao_fieldnames
                 } = self;
-                conn.prepare(#update_sql)?
+                conn.prepare(#insert_sql)?
                     .execute(rusqlite::named_params! {#values})?;
                 Ok(#ident_id(conn.last_insert_rowid()))
+            }
+        }
+    }
+
+    fn select_sql(&self, table_name: &String) -> TokenStream {
+        quote! {
+            pub fn select_sql(select_cols: &[&str], where_cols: &[&str]) -> String {
+                let select_clause = select_cols.iter()
+                    .map(|s| format!("{}", s))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                let where_clause = where_cols.iter()
+                    .map(|s| format!("{} = :{}", s, s))
+                    .collect::<Vec<_>>()
+                    .join(" and ");
+                format!("select {} from {} where {}", select_clause, #table_name, where_clause)
+            }
+        }
+    }
+
+    fn update_sql(&self, table_name: &String) -> TokenStream {
+        quote! {
+            pub fn update_sql(set_cols: &[&str], where_cols: &[&str]) -> String {
+                let set_clause = set_cols.iter()
+                    .map(|s| format!("{} = :{}", s, s))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                let where_clause = where_cols.iter()
+                    .map(|s| format!("{} = :{}", s, s))
+                    .collect::<Vec<_>>()
+                    .join(" and ");
+                format!("update {} set {} where {}", #table_name, set_clause, where_clause)
             }
         }
     }
@@ -96,17 +147,20 @@ impl Dao {
         } = self;
         let ident_dao = format_ident!("{}Dao", ident);
 
-        let create = self.create(table_name);
-        let insert = self.insert(ident_id, table_name);
+        let table_name_fn = self.table_name(table_name);
+        let create_fn = self.create(table_name);
+        let drop_fn = self.drop(table_name);
+        let insert_fn = self.insert(ident_id, table_name);
+        let select_sql_fn = self.select_sql(table_name);
+        let update_sql_fn = self.update_sql(table_name);
         let fields = TokenStream::from_iter(bindings.iter().map(Column::as_struct_defn));
         let columns = self.as_columns();
-        let methods = TokenStream::from_iter(
+        let column_fns = TokenStream::from_iter(
             bindings
                 .iter()
-                .map(|col| col.as_orm_methods(ident_id, table_name, &columns)),
+                .map(|col| col.as_orm_methods(ident_id, &columns)),
         );
-        let product_methods =
-            products.as_orm_methods(ident_id, table_name, &self.bindings, &columns);
+        let product_fns = products.as_orm_methods(ident_id, &self.bindings, &columns);
         let ident_fieldnames = TokenStream::from_iter(
             bindings
                 .iter()
@@ -138,10 +192,17 @@ impl Dao {
             }
             #[automatically_derived]
             impl #ident_dao {
-                #create
-                #insert
-                #methods
-                #product_methods
+                #table_name_fn
+
+                #create_fn
+                #drop_fn
+                #insert_fn
+
+                #select_sql_fn
+                #update_sql_fn
+
+                #column_fns
+                #product_fns
             }
             #[automatically_derived]
             impl From<#ident> for #ident_dao {

@@ -20,11 +20,10 @@ impl PlacedCard {
         place: &FieldPlace,
     ) -> Vec<(PlacedCardId, Self)> {
         PlacedCardDao::select_character_and_place(conn, character, place)
-            .ok()
-            .unwrap_or_else(|| {
+            .unwrap_or_else(|e| {
                 panic!(
-                    "Failed to find PlacedCard for {:?} and {:?}",
-                    character, place
+                    "Failed to find PlacedCard for {:?} and {:?}: {}",
+                    character, place, e
                 )
             })
             .into_iter()
@@ -50,15 +49,26 @@ impl PlacedCard {
         placed_cards
             .into_iter()
             .map(|(id, card)| Action {
-                sql_batch: vec![PlacedCard::update_sql().to_string()],
+                sql: PlacedCardDao::update_sql(&["character", "card", "place"], &["id"]),
                 params: vec![
                     (
                         ":id".to_string(),
-                        serde_json::to_value(id.0).expect("Failed to serialize Id to json"),
+                        serde_json::to_string(&id.0).expect("Failed to serialize Id to Json"),
                     ),
                     (
-                        ":data".to_string(),
-                        serde_json::to_value(card).expect("Failed to serialize PlacedCard to json"),
+                        ":character".to_string(),
+                        serde_json::to_string(&card.character)
+                            .expect("Failed to serialize PlacedCard Character to Json"),
+                    ),
+                    (
+                        ":card".to_string(),
+                        serde_json::to_string(&card.card)
+                            .expect("Failed to serialize PlacedCard Card to Json"),
+                    ),
+                    (
+                        ":place".to_string(),
+                        serde_json::to_string(&card.place)
+                            .expect("Failed to serialize PlacedCard Place to Json"),
                     ),
                 ],
             })

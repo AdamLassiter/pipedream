@@ -1,7 +1,8 @@
 use log::debug;
-use pipedream_domain::{character::PlayerCharacter, player::Player, stats::Resource};
+use pipedream_domain::{player::Player, player::PlayerCharacter, stats::Resource};
 use pipedream_engine::{
     choice::Choices,
+    command::UiMode,
     effect::{Effect, Transition},
     scene::Scene,
     state::State,
@@ -45,5 +46,6 @@ pub fn combat_end(machine: &StateMachine) -> State {
             transition: Transition::Goto((*next).clone()),
             ..Default::default()
         }),
+        ui_mode: UiMode::Combat,
     }
 }

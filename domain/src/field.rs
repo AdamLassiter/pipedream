@@ -1,10 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Combatant {
-    Me,
-    You,
-}
+use crate::target::Target;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum FieldPlace {
@@ -16,7 +12,7 @@ pub enum FieldPlace {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
-pub struct CombatPlace {
-    pub side: Combatant,
+pub struct TargetPlace {
+    pub target: Target,
     pub place: FieldPlace,
 }

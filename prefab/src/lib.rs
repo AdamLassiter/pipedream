@@ -2,7 +2,6 @@
 #![feature(const_trait_impl)]
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
-#![feature(iter_repeat_n)]
 
 use std::sync::LazyLock;
 

@@ -211,10 +211,10 @@ where
 {
     fn from(value: P) -> Self {
         let open_file = ImageReader::open(value.clone())
-            .unwrap_or_else(|_| panic!("No such file or directory {:?}", value));
+            .unwrap_or_else(|e| panic!("No such file or directory {:?}: {}", value, e));
         let image = open_file
             .decode()
-            .unwrap_or_else(|_| panic!("No such file or directory {:?}", value));
+            .unwrap_or_else(|e| panic!("Failed to decode {:?}: {}", value, e));
         Self::new(image)
     }
 }

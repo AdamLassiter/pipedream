@@ -13,7 +13,14 @@ edition = "2024"
 
 
 [workspace]
-members = ["bichannel", "domain", "engine", "interface", "prefab", "rusqlite_orm"]
+members = [
+    "bichannel",
+    "domain",
+    "engine",
+    "interface",
+    "prefab",
+    "rusqlite_orm",
+]
 
 
 [workspace.dependencies]
@@ -49,3 +56,6 @@ pipedream_engine = { path = "engine" }
 pipedream_domain = { path = "domain" }
 pipedream_interface = { path = "interface" }
 pipedream_prefab = { path = "prefab" }
+
+log.workspace = true
+rusqlite.workspace = true

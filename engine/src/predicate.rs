@@ -2,12 +2,12 @@ use std::fmt::Debug;
 
 use rusqlite::{Connection, Result, ToSql};
 use serde::{Deserialize, Serialize};
-use serde_json::{Error, Value};
+use serde_json::Error;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Predicate {
     pub sql: String,
-    pub params: Vec<(String, Value)>,
+    pub params: Vec<(String, String)>,
     pub expected: bool,
 }
 
@@ -23,16 +23,17 @@ impl Predicate {
         }
     }
 
-    pub fn parameterised<T, U>(sql: T, params: Vec<(U, Result<Value, Error>)>) -> Self
+    pub fn parameterised<T, U, V>(sql: T, params: Vec<(U, Result<V, Error>)>) -> Self
     where
         T: Into<String>,
         U: Into<String>,
+        V: Into<String>,
     {
         Self {
             sql: sql.into(),
             params: params
                 .into_iter()
-                .map(|(k, v)| (k.into(), v.expect("Failed to serialize param")))
+                .map(|(k, v)| (k.into(), v.expect("Failed to serialize param").into()))
                 .collect::<Vec<_>>(),
             expected: true,
         }

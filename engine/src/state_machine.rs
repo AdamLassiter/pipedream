@@ -69,7 +69,7 @@ impl StateMachine {
             Transition::None => {}
         };
 
-        debug!(target:"Engine/StateMachine/(String, UiMode)State", "{:?}", self.location_stack);
+        debug!(target:"Engine/StateMachine/LocationState", "{:?}", self.location_stack);
     }
 
     pub fn next_options(&mut self) -> Vec<UiCommand> {
@@ -82,10 +82,9 @@ impl StateMachine {
             predicate
                 .as_ref()
                 .map(|predicate| {
-                    predicate
-                        .clone()
-                        .test(conn)
-                        .unwrap_or_else(|_| panic!("Failed to execute predicate {:?}", predicate))
+                    predicate.clone().test(conn).unwrap_or_else(|e| {
+                        panic!("Failed to execute predicate {:?}: {}", predicate, e)
+                    })
                 })
                 .unwrap_or(true)
         };
@@ -120,10 +119,10 @@ impl StateMachine {
         if let Some(state_fn) = self.dynamic_states.get(location) {
             state_fn.apply(self)
         } else {
-            let state = StateDao::select_location(&self.conn, &location)
-                .ok()
-                .and_then(|mut res| res.pop())
-                .unwrap_or_else(|| panic!("Failed to query states by location {:?}", location));
+            let state = StateDao::select_location(&self.conn, location)
+                .unwrap_or_else(|e| panic!("Failed to find Location for {:?}: {}", location, e))
+                .pop()
+                .unwrap_or_else(|| panic!("No Location found for {:?}", location));
             state.into()
         }
     }

@@ -45,20 +45,16 @@ impl Column {
         }
     }
 
-    fn select(&self, ident_id: &Ident, table_name: &String, columns: &TokenStream) -> TokenStream {
+    fn select(&self, ident_id: &Ident, columns: &TokenStream) -> TokenStream {
         let method_arg = self.as_method_arg(ident_id);
         let select_ident = format_ident!("select_{}", self.ident);
-        let select_sql = format!(
-            "select * from {} where {} = {}",
-            table_name,
-            self.ident,
-            self.ident_key()
-        );
+        let ident = self.ident.to_string();
         let serde_expr = self.as_serde_value();
 
         quote! {
             pub fn #select_ident(conn: &rusqlite::Connection, #method_arg) -> rusqlite::Result<std::vec::Vec<Self>> {
-                Ok(conn.prepare(#select_sql)?
+                let select_sql = Self::select_sql(&["*"], &[#ident]);
+                Ok(conn.prepare(&select_sql)?
                     .query_and_then(rusqlite::named_params! {#serde_expr}, |row| serde_rusqlite::from_row_with_columns::<Self>(row, #columns))?
                     .map(|row| row.expect("Sql for Column was not valid Json"))
                     .collect::<std::vec::Vec<Self>>())
@@ -66,23 +62,19 @@ impl Column {
         }
     }
 
-    fn count(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
+    fn count(&self, ident_id: &Ident) -> TokenStream {
         if matches!(self.typ, Type::PrimaryKey) {
             return quote! {};
         }
         let method_arg = self.as_method_arg(ident_id);
         let count_ident = format_ident!("count_{}", self.ident);
-        let count_sql = format!(
-            "select count(*) from {} where {} = {}",
-            table_name,
-            self.ident,
-            self.ident_key()
-        );
+        let ident = self.ident.to_string();
         let serde_expr = self.as_serde_value();
 
         quote! {
             pub fn #count_ident(conn: &rusqlite::Connection, #method_arg) -> rusqlite::Result<i64> {
-                Ok(conn.prepare(#count_sql)?
+                let count_sql = Self::select_sql(&["count(*)"], &[#ident]);
+                Ok(conn.prepare(&count_sql)?
                     .query_and_then(rusqlite::named_params! {#serde_expr}, |row| serde_rusqlite::from_row_with_columns::<i64>(row, &["count(*)".to_string()]))?
                     .map(|row| row.expect("Failed to deserialize Column from Sql"))
                     .next().unwrap_or(0))
@@ -90,38 +82,29 @@ impl Column {
         }
     }
 
-    fn update(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
+    fn update(&self, ident_id: &Ident) -> TokenStream {
         if matches!(self.typ, Type::PrimaryKey) {
             return quote! {};
         }
         let method_arg = self.as_method_arg(ident_id);
         let update_ident = format_ident!("update_{}", self.ident);
-        let update_sql = format!(
-            "update {} set {} = {} where id = :id",
-            table_name,
-            self.ident,
-            self.ident_key()
-        );
+        let ident = self.ident.to_string();
         let serde_expr = self.as_serde_value();
 
         quote! {
             pub fn #update_ident(conn: &rusqlite::Connection, id: &#ident_id, #method_arg) -> rusqlite::Result<()> {
-                conn.prepare(#update_sql)?
+                let update_sql = Self::update_sql(&[#ident], &["id"]);
+                conn.prepare(&update_sql)?
                     .execute(rusqlite::named_params! {":id": id.0, #serde_expr})?;
                 Ok(())
             }
         }
     }
 
-    pub fn as_orm_methods(
-        &self,
-        ident_id: &Ident,
-        table_name: &String,
-        columns: &TokenStream,
-    ) -> TokenStream {
-        let select = self.select(ident_id, table_name, columns);
-        let count = self.count(ident_id, table_name);
-        let update = self.update(ident_id, table_name);
+    pub fn as_orm_methods(&self, ident_id: &Ident, columns: &TokenStream) -> TokenStream {
+        let select = self.select(ident_id, columns);
+        let count = self.count(ident_id);
+        let update = self.update(ident_id);
 
         quote! {
             #select

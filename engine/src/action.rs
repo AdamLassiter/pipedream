@@ -2,50 +2,48 @@ use std::fmt::Debug;
 
 use rusqlite::{Connection, Result, ToSql};
 use serde::{Deserialize, Serialize};
-use serde_json::{Error, Value};
+use serde_json::Error;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Action {
-    pub sql_batch: Vec<String>,
-    pub params: Vec<(String, Value)>,
+    pub sql: String,
+    pub params: Vec<(String, String)>,
 }
 
 impl Action {
-    pub fn pure<T>(sql_batch: Vec<T>) -> Self
+    pub fn pure<T>(sql: T) -> Self
     where
         T: Into<String>,
     {
         Self {
-            sql_batch: sql_batch.into_iter().map(|x| x.into()).collect(),
+            sql: sql.into(),
             params: vec![],
         }
     }
 
-    pub fn parameterised<T, U>(sql_batch: Vec<T>, params: Vec<(U, Result<Value, Error>)>) -> Self
+    pub fn parameterised<T, U, V>(sql: T, params: Vec<(U, Result<V, Error>)>) -> Self
     where
         T: Into<String>,
         U: Into<String>,
+        V: Into<String>,
     {
         Self {
-            sql_batch: sql_batch.into_iter().map(|x| x.into()).collect(),
+            sql: sql.into(),
             params: params
                 .into_iter()
-                .map(|(k, v)| (k.into(), v.expect("Failed to serialize param")))
+                .map(|(k, v)| (k.into(), v.expect("Failed to serialize param").into()))
                 .collect::<Vec<_>>(),
         }
     }
 
     pub fn run(self, conn: &mut Connection) -> Result<()> {
-        let tx = conn.transaction()?;
         let params = self
             .params
             .iter()
             .map(|(k, v)| (k.as_str(), v as &dyn ToSql))
             .collect::<Vec<_>>();
-        self.sql_batch.iter().for_each(|sql| {
-            tx.execute(sql.as_str(), params.as_slice())
-                .unwrap_or_else(|_| panic!("Failed to execute {}", sql));
-        });
-        tx.commit()
+
+        conn.execute(self.sql.as_str(), params.as_slice())?;
+        Ok(())
     }
 }

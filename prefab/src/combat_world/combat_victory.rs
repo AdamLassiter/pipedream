@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use pipedream_engine::{
     choice::Choices,
+    command::UiMode,
     description::Description,
     effect::{Effect, Transition},
     scene::Scene,
@@ -24,5 +25,6 @@ pub fn combat_victory(_machine: &StateMachine) -> State {
             },
             Duration::from_secs(2),
         ),
+        ui_mode: UiMode::Combat,
     }
 }

@@ -19,3 +19,5 @@ serde_rusqlite.workspace = true
 rand.workspace = true
 
 log.workspace = true
+
+strum.workspace = true

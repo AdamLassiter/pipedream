@@ -30,3 +30,19 @@ impl Default for Effect {
         }
     }
 }
+
+impl Effect {
+    pub fn actions(actions: Vec<Action>) -> Self {
+        Self {
+            actions,
+            ..Default::default()
+        }
+    }
+
+    pub fn transition(transition: Transition) -> Self {
+        Self {
+            transition,
+            ..Default::default()
+        }
+    }
+}

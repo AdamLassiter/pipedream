@@ -4,3 +4,5 @@
 #![feature(let_chains)]
 
 pub mod game_coordinator;
+
+extern crate log;
