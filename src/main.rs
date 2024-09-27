@@ -1,21 +1,22 @@
 use std::{collections::BTreeMap, io};
 
 use bichannel::BichannelMonitor;
+use log::debug;
+use rusqlite::Connection;
+
 use pipedream::game_coordinator::GameCoordinator;
-use pipedream_domain::character::Character;
+use pipedream_domain::{card::Card, character::Character, location::Location};
 use pipedream_engine::{
-    choice::Card,
     command::UiMode,
-    location::Location,
     state::{DynamicStateFn, State},
     state_machine::StateMachine,
 };
 use pipedream_interface::{log_utils::finish_and_panic_threads, tui::Tui};
 use pipedream_prefab::{Generatable, Prefabricated};
-use rusqlite::Connection;
 
 fn main() -> io::Result<()> {
-    let conn = Connection::open("game.db").expect("Failed to open db");
+    let mut conn = Connection::open("game.db").expect("Failed to open db");
+    conn.trace(Some(|query| debug!(target:"Database/Query", "{}", query)));
     Card::initialise(&conn);
     Character::initialise(&conn);
     State::initialise(&conn);

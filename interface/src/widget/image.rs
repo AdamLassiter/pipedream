@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
+use log::debug;
+use ratatui::{prelude::*, widgets::Paragraph};
+
 use crate::{
     ascii_art::{AsciiOptions, ImageConverter, ToAsciiArt},
     Renderable,
 };
-
-use log::debug;
-use pipedream_engine::image::Image;
-use ratatui::{prelude::*, widgets::Paragraph};
+use pipedream_domain::image::Image;
 
 impl Renderable for Image {
     fn render(&self, area: Rect, buf: &mut Buffer) {

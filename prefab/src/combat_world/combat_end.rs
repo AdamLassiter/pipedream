@@ -1,13 +1,12 @@
 use log::debug;
-use pipedream_domain::{player::Player, player::PlayerCharacter, stats::Resource};
-use pipedream_engine::{
+use pipedream_domain::{
     choice::Choices,
-    command::UiMode,
     effect::{Effect, Transition},
-    scene::Scene,
-    state::State,
-    state_machine::StateMachine,
+    player::Player,
+    player::PlayerCharacter,
+    stats::Resource,
 };
+use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
 use crate::combat_world::{COMBAT_DEFEAT, COMBAT_END, COMBAT_VICTORY, HUMAN_PLAY};
 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::description::Description;
+use pipedream_domain::description::Description;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scene {

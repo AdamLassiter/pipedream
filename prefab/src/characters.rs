@@ -1,18 +1,33 @@
+use crate::Prefabricated;
 use pipedream_domain::{
+    card::CardDao,
     character::{Character, CharacterDao},
+    image::Image,
     player::{Player::Human, PlayerCharacter, PlayerCharacterDao},
     stats::{Resource, Stats},
 };
-use pipedream_engine::image::Image;
-
-use crate::Prefabricated;
 
 impl Prefabricated for Character {
     fn initialise(conn: &rusqlite::Connection) {
+        let find = |card| {
+            CardDao::select_title(conn, &String::from(card))
+                .ok()
+                .and_then(|mut rs| rs.pop())
+                .and_then(|r| {
+                    let (id, _) = r.into();
+                    id
+                })
+                .unwrap_or_else(|| panic!("Failed to find card {card}"))
+        };
         let human = Self {
             name: "Plae-Yerr".into(),
             image: Image::new("resources/avatars/fairy/png/transperent/icon24.png"),
             stats: Stats::default(),
+            cards: vec![
+                find("Immolate"),
+                find("Anathema Device"),
+                find("Regular Punch"),
+            ],
         };
         let characters = vec![
             Self {
@@ -24,11 +39,13 @@ impl Prefabricated for Character {
                     stats.max_resources.insert(Resource::Health, 1);
                     stats
                 },
+                cards: vec![find("Regular Punch")],
             },
             Self {
                 name: "Slightly Larger Dave".into(),
                 image: Image::new("resources/rpg/demon/png/transperent/icon2.png"),
                 stats: Stats::default(),
+                cards: vec![find("Regular Punch")],
             },
         ];
 

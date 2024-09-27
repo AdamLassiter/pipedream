@@ -1,12 +1,12 @@
 use rusqlite_orm::orm_autobind;
 
 use crate::command::UiMode;
-use crate::location::Location;
+use pipedream_domain::location::Location;
 
-use super::choice::Choices;
+use pipedream_domain::choice::Choices;
 
-use super::scene::Scene;
-use super::state_machine::StateMachine;
+use crate::scene::Scene;
+use crate::state_machine::StateMachine;
 
 #[derive(Clone, Debug)]
 #[orm_autobind]

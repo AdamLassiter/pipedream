@@ -4,11 +4,8 @@ mod combat;
 use crate::{Handler, Renderable, TickResult};
 use bichannel::Bichannel;
 use crossterm::event::KeyEvent;
-use pipedream_domain::stats::Stats;
-use pipedream_engine::{
-    command::{EngineCommand, UiCommand, UiMode},
-    image::Image,
-};
+use pipedream_domain::{image::Image, stats::Stats};
+use pipedream_engine::command::{EngineCommand, UiCommand, UiMode};
 use ratatui::prelude::*;
 
 use super::Component;

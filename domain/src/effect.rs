@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{action::Action, location::Location};
+use crate::{action::Action, location::Location};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Effect {

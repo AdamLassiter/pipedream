@@ -4,16 +4,19 @@ use log::debug;
 use rusqlite::Connection;
 
 use crate::{
-    choice::{Card, Choice, Choices},
     command::{UiCommand, UiMode},
+    state::{DynamicStateFn, State, StateDao},
+};
+use pipedream_domain::{
+    action::Action,
+    card::Card,
+    choice::{Choice, Choices},
     description::Description,
     effect::Effect,
+    effect::Transition,
     location::Location,
     predicate::Predicate,
-    state::{State, StateDao},
 };
-
-use super::{action::Action, effect::Transition, state::DynamicStateFn};
 
 pub struct StateMachine {
     pub conn: Connection,

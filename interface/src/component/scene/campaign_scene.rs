@@ -1,13 +1,12 @@
-use pipedream_engine::choice::Choices;
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders},
 };
 use symbols::border;
 
-use crate::{widget::choice::campaign_choice::CampaignChoice, Renderable};
-
 use super::SceneComponent;
+use crate::{widget::choice::campaign_choice::CampaignChoice, Renderable};
+use pipedream_domain::choice::Choices;
 
 impl SceneComponent {
     pub fn render_campaign(&self, area: Rect, buf: &mut Buffer) {

@@ -8,7 +8,9 @@ edition = "2024"
 
 
 [dependencies]
+pipedream_domain = { path = "../domain" }
 rusqlite_orm = { path = "../rusqlite_orm" }
+
 serde.workspace = true
 serde_json.workspace = true
 rusqlite.workspace = true

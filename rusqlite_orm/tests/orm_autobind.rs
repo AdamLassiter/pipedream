@@ -71,6 +71,10 @@ fn select() -> Result<()> {
 
     assert_eq!(OrmDao::select_bar(&conn, &1)?, vec![]);
 
+    let daos = QuxDao::select_orm_id(&conn, &OrmId(1))?;
+    let res = daos.into_iter().map(QuxDao::into).collect::<Vec<Qux>>();
+    assert_eq!(res, vec![qux(OrmId(1)).into()]);
+
     Ok(())
 }
 

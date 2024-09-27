@@ -3,19 +3,18 @@ mod combat_scene;
 
 use std::time::Instant;
 
-use crate::{widget::choice::ChoicesWidget, Handler, Renderable, TickResult};
 use bichannel::Bichannel;
 use crossterm::event::{KeyCode, KeyEvent};
 use log::debug;
-use pipedream_engine::{
-    choice::Choices,
-    command::{EngineCommand, UiCommand, UiMode},
-    image::Image,
-    scene::Scene,
-};
 use ratatui::prelude::*;
 
 use super::Component;
+use crate::{widget::choice::ChoicesWidget, Handler, Renderable, TickResult};
+use pipedream_domain::{choice::Choices, image::Image};
+use pipedream_engine::{
+    command::{EngineCommand, UiCommand, UiMode},
+    scene::Scene,
+};
 
 pub struct SceneComponent {
     ui_mode: UiMode,

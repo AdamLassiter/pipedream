@@ -1,17 +1,16 @@
 use log::debug;
-use pipedream_engine::{
-    choice::{Card, Choices},
-    command::UiMode,
-    description::Description,
-    effect::{Effect, Transition},
-    state_machine::StateMachine,
-};
 
 use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
 use pipedream_domain::{
-    card::PlacedCard, field::FieldPlace, player::Player, player::PlayerCharacter,
+    card::{Card, PlacedCard},
+    choice::{Choice, Choices},
+    description::Description,
+    effect::{Effect, Transition},
+    field::FieldPlace,
+    player::Player,
+    player::PlayerCharacter,
 };
-use pipedream_engine::{choice::Choice, scene::Scene, state::State};
+use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
 pub fn player_play(player: &Player, machine: &StateMachine) -> State {
     let (character_id, _character) = PlayerCharacter::get_player_character(&machine.conn, player);

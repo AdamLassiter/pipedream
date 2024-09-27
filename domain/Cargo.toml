@@ -8,8 +8,6 @@ edition = "2024"
 
 
 [dependencies]
-pipedream_engine = { path = "../engine" }
-
 rusqlite_orm = { path = "../rusqlite_orm" }
 serde.workspace = true
 serde_json.workspace = true

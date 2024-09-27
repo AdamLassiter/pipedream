@@ -4,9 +4,8 @@ use ratatui::{
 };
 use symbols::border;
 
-use crate::Renderable;
-
 use super::SceneComponent;
+use crate::Renderable;
 
 impl SceneComponent {
     pub fn render_combat(&self, area: Rect, buf: &mut Buffer) {

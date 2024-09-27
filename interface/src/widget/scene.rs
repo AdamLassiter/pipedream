@@ -1,10 +1,10 @@
+use log::debug;
 use ratatui::{prelude::*, widgets::*};
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use log::debug;
-use pipedream_engine::{description::Description, scene::Scene};
-
 use crate::Renderable;
+use pipedream_domain::description::Description;
+use pipedream_engine::scene::Scene;
 
 impl Renderable for Scene {
     fn render(&self, area: Rect, buf: &mut Buffer) {

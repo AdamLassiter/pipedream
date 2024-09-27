@@ -1,8 +1,8 @@
+use crate::{Controllable, Renderable};
 use campaign_choice::CampaignChoices;
 use combat_choice::CombatChoices;
-use pipedream_engine::{choice::Choices, command::UiMode};
-
-use crate::{Controllable, Renderable};
+use pipedream_domain::choice::Choices;
+use pipedream_engine::command::UiMode;
 
 pub mod campaign_choice;
 pub mod combat_choice;

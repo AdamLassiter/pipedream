@@ -128,9 +128,12 @@ impl Column {
             Type::PrimaryKey => quote! { #ident: None, },
             Type::Null(_typ) => quote! { (), },
             Type::Integer(_typ) | Type::Real(_typ) | Type::Text(_typ) => quote! { #ident: #ident, },
-            Type::Json(_typ) => quote! {
-                #ident: serde_json::to_value(#ident).expect("Could not serialize into Dao Value"),
-            },
+            Type::Json(_typ) => {
+                let serde_err = format!("Could not serialize {ident} into Dao Value");
+                quote! {
+                    #ident: serde_json::to_value(#ident).expect(#serde_err),
+                }
+            }
         }
     }
 
@@ -140,10 +143,17 @@ impl Column {
             Type::PrimaryKey => quote! {},
             Type::Null(_typ) => quote! { #ident: (), },
             Type::Integer(_typ) | Type::Real(_typ) | Type::Text(_typ) => quote! { #ident: #ident, },
-            Type::Json(_typ) => quote! {
-                #ident: serde_json::from_str(#ident.as_str().expect("Dao Value was not a String"))
-                        .expect("Dao Value was not valid Json"),
-            },
+            Type::Json(_typ) => {
+                let serde_err = format!("Dao Value of {ident} was not valid Json");
+                // Bit of an issue treating Sql Json columns as json objects, rather than strings
+                quote! {
+                    #ident: serde_json::from_str(#ident.as_str() // If this was a string i.e. Json
+                            .map(|s| s.to_string()) // Type manipulation
+                            .unwrap_or_else(|| #ident.to_string()) // If this was a number etc.
+                            .as_str()) // Type manipulation
+                        .expect(#serde_err),
+                }
+            }
         }
     }
 }

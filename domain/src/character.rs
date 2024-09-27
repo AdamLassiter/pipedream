@@ -1,8 +1,8 @@
 use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 
-use super::stats::Stats;
-use pipedream_engine::{action::Action, image::Image};
+use crate::stats::Stats;
+use crate::{action::Action, card::CardId, image::Image};
 
 #[derive(Clone, Debug)]
 #[orm_autobind]
@@ -10,6 +10,7 @@ pub struct Character {
     pub name: String,
     pub image: Image,
     pub stats: Stats,
+    pub cards: Vec<CardId>,
 }
 impl Character {
     pub fn update_action(&self, character_id: CharacterId) -> Action {

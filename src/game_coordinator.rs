@@ -1,11 +1,12 @@
 use log::debug;
-use std::{thread, time::Instant};
 use std::thread::JoinHandle;
+use std::{thread, time::Instant};
 
 use bichannel::{Bichannel, BichannelMonitor};
+
+use pipedream_domain::effect::Effect;
 use pipedream_engine::{
     command::{EngineCommand, UiCommand},
-    effect::Effect,
     state_machine::StateMachine,
 };
 
@@ -17,14 +18,11 @@ pub struct GameCoordinator {
 
 impl GameCoordinator {
     fn init(&mut self) {
-        self.states
-            .next_options()
-            .into_iter()
-            .for_each(|command| {
-                self.channel
-                    .send(command)
-                    .expect("Broken channel while initialising first options")
-            });
+        self.states.next_options().into_iter().for_each(|command| {
+            self.channel
+                .send(command)
+                .expect("Broken channel while initialising first options")
+        });
     }
 
     fn handle_commands(&mut self) {

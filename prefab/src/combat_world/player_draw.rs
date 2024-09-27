@@ -1,20 +1,19 @@
 use std::{cell::RefCell, time::Duration};
 
-use crate::combat_world::{HUMAN_DRAW, HUMAN_PLAY};
 use log::debug;
+
+use crate::combat_world::{HUMAN_DRAW, HUMAN_PLAY};
 use pipedream_domain::{
-    card::PlacedCard, field::FieldPlace, player::Player, player::PlayerCharacter,
-    stats::SleightOfHand,
-};
-use pipedream_engine::{
+    card::PlacedCard,
     choice::Choices,
-    command::UiMode,
     description::Description,
     effect::{Effect, Transition},
-    scene::Scene,
-    state::State,
-    state_machine::StateMachine,
+    field::FieldPlace,
+    player::Player,
+    player::PlayerCharacter,
+    stats::SleightOfHand,
 };
+use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
 pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
     let (character_id, character) = PlayerCharacter::get_player_character(&machine.conn, player);

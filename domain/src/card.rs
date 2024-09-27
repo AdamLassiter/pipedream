@@ -1,9 +1,39 @@
 use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 
-use pipedream_engine::{action::Action, choice::CardId};
+use crate::{
+    action::Action, character::CharacterId, description::Description, effect::Effect,
+    field::FieldPlace, image::Image, predicate::Predicate,
+};
 
-use crate::{character::CharacterId, field::FieldPlace};
+#[derive(Debug, Clone, Default)]
+#[orm_autobind]
+pub struct Card {
+    pub title: String,
+    pub cost: Option<String>,
+    pub details: Vec<Description>,
+    pub image: Image,
+    pub predicate: Option<Predicate>,
+    pub effect: Effect,
+}
+impl Card {
+    pub fn get_card(conn: &Connection, card_id: &CardId) -> Option<Self> {
+        CardDao::select_id(conn, card_id)
+            .ok()
+            .and_then(|mut cards| cards.pop())
+            .map(|card| card.into())
+    }
+
+    pub fn predicate_satisfied(&self, conn: &Connection) -> bool {
+        self.predicate
+            .as_ref()
+            .map(|pred| {
+                pred.test(conn)
+                    .unwrap_or_else(|e| panic!("Failed to test Predicate for {:?}: {}", self, e))
+            })
+            .unwrap_or(true)
+    }
+}
 
 #[derive(Clone, Debug)]
 #[orm_autobind [(character, place)]]

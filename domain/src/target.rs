@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::character::{Character, CharacterId};
 
-use pipedream_engine::action::Action;
+use crate::action::Action;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Target {

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::predicate::Predicate;
+use crate::predicate::Predicate;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Description {

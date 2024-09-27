@@ -10,8 +10,8 @@ mod turn_start;
 
 use std::collections::BTreeMap;
 
-use pipedream_domain::player::Player;
-use pipedream_engine::{location::Location, state::DynamicStateFn};
+use pipedream_domain::{location::Location, player::Player};
+use pipedream_engine::state::DynamicStateFn;
 
 use combat_defeat::combat_defeat;
 use combat_end::combat_end;

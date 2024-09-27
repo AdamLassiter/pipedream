@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use super::{choice::Choices, effect::Effect, scene::Scene};
+use crate::scene::Scene;
+use pipedream_domain::{choice::Choices, effect::Effect};
 
 #[derive(Debug, Clone)]
 pub enum EngineCommand {

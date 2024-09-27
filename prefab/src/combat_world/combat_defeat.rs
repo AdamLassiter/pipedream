@@ -1,10 +1,12 @@
 use std::time::Duration;
 
-use pipedream_engine::{
+use pipedream_domain::{
     choice::Choices,
-    command::UiMode,
     description::Description,
     effect::{Effect, Transition},
+};
+use pipedream_engine::{
+    command::UiMode,
     scene::Scene,
     state::State,
     state_machine::StateMachine,

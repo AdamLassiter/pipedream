@@ -1,17 +1,14 @@
 use crate::Prefabricated;
 use pipedream_domain::{
-    card::PlacedCardDao,
-    character::CharacterDao,
-    stats::Resource,
-    target::{Target, TargetCharacterDao},
-};
-use pipedream_engine::{
     action::Action,
-    choice::{Card, CardDao},
+    card::{Card, CardDao, PlacedCardDao},
+    character::CharacterDao,
     description::Description,
     effect::Effect,
     image::Image,
     predicate::Predicate,
+    stats::Resource,
+    target::{Target, TargetCharacterDao},
 };
 
 fn target_has_resource(target: Target, resource: Resource, amount: i64) -> Predicate {

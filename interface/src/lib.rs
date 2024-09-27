@@ -4,8 +4,9 @@
 #![feature(let_chains)]
 
 use crossterm::event::KeyEvent;
-use pipedream_engine::{choice::Choice, effect::Effect};
 use ratatui::{buffer::Buffer, layout::Rect};
+
+use pipedream_domain::{choice::Choice, effect::Effect};
 
 pub mod ascii_art;
 pub mod component;

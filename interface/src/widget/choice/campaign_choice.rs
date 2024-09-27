@@ -1,6 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use crossterm::event::{KeyCode, KeyEvent};
+use log::debug;
 use ratatui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
@@ -13,9 +14,9 @@ use ratatui::{
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
-use log::debug;
-use pipedream_engine::{
-    choice::{Card, Choice, Choices},
+use pipedream_domain::{
+    card::Card,
+    choice::{Choice, Choices},
     description::Description,
     effect::Effect,
 };

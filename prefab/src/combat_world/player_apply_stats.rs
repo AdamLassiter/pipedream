@@ -1,18 +1,13 @@
 use log::debug;
-use pipedream_domain::player::PlayerCharacter;
-use pipedream_domain::{
-    player::Player,
-    stats::{Assistance, Element, Resistance, Resource, Stat, StatChange},
-};
-use pipedream_engine::command::UiMode;
-use pipedream_engine::{choice::Choices, state_machine::StateMachine};
 
 use crate::combat_world::{COMBAT_END, HUMAN_DAMAGE};
-use pipedream_engine::{
+use pipedream_domain::{
+    choice::Choices,
     effect::{Effect, Transition},
-    scene::Scene,
-    state::State,
+    player::{Player, PlayerCharacter},
+    stats::{Assistance, Element, Resistance, Resource, Stat, StatChange},
 };
+use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
 fn calculate_damage(assist_stat: f64, resist_stat: f64, damage_val: f64) -> f64 {
     (assist_stat / resist_stat).sqrt() * damage_val
