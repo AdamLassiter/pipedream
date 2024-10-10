@@ -9,7 +9,6 @@ use crate::{
 };
 use pipedream_domain::{
     action::Action,
-    card::Card,
     choice::{Choice, Choices},
     description::Description,
     effect::Effect,
@@ -99,7 +98,7 @@ impl StateMachine {
         if let Choices::Manual(ref mut choices) = choices {
             choices.retain(
                 |Choice {
-                     card: Card { predicate, .. },
+                     predicate,
                      ..
                  }| test(&self.conn, predicate),
             );

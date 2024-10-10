@@ -15,7 +15,6 @@ use ratatui::{
 use tui_markup::{compile, generator::RatatuiTextGenerator};
 
 use pipedream_domain::{
-    card::Card,
     choice::{Choice, Choices},
     description::Description,
     effect::Effect,
@@ -78,7 +77,7 @@ impl Controllable for CampaignChoices {
             Choices::Manual(choices) => choices
                 .get(self.1)
                 .filter(|&c| c.selectable)
-                .map(|c| c.card.effect.clone()),
+                .map(|c| c.effect.clone()),
             Choices::Auto(transition, _) => Some(transition.clone()),
         }
     }
@@ -86,7 +85,7 @@ impl Controllable for CampaignChoices {
 
 impl Renderable for CampaignChoice {
     fn render(&self, area: Rect, buf: &mut Buffer) {
-        let details_size_hint = self.card.details.len() as u16;
+        let details_size_hint = self.details.len() as u16;
         let ascii_size_hint = if details_size_hint > 0 { 16 } else { 32 } as u16;
 
         let [_, area, _] = Layout::horizontal([
@@ -112,7 +111,7 @@ impl Renderable for CampaignChoice {
         ])
         .areas(block.inner(area));
 
-        let padded_summary = format!(" {} ", self.card.title);
+        let padded_summary = format!(" {} ", self.title);
         let mut title_text = compile::<RatatuiTextGenerator>(&padded_summary)
             .expect("Failed to compile tui text markup for summaries");
         if let Some(title_line) = title_text.lines.pop() {
@@ -125,7 +124,7 @@ impl Renderable for CampaignChoice {
 
         // Must live long enough
         let padded_cost;
-        if let Some(cost) = &self.card.cost {
+        if let Some(cost) = &self.cost {
             padded_cost = format!(" {} ", cost);
             let mut cost_lines = compile::<RatatuiTextGenerator>(&padded_cost)
                 .expect("Failed to compile tui text markup for cost")
@@ -139,10 +138,9 @@ impl Renderable for CampaignChoice {
             }
         }
 
-        self.card.image.render(ascii_area, buf);
+        self.image.render(ascii_area, buf);
 
         let details_lines = self
-            .card
             .details
             .iter()
             .flat_map(|Description { descriptor, .. }| {
@@ -171,14 +169,12 @@ impl Renderable for CampaignChoices {
                 .iter()
                 .map(|choice| {
                     let Choice {
-                        card: Card { title: summary, .. },
-                        selectable,
-                        ..
+                        title, selectable, ..
                     } = choice;
                     if *selectable {
-                        summary.clone()
+                        title.clone()
                     } else {
-                        format!("<d {}>", summary)
+                        format!("<d {}>", title)
                     }
                 })
                 .collect::<Vec<_>>();

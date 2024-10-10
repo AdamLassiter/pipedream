@@ -1,10 +1,29 @@
-use pipedream_domain::player::Player;
-use pipedream_engine::state_machine::StateMachine;
+use pipedream_domain::{
+    choice::Choices,
+    effect::{Effect, Transition},
+    player::Player,
+};
+use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
-use pipedream_engine::state::State;
+use super::{CPU_DRAW, CPU_START, HUMAN_DRAW, HUMAN_START};
 
-pub fn turn_start(player: &Player, machine: &StateMachine) -> State {
-    // Update target pointers
-    // Go to new target draw
-    todo!()
+pub fn turn_start(player: &Player, _machine: &StateMachine) -> State {
+    let current_location = match player {
+        Player::Human => HUMAN_START.clone(),
+        Player::Cpu => CPU_START.clone(),
+        Player::World => panic!("No location for World"),
+    };
+    let next_location = match player {
+        Player::Human => HUMAN_DRAW.clone(),
+        Player::Cpu => CPU_DRAW.clone(),
+        Player::World => panic!("No location for World"),
+    };
+    State {
+        location: current_location,
+        scene: Scene {
+            descriptions: vec![],
+        },
+        choices: Choices::skip(Effect::transition(Transition::Goto(next_location))),
+        ui_mode: UiMode::Combat,
+    }
 }

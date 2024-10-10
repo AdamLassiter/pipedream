@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::combat_world::{COMBAT_END, HUMAN_DAMAGE};
+use crate::combat_world::{CPU_DAMAGE, CPU_PLAY, HUMAN_DAMAGE, HUMAN_PLAY};
 use pipedream_domain::{
     choice::Choices,
     effect::{Effect, Transition},
@@ -13,11 +13,22 @@ fn calculate_damage(assist_stat: f64, resist_stat: f64, damage_val: f64) -> f64 
     (assist_stat / resist_stat).sqrt() * damage_val
 }
 
-pub fn player_apply_stats(player: &Player, machine: &StateMachine) -> State {
+pub fn player_damage(player: &Player, machine: &StateMachine) -> State {
     let stat_changes = StatChange::find_target(&machine.conn, player);
     debug!(target:"Prefab/Combat/ApplyStats", "{:?} {:?}", player, stat_changes);
 
-    let transition = Transition::Goto(COMBAT_END.clone());
+    let current_location = match player {
+        Player::Human => HUMAN_DAMAGE.clone(),
+        Player::Cpu => CPU_DAMAGE.clone(),
+        Player::World => panic!("No location for World"),
+    };
+    let next_location = match player {
+        Player::Human => HUMAN_PLAY.clone(),
+        Player::Cpu => CPU_PLAY.clone(),
+        Player::World => panic!("No location for World"),
+    };
+
+    // let end_transition = Transition::Goto(COMBAT_END.clone());
     let action =
         PlayerCharacter::update_player_character(&machine.conn, player, |mut target_char| {
             stat_changes.iter().for_each(
@@ -77,12 +88,12 @@ pub fn player_apply_stats(player: &Player, machine: &StateMachine) -> State {
         });
 
     State {
-        location: HUMAN_DAMAGE.clone(),
+        location: current_location,
         scene: Scene {
             descriptions: vec![],
         },
         choices: Choices::skip(Effect {
-            transition,
+            transition: Transition::Goto(next_location),
             actions: vec![action],
         }),
         ui_mode: UiMode::Combat,

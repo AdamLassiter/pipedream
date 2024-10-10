@@ -1,21 +1,44 @@
 use std::time::Duration;
 
+use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
-use crate::{card::Card, effect::Effect};
+use crate::{
+    card::Card, description::Description, effect::Effect, image::Image, predicate::Predicate,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Choice {
-    pub card: Card,
+    pub title: String,
+    pub cost: Option<String>,
+    pub details: Vec<Description>,
+    pub image: Image,
+    pub predicate: Option<Predicate>,
+    pub effect: Effect,
     pub selectable: bool,
 }
-
 impl Default for Choice {
     fn default() -> Self {
         Self {
-            card: Default::default(),
+            title: Default::default(),
+            cost: Default::default(),
+            details: Default::default(),
+            image: Default::default(),
+            predicate: Default::default(),
+            effect: Default::default(),
             selectable: true,
         }
+    }
+}
+impl Choice {
+    pub fn predicate_satisfied(&self, conn: &Connection) -> bool {
+        self.predicate
+            .as_ref()
+            .map(|pred| {
+                pred.test(conn)
+                    .unwrap_or_else(|e| panic!("Failed to test Predicate for {:?}: {}", self, e))
+            })
+            .unwrap_or(true)
     }
 }
 
@@ -27,15 +50,7 @@ pub enum Choices {
 
 impl Choices {
     pub fn cards(value: Vec<Card>) -> Self {
-        Self::Manual(
-            value
-                .into_iter()
-                .map(|card| Choice {
-                    card,
-                    ..Default::default()
-                })
-                .collect(),
-        )
+        Self::Manual(value.into_iter().map(|card| card.choice).collect())
     }
 
     pub fn manual(value: Vec<Choice>) -> Self {

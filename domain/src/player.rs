@@ -1,12 +1,13 @@
 use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize};
+use strum::EnumIter;
 
 use crate::character::{Character, CharacterId};
 
 use crate::action::Action;
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Player {
     Human,
     Cpu,

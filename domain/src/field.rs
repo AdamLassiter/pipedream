@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+use strum::EnumIter;
 
 use crate::target::Target;
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum FieldPlace {
     Innate,
     Deck,

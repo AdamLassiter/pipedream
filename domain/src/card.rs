@@ -1,37 +1,29 @@
 use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 
-use crate::{
-    action::Action, character::CharacterId, description::Description, effect::Effect,
-    field::FieldPlace, image::Image, predicate::Predicate,
-};
+use crate::{action::Action, character::CharacterId, choice::Choice, field::FieldPlace};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 #[orm_autobind]
 pub struct Card {
-    pub title: String,
-    pub cost: Option<String>,
-    pub details: Vec<Description>,
-    pub image: Image,
-    pub predicate: Option<Predicate>,
-    pub effect: Effect,
+    title: String,
+    pub choice: Choice,
+    pub starts: FieldPlace,
 }
 impl Card {
+    pub fn new(choice: Choice, starts: FieldPlace) -> Self {
+        Self {
+            title: choice.title.clone(),
+            choice,
+            starts,
+        }
+    }
+
     pub fn get_card(conn: &Connection, card_id: &CardId) -> Option<Self> {
         CardDao::select_id(conn, card_id)
             .ok()
             .and_then(|mut cards| cards.pop())
             .map(|card| card.into())
-    }
-
-    pub fn predicate_satisfied(&self, conn: &Connection) -> bool {
-        self.predicate
-            .as_ref()
-            .map(|pred| {
-                pred.test(conn)
-                    .unwrap_or_else(|e| panic!("Failed to test Predicate for {:?}: {}", self, e))
-            })
-            .unwrap_or(true)
     }
 }
 
@@ -50,10 +42,10 @@ impl PlacedCard {
         place: &FieldPlace,
     ) -> Vec<(PlacedCardId, Self)> {
         PlacedCardDao::select_character_and_place(conn, character, place)
-            .unwrap_or_else(|e| {
+            .unwrap_or_else(|err| {
                 panic!(
                     "Failed to find PlacedCard for {:?} and {:?}: {}",
-                    character, place, e
+                    character, place, err
                 )
             })
             .into_iter()
@@ -62,6 +54,13 @@ impl PlacedCard {
                 (id.expect("Selected PlacedCard with no Id"), card)
             })
             .collect::<Vec<_>>()
+    }
+
+    pub fn insert_placed_cards(conn: &Connection, cards: Vec<Self>) {
+        cards.into_iter().for_each(|card| {
+            let card_dao: PlacedCardDao = card.into();
+            card_dao.insert(conn).expect("Failed to insert PlacedCard");
+        })
     }
 
     pub fn update_placed_cards(

@@ -3,8 +3,10 @@ use pipedream_domain::{
     action::Action,
     card::{Card, CardDao, PlacedCardDao},
     character::CharacterDao,
+    choice::Choice,
     description::Description,
     effect::Effect,
+    field::FieldPlace,
     image::Image,
     predicate::Predicate,
     stats::Resource,
@@ -71,78 +73,96 @@ where
 impl Prefabricated for Card {
     fn initialise(conn: &rusqlite::Connection) {
         let cards = vec![
-            Self {
-                title: "Anathema Device".into(),
-                image: Image::new("resources/legacy/tile269.png"),
-                details: vec![Description::always("Apply <blue 0 anathema> [Self]")],
-                cost: Some("<blue 10 mana>".into()),
-                predicate: Some(target_has_resource(Target::Me, Resource::Mana, 10)),
-                effect: Effect::actions(vec![
-                    modify_target_resource(Target::Me, Resource::Mana, -5),
-                    modify_target_resource(Target::Me, Resource::Mana, -5),
-                ]),
-            },
-            Self {
-                title: "Regular Punch".into(),
-                image: Image::new("resources/legacy/tile095.png"),
-                details: vec![Description::always("Damage <red 2 health> [Enemy]")],
-                cost: Some("<green 1 stamina>".into()),
-                predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
-                effect: Effect::actions(vec![
-                    modify_target_resource(Target::Me, Resource::Stamina, -1),
-                    modify_target_resource(Target::You, Resource::Health, -2),
-                ]),
-            },
-            Self {
-                title: "Mossy Sword".into(),
-                image: Image::new("resources/legacy/tile083.png"),
-                details: vec![Description::always("Damage <red 5 health> [Enemy]")],
-                cost: Some("<green 2 stamina>".into()),
-                predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 2)),
-                effect: Effect::actions(vec![
-                    modify_target_resource(Target::Me, Resource::Stamina, -2),
-                    modify_target_resource(Target::You, Resource::Health, -2),
-                ]),
-            },
-            Self {
-                title: "Immolate".into(),
-                image: Image::new("resources/legacy/tile095.png"),
-                details: vec![
-                    Description::always("Damage <red 100% self health> [Enemy]"),
-                    Description::always("Damage <green 100% self stamina> [Enemy]"),
-                ],
-                cost: Some("<red 100% health>, <green 100% stamina>".into()),
-                predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
-                effect: Effect::actions(vec![
-                    modify_expr_target_resource(
-                        Target::Me,
-                        Resource::Health,
-                        format!(
-                            "round((character.stats)->'$.resources[{health}]' * 0.99)",
-                            health = serde_json::to_string(&&Resource::Health)
-                                .expect("Faield to serialize Resource enum")
+            Self::new(
+                Choice {
+                    title: "Anathema Device".into(),
+                    image: Image::new("resources/legacy/tile269.png"),
+                    details: vec![Description::always(
+                        "Apply <blue 0 anathema> [choice: Choice]",
+                    )],
+                    cost: Some("<blue 10 mana>".into()),
+                    predicate: Some(target_has_resource(Target::Me, Resource::Mana, 10)),
+                    effect: Effect::actions(vec![
+                        modify_target_resource(Target::Me, Resource::Mana, -5),
+                        modify_target_resource(Target::Me, Resource::Mana, -5),
+                    ]),
+                    ..Default::default()
+                },
+                FieldPlace::Deck,
+            ),
+            Self::new(
+                Choice {
+                    title: "Regular Punch".into(),
+                    image: Image::new("resources/legacy/tile095.png"),
+                    details: vec![Description::always("Damage <red 2 health> [Enemy]")],
+                    cost: Some("<green 1 stamina>".into()),
+                    predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
+                    effect: Effect::actions(vec![
+                        modify_target_resource(Target::Me, Resource::Stamina, -1),
+                        modify_target_resource(Target::You, Resource::Health, -2),
+                    ]),
+                    ..Default::default()
+                },
+                FieldPlace::Deck,
+            ),
+            Self::new(
+                Choice {
+                    title: "Mossy Sword".into(),
+                    image: Image::new("resources/legacy/tile083.png"),
+                    details: vec![Description::always("Damage <red 5 health> [Enemy]")],
+                    cost: Some("<green 2 stamina>".into()),
+                    predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 2)),
+                    effect: Effect::actions(vec![
+                        modify_target_resource(Target::Me, Resource::Stamina, -2),
+                        modify_target_resource(Target::You, Resource::Health, -2),
+                    ]),
+                    ..Default::default()
+                },
+                FieldPlace::Deck,
+            ),
+            Self::new(
+                Choice {
+                    title: "Immolate".into(),
+                    image: Image::new("resources/legacy/tile095.png"),
+                    details: vec![
+                        Description::always("Damage <red 100% self health> [Enemy]"),
+                        Description::always("Damage <green 100% self stamina> [Enemy]"),
+                    ],
+                    cost: Some("<red 100% health>, <green 100% stamina>".into()),
+                    predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
+                    effect: Effect::actions(vec![
+                        modify_expr_target_resource(
+                            Target::Me,
+                            Resource::Health,
+                            format!(
+                                "round((character.stats)->'$.resources[{health}]' * 0.99)",
+                                health = serde_json::to_string(&&Resource::Health)
+                                    .expect("Faield to serialize Resource enum")
+                            ),
                         ),
-                    ),
-                    modify_expr_target_resource(
-                        Target::Me,
-                        Resource::Stamina,
-                        format!(
-                            "round((character.stats)->'$.resources[{stamina}]' * 0.99)",
-                            stamina = serde_json::to_string(&&Resource::Stamina)
-                                .expect("Faield to serialize Resource enum")
+                        modify_expr_target_resource(
+                            Target::Me,
+                            Resource::Stamina,
+                            format!(
+                                "round((character.stats)->'$.resources[{stamina}]' * 0.99)",
+                                stamina = serde_json::to_string(&&Resource::Stamina)
+                                    .expect("Faield to serialize Resource enum")
+                            ),
                         ),
-                    ),
-                    modify_expr_target_resource(
-                        Target::You,
-                        Resource::Health,
-                        format!(
-                            "round((character.stats)->'$.resources[{health}]' * 0.99)",
-                            health = serde_json::to_string(&&Resource::Health)
-                                .expect("Faield to serialize Resource enum")
+                        modify_expr_target_resource(
+                            Target::You,
+                            Resource::Health,
+                            format!(
+                                "round((character.stats)->'$.resources[{health}]' * 0.99)",
+                                health = serde_json::to_string(&&Resource::Health)
+                                    .expect("Faield to serialize Resource enum")
+                            ),
                         ),
-                    ),
-                ]),
-            },
+                    ]),
+                    ..Default::default()
+                },
+                FieldPlace::Deck,
+            ),
         ];
 
         CardDao::drop_table(conn).expect("Failed to drop table for Card");

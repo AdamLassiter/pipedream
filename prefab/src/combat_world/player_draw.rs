@@ -1,4 +1,4 @@
-use std::{cell::RefCell, time::Duration};
+use std::time::Duration;
 
 use log::debug;
 
@@ -15,6 +15,8 @@ use pipedream_domain::{
 };
 use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
+use super::{CPU_DRAW, CPU_PLAY};
+
 pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
     let (character_id, character) = PlayerCharacter::get_player_character(&machine.conn, player);
     let draw_count = character
@@ -23,36 +25,36 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
         .get(&SleightOfHand::Inspiration)
         .expect("Failed to find Player Inspration");
 
-    let cards_drawn = RefCell::new(vec![]);
-    let deck_remove = PlacedCard::update_placed_cards(
+    let deck_draw = PlacedCard::update_placed_cards(
         &machine.conn,
         &character_id,
         &FieldPlace::Deck,
         |mut deck| {
-            let mut drawn_from_deck = draw_cards(&mut deck, *draw_count);
-            cards_drawn.borrow_mut().append(&mut drawn_from_deck);
+            draw_cards(&mut deck, *draw_count);
             deck
         },
     );
-    let hand_add = PlacedCard::update_placed_cards(
-        &machine.conn,
-        &character_id,
-        &FieldPlace::Hand,
-        |mut hand| {
-            hand.append(&mut cards_drawn.borrow_mut());
-            hand
-        },
-    );
+
+    let current_location = match player {
+        Player::Human => HUMAN_DRAW.clone(),
+        Player::Cpu => CPU_DRAW.clone(),
+        Player::World => panic!("No location for World"),
+    };
+    let next_location = match player {
+        Player::Human => HUMAN_PLAY.clone(),
+        Player::Cpu => CPU_PLAY.clone(),
+        Player::World => panic!("No location for World"),
+    };
 
     State {
-        location: HUMAN_DRAW.clone(),
+        location: current_location,
         scene: Scene {
             descriptions: vec![Description::always("Draw!")],
         },
         choices: Choices::timed(
             Effect {
-                transition: Transition::Goto(HUMAN_PLAY.clone()),
-                actions: deck_remove.into_iter().chain(hand_add).collect::<Vec<_>>(),
+                transition: Transition::Goto(next_location),
+                actions: deck_draw,
             },
             Duration::from_secs(2),
         ),
@@ -60,17 +62,11 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
     }
 }
 
-fn draw_cards(deck: &mut Vec<PlacedCard>, draw_count: u16) -> Vec<PlacedCard> {
+fn draw_cards(deck: &mut Vec<PlacedCard>, draw_count: u16) {
     // player_deck_slice.shuffle(&mut thread_rng());
-    let draw = deck.split_off(deck.len().saturating_sub(draw_count as usize));
-    let draw = draw
-        .into_iter()
-        .map(|card| PlacedCard {
-            place: FieldPlace::Hand,
-            ..card
-        })
-        .collect::<Vec<_>>();
+    deck.iter_mut().take(draw_count as usize).for_each(|card| {
+        card.place = FieldPlace::Hand;
+    });
 
-    debug!(target:"Prefab/Combat/Draw", "{:?}", draw);
-    draw
+    debug!(target:"Prefab/Combat/Draw", "{:?}", deck);
 }

@@ -4,7 +4,7 @@ use pipedream_domain::{
     character::{Character, CharacterDao},
     image::Image,
     player::{Player::Human, PlayerCharacter, PlayerCharacterDao},
-    stats::{Resource, Stats},
+    stats::{Resource, Stats}, target::TargetCharacterDao,
 };
 
 impl Prefabricated for Character {
@@ -57,6 +57,9 @@ impl Prefabricated for Character {
                 .insert(conn)
                 .expect("Failed to prefabricate Character");
         });
+
+        TargetCharacterDao::drop_table(conn).expect("Failed to drop table for TargetCharacter");
+        TargetCharacterDao::create_table(conn).expect("Failed to create table for TargetCharacter");
 
         PlayerCharacterDao::drop_table(conn).expect("Failed to drop table for PlayerCharacter");
         PlayerCharacterDao::create_table(conn).expect("Failed to create table for PlayerCharacter");

@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::combat_world::{HUMAN_DAMAGE, HUMAN_PLAY};
+use crate::combat_world::{CPU_DAMAGE, CPU_PLAY, HUMAN_DAMAGE, HUMAN_PLAY};
 use pipedream_domain::{
     card::{Card, PlacedCard},
     choice::{Choice, Choices},
@@ -17,8 +17,19 @@ pub fn player_play(player: &Player, machine: &StateMachine) -> State {
     let player_hand = PlacedCard::get_placed_cards(&machine.conn, &character_id, &FieldPlace::Hand);
     debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand);
 
+    let current_location = match player {
+        Player::Human => HUMAN_PLAY.clone(),
+        Player::Cpu => CPU_PLAY.clone(),
+        Player::World => panic!("No location for World"),
+    };
+    let next_location = match player {
+        Player::Human => HUMAN_DAMAGE.clone(),
+        Player::Cpu => CPU_DAMAGE.clone(),
+        Player::World => panic!("No location for World"),
+    };
+
     State {
-        location: HUMAN_PLAY.clone(),
+        location: current_location,
         scene: Scene {
             descriptions: vec![Description::always("Play")],
         },
@@ -29,16 +40,14 @@ pub fn player_play(player: &Player, machine: &StateMachine) -> State {
                     Card::get_card(&machine.conn, &card_id).into_iter()
                 })
                 .map(|card| {
-                    let selectable = card.predicate_satisfied(&machine.conn);
+                    let selectable = card.choice.predicate_satisfied(&machine.conn);
                     Choice {
-                        card: Card {
-                            effect: Effect {
-                                transition: Transition::Goto(HUMAN_DAMAGE.clone()),
-                                ..card.effect
-                            },
-                            ..card
+                        effect: Effect {
+                            transition: Transition::Goto(next_location.clone()),
+                            ..card.choice.effect
                         },
                         selectable,
+                        ..card.choice
                     }
                 })
                 .collect::<Vec<_>>(),

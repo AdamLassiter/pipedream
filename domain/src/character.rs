@@ -23,17 +23,17 @@ impl Character {
                 ),
                 (
                     ":name".to_string(),
-                    serde_json::to_string(&&self.name)
+                    serde_json::to_string(&self.name)
                         .expect("Failed to serialize Character Name to Json"),
                 ),
                 (
                     ":image".to_string(),
-                    serde_json::to_string(&&self.image)
+                    serde_json::to_string(&self.image)
                         .expect("Failed to serialize Character Image to Json"),
                 ),
                 (
                     ":stats".to_string(),
-                    serde_json::to_string(&&self.stats)
+                    serde_json::to_string(&self.stats)
                         .expect("Failed to serialize Character Stats to Json"),
                 ),
             ],
