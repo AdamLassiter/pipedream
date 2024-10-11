@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize};
-use strum::{EnumIter, IntoEnumIterator};
+use strum::{Display, EnumIter, IntoEnumIterator};
 
 use crate::player::Player;
 
@@ -81,7 +81,7 @@ pub enum Stat {
     Debuff(Debuff),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
+#[derive(Clone, Debug, Display, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum Resource {
     Health,
     Stamina,

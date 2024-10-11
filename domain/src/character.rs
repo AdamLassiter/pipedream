@@ -21,11 +21,7 @@ impl Character {
                     ":id".to_string(),
                     serde_json::to_string(&character_id.0).expect("Failed to serialize Id to Json"),
                 ),
-                (
-                    ":name".to_string(),
-                    serde_json::to_string(&self.name)
-                        .expect("Failed to serialize Character Name to Json"),
-                ),
+                (":name".to_string(), self.name.clone()),
                 (
                     ":image".to_string(),
                     serde_json::to_string(&self.image)

@@ -149,7 +149,7 @@ where
         Action::parameterised(enemy, enemy_params),
         Action::parameterised(cards, cards_params),
     ];
-    let transition = Transition::Enter(COMBAT_START.clone());
+    let transition = Transition::Fight(COMBAT_START.clone());
     Effect {
         transition,
         actions,

@@ -95,21 +95,17 @@ impl StateMachine {
             .descriptions
             .retain(|Description { predicate, .. }| test(&self.conn, predicate));
 
-        if let Choices::Manual(ref mut choices) = choices {
-            choices.retain(
-                |Choice {
-                     predicate,
-                     ..
-                 }| test(&self.conn, predicate),
-            );
+        if let Choices::Manual(ref mut choices) = choices && *ui_mode == UiMode::Campaign {
+            choices.retain(|Choice { predicate, .. }| test(&self.conn, predicate));
         }
 
+        debug!(target:"Engine/StateMachine/UiMode", "{:?}", ui_mode);
         debug!(target:"Engine/StateMachine/ShowScene", "{:?}", &scene);
         debug!(target:"Engine/StateMachine/ShowChoices", "{:?}", &choices);
         vec![
+            UiCommand::ChangeMode(ui_mode.clone()),
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(choices),
-            UiCommand::ChangeMode(ui_mode.clone()),
         ]
     }
 

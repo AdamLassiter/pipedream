@@ -16,54 +16,44 @@ use pipedream_domain::{
 fn target_has_resource(target: Target, resource: Resource, amount: i64) -> Predicate {
     let targets = TargetCharacterDao::table_name();
     let characters = CharacterDao::table_name();
-    let resource = serde_json::to_string(&&resource).expect("Failed to serialize Resource enum");
     let has = format!(
         "select count(*)
         from {targets} as target
         inner join {characters} as character on target.character = character.id
-        where (character.stats)->'$.resources[{resource}]' > :amount
+        where json_extract(character.stats, '$.resources.{resource}') >= {amount}
         and target.target = :target;"
     );
-    let params = vec![
-        (":target", serde_json::to_string(&target)),
-        (":amount", Ok(amount.to_string())),
-    ];
+    let params = vec![(":target", serde_json::to_string(&target))];
     Predicate::parameterised(has, params)
 }
 
 fn modify_target_resource(target: Target, resource: Resource, amount: i64) -> Action {
     let targets = TargetCharacterDao::table_name();
     let characters = CharacterDao::table_name();
-    let resource = serde_json::to_string(&&resource).expect("Failed to serialize Resource enum");
     let modify = format!(
         "update {characters}
-        set character.stats = json_set(character.stats, '$.resources[{resource}]', :amount)
+        set stats = json_set(character.stats, '$.resources.{resource}', (json_extract(character.stats, '$.resources.{resource}') + {amount}))
         from {targets} as target
         inner join {characters} as character on target.character = character.id
-        where (character.stats)->'$.resources[{resource}]' > :amount
+        where json_extract(character.stats, '$.resources.{resource}') >= -({amount})
         and target.target = :target;"
     );
-    let params = vec![
-        (":target", serde_json::to_string(&target)),
-        (":amount", Ok(amount.to_string())),
-    ];
+    let params = vec![(":target", serde_json::to_string(&target))];
     Action::parameterised(modify, params)
 }
 
-fn modify_expr_target_resource<T>(target: Target, resource: Resource, expr: T) -> Action
+fn set_expr_target_resource<T>(target: Target, resource: Resource, expr: T) -> Action
 where
     T: Into<String>,
 {
     let expr = expr.into();
     let targets = TargetCharacterDao::table_name();
     let characters = CharacterDao::table_name();
-    let resource = serde_json::to_string(&&resource).expect("Failed to serialize Resource enum");
     let modify = format!(
         "update {characters}
-        set character.stats = json_set(character.stats, '$.resources[{resource}]', {expr})
+        set stats = json_set(character.stats, '$.resources.{resource}', {expr})
         from {targets} as target
         inner join {characters} as character on target.character = character.id
-        where (character.stats)->'$.resources[{resource}]' > {expr}
         and target.target = :target;"
     );
     let params = vec![(":target", serde_json::to_string(&target))];
@@ -78,7 +68,7 @@ impl Prefabricated for Card {
                     title: "Anathema Device".into(),
                     image: Image::new("resources/legacy/tile269.png"),
                     details: vec![Description::always(
-                        "Apply <blue 0 anathema> [choice: Choice]",
+                        "Apply <blue 0 anathema> [Self]",
                     )],
                     cost: Some("<blue 10 mana>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Mana, 10)),
@@ -123,7 +113,7 @@ impl Prefabricated for Card {
             Self::new(
                 Choice {
                     title: "Immolate".into(),
-                    image: Image::new("resources/legacy/tile095.png"),
+                    image: Image::new("resources/legacy/tile009.png"),
                     details: vec![
                         Description::always("Damage <red 100% self health> [Enemy]"),
                         Description::always("Damage <green 100% self stamina> [Enemy]"),
@@ -131,31 +121,28 @@ impl Prefabricated for Card {
                     cost: Some("<red 100% health>, <green 100% stamina>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
                     effect: Effect::actions(vec![
-                        modify_expr_target_resource(
+                        set_expr_target_resource(
                             Target::Me,
                             Resource::Health,
                             format!(
-                                "round((character.stats)->'$.resources[{health}]' * 0.99)",
-                                health = serde_json::to_string(&&Resource::Health)
-                                    .expect("Faield to serialize Resource enum")
+                                "cast(json_extract(character.stats, '$.resources.{health}') * 0.99 as int)",
+                                health = Resource::Health,
                             ),
                         ),
-                        modify_expr_target_resource(
+                        set_expr_target_resource(
                             Target::Me,
                             Resource::Stamina,
                             format!(
-                                "round((character.stats)->'$.resources[{stamina}]' * 0.99)",
-                                stamina = serde_json::to_string(&&Resource::Stamina)
-                                    .expect("Faield to serialize Resource enum")
+                                "cast(json_extract(character.stats, '$.resources.{stamina}') * 0.99 as int)",
+                                stamina = Resource::Stamina,
                             ),
                         ),
-                        modify_expr_target_resource(
+                        set_expr_target_resource(
                             Target::You,
                             Resource::Health,
                             format!(
-                                "round((character.stats)->'$.resources[{health}]' * 0.99)",
-                                health = serde_json::to_string(&&Resource::Health)
-                                    .expect("Faield to serialize Resource enum")
+                                "cast(json_extract(character.stats, '$.resources.{health}') * 0.99 as int)",
+                                health = Resource::Health,
                             ),
                         ),
                     ]),

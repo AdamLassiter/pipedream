@@ -75,6 +75,7 @@ impl Handler for SceneComponent {
         }
 
         while let Ok(ev) = self.channel.try_recv() {
+            debug!(target:"Interface/Event/Command", "{:?}", ev);
             match ev {
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowChoices(opts) => {
