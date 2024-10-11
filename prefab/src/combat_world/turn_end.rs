@@ -24,12 +24,12 @@ pub fn turn_end(player: &Player, machine: &StateMachine) -> State {
     let current_location = match player {
         Player::Human => HUMAN_END.clone(),
         Player::Cpu => CPU_END.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
     let next_location = match player {
         Player::Human => CPU_START.clone(),
         Player::Cpu => HUMAN_START.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
 
     State {

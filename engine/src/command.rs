@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::scene::Scene;
-use pipedream_domain::{choice::Choices, effect::Effect};
+use pipedream_domain::{choice::Choices, effect::Effect, image::Image, player::Player, stats::Stats};
 
 #[derive(Debug, Clone)]
 pub enum EngineCommand {
@@ -13,6 +13,8 @@ pub enum EngineCommand {
 pub enum UiCommand {
     ShowScene(Scene),
     ShowChoices(Choices),
+    ShowStats(Player, Stats),
+    ShowPortrait(Player, Image),
     ChangeMode(UiMode),
 }
 

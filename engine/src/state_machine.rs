@@ -9,12 +9,15 @@ use crate::{
 };
 use pipedream_domain::{
     action::Action,
+    character::Character,
     choice::{Choice, Choices},
     description::Description,
-    effect::Effect,
-    effect::Transition,
+    effect::{Effect, Transition},
+    image::Image,
     location::Location,
+    player::{Player, PlayerCharacter},
     predicate::Predicate,
+    stats::Stats,
 };
 
 pub struct StateMachine {
@@ -25,12 +28,12 @@ pub struct StateMachine {
 
 impl StateMachine {
     pub fn new(
-        connection: Connection,
+        conn: Connection,
         start: (Location, UiMode),
         dynamic_states: BTreeMap<Location, DynamicStateFn>,
     ) -> Self {
         Self {
-            conn: connection,
+            conn,
             location_stack: vec![start],
             dynamic_states,
         }
@@ -79,6 +82,8 @@ impl StateMachine {
         let State { scene, choices, .. } = self.state(location);
         let mut scene = scene.clone();
         let mut choices = choices.clone();
+        let (human_image, human_stats) = self.stats(&Player::Human);
+        // let (cpu_image, cpu_stats) = self.stats(&Player::Cpu);
 
         let test = |conn: &Connection, predicate: &Option<Predicate>| {
             predicate
@@ -95,7 +100,9 @@ impl StateMachine {
             .descriptions
             .retain(|Description { predicate, .. }| test(&self.conn, predicate));
 
-        if let Choices::Manual(ref mut choices) = choices && *ui_mode == UiMode::Campaign {
+        if let Choices::Manual(ref mut choices) = choices
+            && *ui_mode == UiMode::Campaign
+        {
             choices.retain(|Choice { predicate, .. }| test(&self.conn, predicate));
         }
 
@@ -104,6 +111,10 @@ impl StateMachine {
         debug!(target:"Engine/StateMachine/ShowChoices", "{:?}", &choices);
         vec![
             UiCommand::ChangeMode(ui_mode.clone()),
+            UiCommand::ShowPortrait(Player::Human, human_image),
+            // UiCommand::ShowPortrait(Player::Cpu, cpu_image),
+            UiCommand::ShowStats(Player::Human, human_stats),
+            // UiCommand::ShowStats(Player::Cpu, cpu_stats),
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(choices),
         ]
@@ -123,5 +134,11 @@ impl StateMachine {
                 .unwrap_or_else(|| panic!("No Location found for {:?}", location));
             state.into()
         }
+    }
+
+    fn stats(&self, player: &Player) -> (Image, Stats) {
+        let (_id, Character { image, stats, .. }) =
+            PlayerCharacter::get_player_character(&self.conn, player);
+        (image, stats)
     }
 }

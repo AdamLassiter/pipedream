@@ -10,16 +10,12 @@ use crate::Renderable;
 impl SceneComponent {
     pub fn render_combat(&self, area: Rect, buf: &mut Buffer) {
         // Size hints
-        let portrait_width_hint = if self.player_image.is_some() {
-            32 + 2
-        } else {
-            0
-        };
-        let portrait_height_hint = if self.player_image.is_some() {
-            16 + 2
-        } else {
-            0
-        };
+        let (portrait_width_hint, portrait_height_hint) =
+            if self.player_image.is_some() || self.enemy_image.is_some() {
+                (32 + 2, 16 + 2)
+            } else {
+                (0, 0)
+            };
         let scene_size_hint = self
             .scene
             .as_ref()

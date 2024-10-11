@@ -20,12 +20,12 @@ pub fn player_damage(player: &Player, machine: &StateMachine) -> State {
     let current_location = match player {
         Player::Human => HUMAN_DAMAGE.clone(),
         Player::Cpu => CPU_DAMAGE.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
     let next_location = match player {
         Player::Human => HUMAN_PLAY.clone(),
         Player::Cpu => CPU_PLAY.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
 
     // let end_transition = Transition::Goto(COMBAT_END.clone());

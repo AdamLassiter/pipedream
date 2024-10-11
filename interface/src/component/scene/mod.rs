@@ -10,7 +10,7 @@ use ratatui::prelude::*;
 
 use super::Component;
 use crate::{widget::choice::ChoicesWidget, Handler, Renderable, TickResult};
-use pipedream_domain::{choice::Choices, image::Image};
+use pipedream_domain::{choice::Choices, image::Image, player::Player, stats::Stats};
 use pipedream_engine::{
     command::{EngineCommand, UiCommand, UiMode},
     scene::Scene,
@@ -22,7 +22,9 @@ pub struct SceneComponent {
     pub scene: Option<Scene>,
     pub choices: Option<ChoicesWidget>,
     pub player_image: Option<Image>,
+    pub player_stats: Option<Stats>,
     pub enemy_image: Option<Image>,
+    pub enemy_stats: Option<Stats>,
     pub wake_time: Option<Instant>,
 }
 
@@ -33,7 +35,9 @@ impl SceneComponent {
             scene: None,
             choices: None,
             player_image: None,
+            player_stats: None,
             enemy_image: None,
+            enemy_stats: None,
             wake_time: None,
             ui_mode: UiMode::Campaign,
         }
@@ -81,6 +85,24 @@ impl Handler for SceneComponent {
                 UiCommand::ShowChoices(opts) => {
                     self.choices = Some(ChoicesWidget::new(opts, &self.ui_mode))
                 }
+                UiCommand::ShowPortrait(player, image) => match player {
+                    Player::Human => {
+                        self.player_image = Some(image);
+                    }
+                    Player::Cpu => {
+                        self.enemy_image = Some(image);
+                    }
+                    _ => unimplemented!(),
+                },
+                UiCommand::ShowStats(player, stats) => match player {
+                    Player::Human => {
+                        self.player_stats = Some(stats);
+                    }
+                    Player::Cpu => {
+                        self.enemy_stats = Some(stats);
+                    }
+                    _ => unimplemented!(),
+                },
                 UiCommand::ChangeMode(mode) => {
                     self.ui_mode = mode;
                 }

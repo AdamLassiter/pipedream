@@ -38,12 +38,12 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
     let current_location = match player {
         Player::Human => HUMAN_DRAW.clone(),
         Player::Cpu => CPU_DRAW.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
     let next_location = match player {
         Player::Human => HUMAN_PLAY.clone(),
         Player::Cpu => CPU_PLAY.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
 
     State {

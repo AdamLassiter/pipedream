@@ -11,12 +11,12 @@ pub fn turn_start(player: &Player, _machine: &StateMachine) -> State {
     let current_location = match player {
         Player::Human => HUMAN_START.clone(),
         Player::Cpu => CPU_START.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
     let next_location = match player {
         Player::Human => HUMAN_DRAW.clone(),
         Player::Cpu => CPU_DRAW.clone(),
-        Player::World => panic!("No location for World"),
+        Player::World => unimplemented!(),
     };
     State {
         location: current_location,
