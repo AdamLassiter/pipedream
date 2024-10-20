@@ -88,6 +88,16 @@ pub enum Resource {
     Mana,
     Favour,
 }
+impl Resource {
+    pub fn style(&self) -> &'static str {
+        match self {
+            Resource::Health => "red",
+            Resource::Stamina => "green",
+            Resource::Mana => "blue",
+            Resource::Favour => "yellow",
+        }
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
 pub enum SleightOfHand {

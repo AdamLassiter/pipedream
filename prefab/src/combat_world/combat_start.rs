@@ -38,7 +38,7 @@ pub fn combat_start(machine: &StateMachine) -> State {
                     TargetCharacter::insert_target_character(
                         &machine.conn,
                         TargetCharacter {
-                            target: Target::Me,
+                            target: Target::You,
                             character: character_id,
                         },
                     );

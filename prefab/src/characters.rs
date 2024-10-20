@@ -33,7 +33,7 @@ impl Prefabricated for Character {
         let characters = vec![
             Self {
                 name: "Dave".into(),
-                image: Image::new("resources/rpg/demon/png/transperent/icon3.png"),
+                image: Image::new("resources/avatars/demon/png/transperent/icon17.png"),
                 stats: {
                     let mut stats = Stats::default();
                     stats.resources.insert(Resource::Health, 1);
@@ -44,7 +44,7 @@ impl Prefabricated for Character {
             },
             Self {
                 name: "Slightly Larger Dave".into(),
-                image: Image::new("resources/rpg/demon/png/transperent/icon2.png"),
+                image: Image::new("resources/avatars/demon/png/transperent/icon35.png"),
                 stats: Stats::default(),
                 cards: vec![find("Regular Punch")],
             },
@@ -75,3 +75,4 @@ impl Prefabricated for Character {
         .expect("Failed to prefabricate PlayerCharacter");
     }
 }
+

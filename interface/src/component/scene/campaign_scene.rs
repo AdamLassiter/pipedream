@@ -39,7 +39,7 @@ impl SceneComponent {
             Constraint::Fill(1),
         ])
         .areas(description_area);
-        let [portrait_border_area, stats_area] =
+        let [portrait_border_area, stats_border_area] =
             Layout::horizontal([Constraint::Length(portrait_width_hint), Constraint::Fill(1)])
                 .areas(portrait_and_stats_area);
         let [scene_area, choices_area] = Layout::vertical([
@@ -70,6 +70,15 @@ impl SceneComponent {
 
             block.render(portrait_border_area, buf);
             portrait.render(portrait_area, buf);
+        }
+        if let Some(stats) = self.player_stats.as_ref() {
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .border_set(border::ROUNDED);
+            let stats_area = block.inner(stats_border_area);
+
+            block.render(stats_border_area, buf);
+            stats.render(stats_area, buf);
         }
     }
 }
