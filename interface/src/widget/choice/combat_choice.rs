@@ -93,7 +93,7 @@ impl Renderable for CombatChoice {
         let mut block = Block::default()
             .borders(Borders::ALL)
             .border_set(border::ROUNDED);
-        Clear.render(block.inner(area), buf);
+        Clear.render(area, buf);
 
         let [ascii_area, details_area] = Layout::vertical([
             Constraint::Min(ascii_size_hint),
@@ -103,7 +103,7 @@ impl Renderable for CombatChoice {
 
         let padded_summary = format!(" {} ", self.title);
         let mut title_text = compile::<RatatuiTextGenerator>(&padded_summary)
-            .expect("Failed to compile tui text markup for summaries");
+            .expect("Failed to compile Tui text markup for summaries");
         if let Some(title_line) = title_text.lines.pop() {
             block = block.title(Title {
                 content: title_line.bold(),
@@ -116,7 +116,7 @@ impl Renderable for CombatChoice {
         if let Some(cost) = &self.cost {
             padded_cost = format!(" {} ", cost);
             let mut cost_lines = compile::<RatatuiTextGenerator>(&padded_cost)
-                .expect("Failed to compile tui text markup for cost")
+                .expect("Failed to compile Tui text markup for cost")
                 .lines;
             if let Some(cost_line) = cost_lines.pop() {
                 block = block.title(Title {
@@ -172,7 +172,7 @@ impl Renderable for CombatChoices {
                     (
                         idx,
                         Rect {
-                            x: starts,
+                            x: initial_card.x + starts,
                             y: initial_card.y - (if idx == *cursor { 1 } else { 0 }),
                             ..initial_card
                         },

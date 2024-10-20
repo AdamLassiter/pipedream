@@ -20,20 +20,28 @@ pub struct PlayerCharacter {
     pub character: CharacterId,
 }
 impl PlayerCharacter {
-    pub fn get_player_character(conn: &Connection, player: &Player) -> (CharacterId, Character) {
-        let (
+    pub fn find_player_character(conn: &Connection, player: &Player) -> Option<(CharacterId, Character)> {
+        if let Some((
             _id,
             PlayerCharacter {
                 character: character_id,
                 ..
             },
-        ) = PlayerCharacterDao::select_player(conn, player)
+        )) = PlayerCharacterDao::select_player(conn, player)
             .unwrap_or_else(|e| panic!("Failed to find PlayerCharacter for {:?}: {}", player, e))
             .pop()
+            .map(|dao| dao.into()) {
+            let character = Character::get(conn, &character_id);
+
+            Some((character_id, character))
+        } else {
+            None
+        }
+    }
+    
+    pub fn get_player_character(conn: &Connection, player: &Player) -> (CharacterId, Character) {
+        Self::find_player_character(conn, player)
             .unwrap_or_else(|| panic!("No PlayerCharacter found for {:?}", player))
-            .into();
-        let character = Character::get(conn, &character_id);
-        (character_id, character)
     }
 
     pub fn update_player_character(

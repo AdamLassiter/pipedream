@@ -10,7 +10,7 @@ use pipedream_domain::{
     image::Image,
     predicate::Predicate,
     stats::Resource,
-    target::{Target, TargetCharacterDao},
+    target::{Target, TargetCharacter, TargetCharacterDao},
 };
 
 fn target_has_resource(target: Target, resource: Resource, amount: i64) -> Predicate {
@@ -27,37 +27,32 @@ fn target_has_resource(target: Target, resource: Resource, amount: i64) -> Predi
     Predicate::parameterised(has, params)
 }
 
-fn modify_target_resource(target: Target, resource: Resource, amount: i64) -> Action {
-    let targets = TargetCharacterDao::table_name();
+fn modify_target_resource(conn: &rusqlite::Connection, target: Target, resource: Resource, amount: i64) -> Action {
     let characters = CharacterDao::table_name();
+    let (_id, TargetCharacter {character, ..}) = TargetCharacter::get_target(conn, &target);
+    let character_id = character.0;
     let modify = format!(
         "update {characters}
-        set stats = json_set(character.stats, '$.resources.{resource}', (json_extract(character.stats, '$.resources.{resource}') + {amount}))
-        from {targets} as target
-        inner join {characters} as character on target.character = character.id
-        where json_extract(character.stats, '$.resources.{resource}') >= -({amount})
-        and target.target = :target;"
+        set stats = json_set(stats, '$.resources.{resource}', json_extract(stats, '$.resources.{resource}') + {amount})
+        where id = {character_id};"
     );
-    let params = vec![(":target", serde_json::to_string(&target))];
-    Action::parameterised(modify, params)
+    Action::pure(modify)
 }
 
-fn set_expr_target_resource<T>(target: Target, resource: Resource, expr: T) -> Action
+fn set_expr_target_resource<T>(conn: &rusqlite::Connection, target: Target, resource: Resource, expr: T) -> Action
 where
     T: Into<String>,
 {
     let expr = expr.into();
-    let targets = TargetCharacterDao::table_name();
     let characters = CharacterDao::table_name();
+    let (_id, TargetCharacter {character, ..}) = TargetCharacter::get_target(conn, &target);
+    let character_id = character.0;
     let modify = format!(
         "update {characters}
-        set stats = json_set(character.stats, '$.resources.{resource}', {expr})
-        from {targets} as target
-        inner join {characters} as character on target.character = character.id
-        and target.target = :target;"
+        set stats = json_set(stats, '$.resources.{resource}', {expr})
+        where id = {character_id};"
     );
-    let params = vec![(":target", serde_json::to_string(&target))];
-    Action::parameterised(modify, params)
+    Action::pure(modify)
 }
 
 impl Prefabricated for Card {
@@ -73,8 +68,8 @@ impl Prefabricated for Card {
                     cost: Some("<blue 10 mana>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Mana, 10)),
                     effect: Effect::actions(vec![
-                        modify_target_resource(Target::Me, Resource::Mana, -5),
-                        modify_target_resource(Target::Me, Resource::Mana, -5),
+                        modify_target_resource(conn, Target::Me, Resource::Mana, -5),
+                        modify_target_resource(conn, Target::Me, Resource::Mana, -5),
                     ]),
                     ..Default::default()
                 },
@@ -88,8 +83,8 @@ impl Prefabricated for Card {
                     cost: Some("<green 1 stamina>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
                     effect: Effect::actions(vec![
-                        modify_target_resource(Target::Me, Resource::Stamina, -1),
-                        modify_target_resource(Target::You, Resource::Health, -2),
+                        modify_target_resource(conn, Target::Me, Resource::Stamina, -1),
+                        modify_target_resource(conn, Target::You, Resource::Health, -2),
                     ]),
                     ..Default::default()
                 },
@@ -103,8 +98,8 @@ impl Prefabricated for Card {
                     cost: Some("<green 2 stamina>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 2)),
                     effect: Effect::actions(vec![
-                        modify_target_resource(Target::Me, Resource::Stamina, -2),
-                        modify_target_resource(Target::You, Resource::Health, -2),
+                        modify_target_resource(conn, Target::Me, Resource::Stamina, -2),
+                        modify_target_resource(conn, Target::You, Resource::Health, -2),
                     ]),
                     ..Default::default()
                 },
@@ -122,6 +117,7 @@ impl Prefabricated for Card {
                     predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
                     effect: Effect::actions(vec![
                         set_expr_target_resource(
+                            conn,                        
                             Target::Me,
                             Resource::Health,
                             format!(
@@ -130,6 +126,7 @@ impl Prefabricated for Card {
                             ),
                         ),
                         set_expr_target_resource(
+                            conn,                        
                             Target::Me,
                             Resource::Stamina,
                             format!(
@@ -138,6 +135,7 @@ impl Prefabricated for Card {
                             ),
                         ),
                         set_expr_target_resource(
+                            conn,                        
                             Target::You,
                             Resource::Health,
                             format!(

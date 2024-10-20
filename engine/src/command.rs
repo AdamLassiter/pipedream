@@ -13,8 +13,8 @@ pub enum EngineCommand {
 pub enum UiCommand {
     ShowScene(Scene),
     ShowChoices(Choices),
-    ShowStats(Player, Stats),
-    ShowPortrait(Player, Image),
+    ShowStats(Player, Option<Stats>),
+    ShowPortrait(Player, Option<Image>),
     ChangeMode(UiMode),
 }
 

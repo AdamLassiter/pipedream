@@ -31,10 +31,10 @@ impl SceneComponent {
         .areas(area);
         let [player_stats_area, enemy_stats_area] =
             Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).areas(stats_area);
-        let [player_portrait_border_area, player_stats_area] =
+        let [player_portrait_border_area, player_stats_border_area] =
             Layout::horizontal([Constraint::Length(portrait_width_hint), Constraint::Fill(1)])
                 .areas(player_stats_area);
-        let [enemy_stats_area, enemy_portrait_border_area] =
+        let [enemy_stats_border_area, enemy_portrait_border_area] =
             Layout::horizontal([Constraint::Fill(1), Constraint::Length(portrait_width_hint)])
                 .areas(enemy_stats_area);
 
@@ -51,6 +51,15 @@ impl SceneComponent {
             block.render(player_portrait_border_area, buf);
             portrait.render(portrait_area, buf);
         }
+        if let Some(stats) = self.player_stats.as_ref() {
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .border_set(border::ROUNDED);
+            let stats_area = block.inner(player_stats_border_area);
+
+            block.render(player_stats_border_area, buf);
+            stats.render(stats_area, buf);
+        }
         if let Some(portrait) = self.enemy_image.as_ref() {
             let block = Block::default()
                 .borders(Borders::ALL)
@@ -59,6 +68,15 @@ impl SceneComponent {
 
             block.render(enemy_portrait_border_area, buf);
             portrait.render(portrait_area, buf);
+        }
+        if let Some(stats) = self.enemy_stats.as_ref() {
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .border_set(border::ROUNDED);
+            let stats_area = block.inner(enemy_stats_border_area);
+
+            block.render(enemy_stats_border_area, buf);
+            stats.render(stats_area, buf);
         }
         if let Some(choices) = self.choices.as_ref() {
             choices.renderable().render(cards_area, buf);

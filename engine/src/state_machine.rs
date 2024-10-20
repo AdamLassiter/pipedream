@@ -83,7 +83,7 @@ impl StateMachine {
         let mut scene = scene.clone();
         let mut choices = choices.clone();
         let (human_image, human_stats) = self.stats(&Player::Human);
-        // let (cpu_image, cpu_stats) = self.stats(&Player::Cpu);
+        let (cpu_image, cpu_stats) = self.stats(&Player::Cpu);
 
         let test = |conn: &Connection, predicate: &Option<Predicate>| {
             predicate
@@ -112,9 +112,9 @@ impl StateMachine {
         vec![
             UiCommand::ChangeMode(ui_mode.clone()),
             UiCommand::ShowPortrait(Player::Human, human_image),
-            // UiCommand::ShowPortrait(Player::Cpu, cpu_image),
+            UiCommand::ShowPortrait(Player::Cpu, cpu_image),
             UiCommand::ShowStats(Player::Human, human_stats),
-            // UiCommand::ShowStats(Player::Cpu, cpu_stats),
+            UiCommand::ShowStats(Player::Cpu, cpu_stats),
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(choices),
         ]
@@ -136,9 +136,12 @@ impl StateMachine {
         }
     }
 
-    fn stats(&self, player: &Player) -> (Image, Stats) {
-        let (_id, Character { image, stats, .. }) =
-            PlayerCharacter::get_player_character(&self.conn, player);
-        (image, stats)
+    fn stats(&self, player: &Player) -> (Option<Image>, Option<Stats>) {
+        if let Some((_id, Character { image, stats, .. })) =
+            PlayerCharacter::find_player_character(&self.conn, player) {
+            (Some(image), Some(stats))
+        } else {
+            (None, None)
+        }
     }
 }

@@ -15,7 +15,7 @@ impl Renderable for Scene {
             .iter()
             .map(|Description { descriptor, .. }| {
                 compile::<RatatuiTextGenerator>(descriptor)
-                    .expect("Failed to compile tui text markup")
+                    .expect("Failed to compile Tui text markup")
             })
             .flat_map(|scene_text| scene_text.lines)
             .collect::<Vec<_>>();

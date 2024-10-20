@@ -87,19 +87,19 @@ impl Handler for SceneComponent {
                 }
                 UiCommand::ShowPortrait(player, image) => match player {
                     Player::Human => {
-                        self.player_image = Some(image);
+                        self.player_image = image;
                     }
                     Player::Cpu => {
-                        self.enemy_image = Some(image);
+                        self.enemy_image = image;
                     }
                     _ => unimplemented!(),
                 },
                 UiCommand::ShowStats(player, stats) => match player {
                     Player::Human => {
-                        self.player_stats = Some(stats);
+                        self.player_stats = stats;
                     }
                     Player::Cpu => {
-                        self.enemy_stats = Some(stats);
+                        self.enemy_stats = stats;
                     }
                     _ => unimplemented!(),
                 },
