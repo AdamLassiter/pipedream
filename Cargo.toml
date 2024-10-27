@@ -1,8 +1,9 @@
-cargo-features = ["edition2024", "codegen-backend"]
+# cargo-features = ["edition2024", "codegen-backend"]
+cargo-features = ["edition2024"]
 
 
 [profile.dev]
-codegen-backend = "cranelift"
+# codegen-backend = "cranelift"
 panic = 'abort'
 
 
