@@ -10,7 +10,7 @@ use std::{
 };
 
 use crossbeam_channel::{
-    unbounded, Receiver, RecvError, SendError, Sender, TryRecvError, TrySendError,
+    Receiver, RecvError, SendError, Sender, TryRecvError, TrySendError, unbounded,
 };
 
 pub struct Bichannel<Send, Recv>(Sender<Send>, Receiver<Recv>);
@@ -45,28 +45,30 @@ impl<Left: Send + Sync + Clone, Right: Send + Sync + Clone> BichannelMonitor<Lef
         let fanout_thread;
         {
             let this = this.clone();
-            fanout_thread = thread::spawn(move || loop {
-                {
-                    let frwd_l = this.frwd_l.lock().unwrap();
-                    while let Ok(mesg) = recv_l.try_recv() {
-                        frwd_l.iter().for_each(|sender| {
-                            sender.send(mesg.clone()).expect(
+            fanout_thread = thread::spawn(move || {
+                loop {
+                    {
+                        let frwd_l = this.frwd_l.lock().unwrap();
+                        while let Ok(mesg) = recv_l.try_recv() {
+                            frwd_l.iter().for_each(|sender| {
+                                sender.send(mesg.clone()).expect(
                                 "Monitor failed to forward upstream message to downstream channel",
                             )
-                        });
+                            });
+                        }
                     }
-                }
-                {
-                    let frwd_r = this.frwd_r.lock().unwrap();
-                    while let Ok(mesg) = recv_r.try_recv() {
-                        frwd_r.iter().for_each(|sender| {
-                            sender.send(mesg.clone()).expect(
+                    {
+                        let frwd_r = this.frwd_r.lock().unwrap();
+                        while let Ok(mesg) = recv_r.try_recv() {
+                            frwd_r.iter().for_each(|sender| {
+                                sender.send(mesg.clone()).expect(
                                 "Monitor failed to forward upstream message to downstream channel",
                             )
-                        });
+                            });
+                        }
                     }
+                    thread::sleep(Duration::from_millis(1));
                 }
-                thread::sleep(Duration::from_millis(1));
             });
         }
         (this, fanout_thread)

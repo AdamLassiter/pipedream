@@ -8,8 +8,8 @@ use ratatui::{
     style::Stylize,
     symbols::border,
     widgets::{
-        block::{Position, Title},
         Block, Borders, Clear, Paragraph, Widget,
+        block::{Position, Title},
     },
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};
@@ -171,14 +171,11 @@ impl Renderable for CombatChoices {
                     .areas(area);
             let mut idx_areas = idx_starts
                 .map(|(idx, starts)| {
-                    (
-                        idx,
-                        Rect {
-                            x: initial_card.x + starts,
-                            y: initial_card.y - (if idx == *cursor { 1 } else { 0 }),
-                            ..initial_card
-                        },
-                    )
+                    (idx, Rect {
+                        x: initial_card.x + starts,
+                        y: initial_card.y - (if idx == *cursor { 1 } else { 0 }),
+                        ..initial_card
+                    })
                 })
                 .collect::<Vec<_>>();
 

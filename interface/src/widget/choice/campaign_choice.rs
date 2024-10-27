@@ -8,8 +8,8 @@ use ratatui::{
     style::Stylize,
     symbols::border,
     widgets::{
-        block::{Position, Title},
         Block, Borders, List, ListDirection, ListState, Paragraph, StatefulWidget, Widget,
+        block::{Position, Title},
     },
 };
 use tui_markup::{compile, generator::RatatuiTextGenerator};

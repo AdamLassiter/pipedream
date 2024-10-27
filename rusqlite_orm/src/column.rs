@@ -1,7 +1,7 @@
 use proc_macro::{Diagnostic, Level, Span};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
-use syn::{spanned::Spanned, Field, Ident};
+use syn::{Field, Ident, spanned::Spanned};
 
 use crate::sql_type::Type;
 

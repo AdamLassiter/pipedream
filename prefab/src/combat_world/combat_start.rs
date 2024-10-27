@@ -26,22 +26,16 @@ pub fn combat_start(machine: &StateMachine) -> State {
             debug!(target:"Prefab/Combat/Init", "{:?} {:?}", player, character.name);
             match player {
                 Player::Human => {
-                    TargetCharacter::insert_target_character(
-                        &machine.conn,
-                        TargetCharacter {
-                            target: Target::Me,
-                            character: character_id,
-                        },
-                    );
+                    TargetCharacter::insert_target_character(&machine.conn, TargetCharacter {
+                        target: Target::Me,
+                        character: character_id,
+                    });
                 }
                 Player::Cpu => {
-                    TargetCharacter::insert_target_character(
-                        &machine.conn,
-                        TargetCharacter {
-                            target: Target::You,
-                            character: character_id,
-                        },
-                    );
+                    TargetCharacter::insert_target_character(&machine.conn, TargetCharacter {
+                        target: Target::You,
+                        character: character_id,
+                    });
                     enemy_name = Some(character.name);
                 }
                 Player::World => {

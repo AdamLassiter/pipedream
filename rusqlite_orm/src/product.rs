@@ -6,10 +6,9 @@ use proc_macro::{Diagnostic, Level, Span};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
-    parenthesized,
+    Ident, Result, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    Ident, Result, Token,
 };
 
 #[derive(Debug)]

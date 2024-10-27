@@ -7,12 +7,12 @@ use bichannel::{Bichannel, BichannelMonitor};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use pipedream_engine::command::{EngineCommand, UiCommand};
 use ratatui::{
+    Frame,
     buffer::Buffer,
     layout::{Alignment, Constraint, Layout, Rect},
     style::Style,
     text::Line,
-    widgets::{block::Position, Borders, Tabs, Widget},
-    Frame,
+    widgets::{Borders, Tabs, Widget, block::Position},
 };
 use ratatui::{
     style::{Color, Stylize},
@@ -23,7 +23,7 @@ use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use crate::{
     component::{
-        inventory::InventoryComponent, logging::LoggingComponent, scene::SceneComponent, Component,
+        Component, inventory::InventoryComponent, logging::LoggingComponent, scene::SceneComponent,
     },
     log_utils,
     widget::instructions::instructions,

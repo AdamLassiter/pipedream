@@ -4,8 +4,8 @@ use log::debug;
 use ratatui::{prelude::*, widgets::Paragraph};
 
 use crate::{
-    ascii_art::{AsciiOptions, ImageConverter, ToAsciiArt},
     Renderable,
+    ascii_art::{AsciiOptions, ImageConverter, ToAsciiArt},
 };
 use pipedream_domain::image::Image;
 

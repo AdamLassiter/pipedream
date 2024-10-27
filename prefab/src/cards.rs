@@ -70,9 +70,7 @@ impl Prefabricated for Card {
                 Choice {
                     title: "Anathema Device".into(),
                     image: Image::new("resources/legacy/tile269.png"),
-                    details: vec![Description::always(
-                        "Apply <blue 0 anathema> [Self]",
-                    )],
+                    details: vec![Description::always("Apply <blue 0 anathema> [Self]")],
                     cost: Some("<blue 10 mana>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Mana, 10)),
                     effect: Effect::actions(vec![

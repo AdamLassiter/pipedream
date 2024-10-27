@@ -2,7 +2,7 @@ use log::LevelFilter;
 use tui_logger;
 
 use std::{
-    io::{self, stdout, Stdout},
+    io::{self, Stdout, stdout},
     panic,
     thread::{self, JoinHandle},
     time::Duration,

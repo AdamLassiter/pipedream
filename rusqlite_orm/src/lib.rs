@@ -12,7 +12,7 @@ use dao::Dao;
 use proc_macro2::TokenStream;
 use product::Products;
 use quote::{format_ident, quote};
-use syn::{parse_macro_input, ItemStruct};
+use syn::{ItemStruct, parse_macro_input};
 
 #[proc_macro_attribute]
 pub fn orm_autobind(

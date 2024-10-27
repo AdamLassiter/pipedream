@@ -5,7 +5,7 @@ use ratatui::{
 use symbols::border;
 
 use super::SceneComponent;
-use crate::{widget::choice::campaign_choice::CampaignChoice, Renderable};
+use crate::{Renderable, widget::choice::campaign_choice::CampaignChoice};
 use pipedream_domain::choice::Choices;
 
 impl SceneComponent {

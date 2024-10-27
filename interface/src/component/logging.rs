@@ -7,7 +7,7 @@ use ratatui::{
 };
 use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget, TuiWidgetEvent, TuiWidgetState};
 
-use crate::{component::Component, Handler, Renderable, TickResult};
+use crate::{Handler, Renderable, TickResult, component::Component};
 
 pub struct LoggingComponent {
     log: TuiWidgetState,

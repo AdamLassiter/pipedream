@@ -1,6 +1,6 @@
 use rusqlite::Connection;
 
-use crate::{combat_world::COMBAT_START, Prefabricated};
+use crate::{Prefabricated, combat_world::COMBAT_START};
 use pipedream_domain::{
     action::Action,
     card::{CardDao, PlacedCardDao},
@@ -164,10 +164,12 @@ impl Prefabricated for State {
                 scene: Scene {
                     descriptions: vec![
                         Description::always("You are in <green the woods>"),
-                        Description::always("There is a mysterious moss-covered shop in a small grove"),
+                        Description::always(
+                            "There is a mysterious moss-covered shop in a small grove",
+                        ),
                         Description::predicated(
                             "You see a shiny sword lodged in a stone",
-                            player_has_card(Player::Human, "Mossy Sword").inverse()
+                            player_has_card(Player::Human, "Mossy Sword").inverse(),
                         ),
                     ],
                 },
@@ -176,18 +178,27 @@ impl Prefabricated for State {
                         title: "Pick up the sword".into(),
                         image: Image::new("resources/hi-res/sword/png/without_shadow/7.png"),
                         predicate: Some(player_has_card(Player::Human, "Mossy Sword").inverse()),
-                        effect: Effect::actions(vec![give_player_card(Player::Human, "Mossy Sword")]),
+                        effect: Effect::actions(vec![give_player_card(
+                            Player::Human,
+                            "Mossy Sword",
+                        )]),
                         ..Default::default()
                     },
                     Choice {
                         title: "Go into the shop".into(),
-                        image: Image::new("resources/scenery/glade/png/objects_separated/assets_no_shadow/house1.png"),
-                        effect: Effect::transition(Transition::Enter(Location::new("ephemeral:shop"))),
+                        image: Image::new(
+                            "resources/scenery/glade/png/objects_separated/assets_no_shadow/house1.png",
+                        ),
+                        effect: Effect::transition(Transition::Enter(Location::new(
+                            "ephemeral:shop",
+                        ))),
                         ..Default::default()
                     },
                     Choice {
                         title: "Go deeper into the woods".into(),
-                        image: Image::new("resources/scenery/forest/png/assets_no_shadow/luminous_tree1.png"),
+                        image: Image::new(
+                            "resources/scenery/forest/png/assets_no_shadow/luminous_tree1.png",
+                        ),
                         effect: Effect::transition(Transition::Goto(Location::new("woods:depths"))),
                         ..Default::default()
                     },
@@ -202,13 +213,17 @@ impl Prefabricated for State {
                 choices: Choices::manual(vec![
                     Choice {
                         title: "Go deeper into the woods".into(),
-                        image: Image::new("resources/scenery/forest/png/assets_no_shadow/luminous_tree2.png"),
+                        image: Image::new(
+                            "resources/scenery/forest/png/assets_no_shadow/luminous_tree2.png",
+                        ),
                         effect: Effect::transition(Transition::Goto(Location::new("woods:depths"))),
                         ..Default::default()
                     },
                     Choice {
                         title: "Battle <red inner demons>".into(),
-                        image: Image::new("resources/avatars/demon-hires/png/transperent/icon42.png"),
+                        image: Image::new(
+                            "resources/avatars/demon-hires/png/transperent/icon42.png",
+                        ),
                         effect: enter_combat("Dave"),
                         ..Default::default()
                     },
@@ -229,13 +244,17 @@ impl Prefabricated for State {
                 choices: Choices::manual(vec![
                     Choice {
                         title: "Leave the shop".into(),
-                        image: Image::new("resources/avatars/dark-elf-2/png/dark_elves_faces_transperent/character6_face1.png"),
+                        image: Image::new(
+                            "resources/avatars/dark-elf-2/png/dark_elves_faces_transperent/character6_face1.png",
+                        ),
                         effect: Effect::transition(Transition::Leave),
                         ..Default::default()
                     },
                     Choice {
                         title: "Trade a sword for two swords".into(),
-                        image: Image::new("resources/avatars/dark-elf-2/png/dark_elves_faces_transperent/character6_face2.png"),
+                        image: Image::new(
+                            "resources/avatars/dark-elf-2/png/dark_elves_faces_transperent/character6_face2.png",
+                        ),
                         predicate: Some(player_has_card(Player::Human, "Mossy Sword")),
                         effect: Effect::actions(vec![
                             take_player_card(Player::Human, "Mossy Sword"),

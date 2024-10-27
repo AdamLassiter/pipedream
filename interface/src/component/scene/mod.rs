@@ -9,7 +9,7 @@ use log::debug;
 use ratatui::prelude::*;
 
 use super::Component;
-use crate::{widget::choice::ChoicesWidget, Handler, Renderable, TickResult};
+use crate::{Handler, Renderable, TickResult, widget::choice::ChoicesWidget};
 use pipedream_domain::{choice::Choices, image::Image, player::Player, stats::Stats};
 use pipedream_engine::{
     command::{EngineCommand, UiCommand, UiMode},
