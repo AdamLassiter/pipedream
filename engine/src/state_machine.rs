@@ -138,7 +138,8 @@ impl StateMachine {
 
     fn stats(&self, player: &Player) -> (Option<Image>, Option<Stats>) {
         if let Some((_id, Character { image, stats, .. })) =
-            PlayerCharacter::find_player_character(&self.conn, player) {
+            PlayerCharacter::find_player_character(&self.conn, player)
+        {
             (Some(image), Some(stats))
         } else {
             (None, None)

@@ -157,7 +157,9 @@ impl Renderable for CombatChoices {
         };
         let Self(choices, cursor) = self;
 
-        if let Choices::Manual(choices) = choices && !choices.is_empty() {
+        if let Choices::Manual(choices) = choices
+            && !choices.is_empty()
+        {
             let card_size_hint = 32 + 2;
             let carousel_len = choices.len();
             let space_between = (area.width - card_size_hint) / carousel_len as u16;

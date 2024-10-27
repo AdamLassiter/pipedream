@@ -75,4 +75,3 @@ impl Prefabricated for Character {
         .expect("Failed to prefabricate PlayerCharacter");
     }
 }
-

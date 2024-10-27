@@ -81,7 +81,9 @@ pub enum Stat {
     Debuff(Debuff),
 }
 
-#[derive(Clone, Debug, Display, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter)]
+#[derive(
+    Clone, Debug, Display, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, EnumIter,
+)]
 pub enum Resource {
     Health,
     Stamina,

@@ -12,10 +12,10 @@ pub mod description;
 pub mod effect;
 pub mod field;
 pub mod image;
+pub mod location;
 pub mod player;
 pub mod predicate;
 pub mod stats;
 pub mod target;
-pub mod location;
 
 extern crate log;

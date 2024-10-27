@@ -5,12 +5,7 @@ use pipedream_domain::{
     description::Description,
     effect::{Effect, Transition},
 };
-use pipedream_engine::{
-    command::UiMode,
-    scene::Scene,
-    state::State,
-    state_machine::StateMachine,
-};
+use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
 use crate::combat_world::COMBAT_DEFEAT;
 
