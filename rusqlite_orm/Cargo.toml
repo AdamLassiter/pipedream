@@ -1,6 +1,3 @@
-cargo-features = ["edition2024", "codegen-backend"]
-
-
 [package]
 name = "rusqlite_orm"
 version = "0.3.0"

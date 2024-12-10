@@ -1,6 +1,3 @@
-cargo-features = ["edition2024", "codegen-backend"]
-
-
 [package]
 name = "bichannel"
 version = "0.1.0"
