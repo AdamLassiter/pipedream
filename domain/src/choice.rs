@@ -57,6 +57,14 @@ impl Choices {
         Self::Manual(value)
     }
 
+    pub fn cpu(value: Vec<Choice>, default: Choice) -> Self {
+        let choice = value
+            .into_iter()
+            .find(|choice| choice.selectable)
+            .unwrap_or(default);
+        Self::Auto(choice.effect, Duration::from_secs(1))
+    }
+
     pub fn timed(value: Effect, duration: Duration) -> Self {
         Self::Auto(value, duration)
     }

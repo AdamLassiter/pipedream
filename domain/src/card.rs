@@ -25,6 +25,16 @@ impl Card {
             .and_then(|mut cards| cards.pop())
             .map(|card| card.into())
     }
+
+    pub fn get_card_title(
+        conn: &Connection,
+        card_title: &String,
+    ) -> Option<(Option<CardId>, Self)> {
+        CardDao::select_title(conn, card_title)
+            .ok()
+            .and_then(|mut cards| cards.pop())
+            .map(|card| card.into())
+    }
 }
 
 #[derive(Clone, Debug)]

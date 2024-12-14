@@ -1,11 +1,14 @@
-use crate::Prefabricated;
+use crate::{
+    Prefabricated,
+    combat_world::{CPU_END, HUMAN_END},
+};
 use pipedream_domain::{
     action::Action,
     card::{Card, CardDao, PlacedCardDao},
     character::CharacterDao,
     choice::Choice,
     description::Description,
-    effect::Effect,
+    effect::{Effect, Transition},
     field::FieldPlace,
     image::Image,
     predicate::Predicate,
@@ -116,17 +119,17 @@ impl Prefabricated for Card {
                     title: "Immolate".into(),
                     image: Image::new("resources/legacy/tile009.png"),
                     details: vec![
-                        Description::always("Damage <red 100% self health> [Enemy]"),
-                        Description::always("Damage <green 100% self stamina> [Enemy]"),
+                        Description::always("Damage <red 50% self health> [Enemy]"),
+                        Description::always("Damage <green 50% self stamina> [Enemy]"),
                     ],
-                    cost: Some("<red 100% health>, <green 100% stamina>".into()),
+                    cost: Some("<red 50% health>, <green 50% stamina>".into()),
                     predicate: Some(target_has_resource(Target::Me, Resource::Stamina, 1)),
                     effect: Effect::actions(vec![
                         set_expr_target_resource(
                             Target::Me,
                             Resource::Health,
                             format!(
-                                "cast(json_extract(character.stats, '$.resources.{health}') * 0.99 as int)",
+                                "cast(json_extract(stats, '$.resources.{health}') * 0.5 as int)",
                                 health = Resource::Health,
                             ),
                         ),
@@ -134,7 +137,7 @@ impl Prefabricated for Card {
                             Target::Me,
                             Resource::Stamina,
                             format!(
-                                "cast(json_extract(character.stats, '$.resources.{stamina}') * 0.99 as int)",
+                                "cast(json_extract(stats, '$.resources.{stamina}') * 0.5 as int)",
                                 stamina = Resource::Stamina,
                             ),
                         ),
@@ -142,7 +145,7 @@ impl Prefabricated for Card {
                             Target::You,
                             Resource::Health,
                             format!(
-                                "cast(json_extract(character.stats, '$.resources.{health}') * 0.99 as int)",
+                                "cast(json_extract(stats, '$.resources.{health}') * 0.5 as int)",
                                 health = Resource::Health,
                             ),
                         ),
@@ -150,6 +153,27 @@ impl Prefabricated for Card {
                     ..Default::default()
                 },
                 FieldPlace::Deck,
+            ),
+            // System cards
+            Self::new(
+                Choice {
+                    title: "Skip".into(),
+                    image: Image::new("resources/legacy/tile037.png"),
+                    details: vec![Description::always("End turn")],
+                    effect: Effect::transition(Transition::Goto(HUMAN_END.clone())),
+                    ..Default::default()
+                },
+                FieldPlace::Hand,
+            ),
+            Self::new(
+                Choice {
+                    title: "Exhaust".into(),
+                    image: Image::new("resources/legacy/tile037.png"),
+                    details: vec![Description::always("End turn")],
+                    effect: Effect::transition(Transition::Goto(CPU_END.clone())),
+                    ..Default::default()
+                },
+                FieldPlace::Hand,
             ),
         ];
 

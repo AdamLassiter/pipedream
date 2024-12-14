@@ -9,8 +9,7 @@ use pipedream_domain::{
     description::Description,
     effect::{Effect, Transition},
     field::FieldPlace,
-    player::Player,
-    player::PlayerCharacter,
+    player::{Player, PlayerCharacter},
     stats::SleightOfHand,
 };
 use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};

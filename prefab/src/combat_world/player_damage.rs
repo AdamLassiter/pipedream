@@ -28,7 +28,6 @@ pub fn player_damage(player: &Player, machine: &StateMachine) -> State {
         Player::World => unimplemented!(),
     };
 
-    // let end_transition = Transition::Goto(COMBAT_END.clone());
     let action =
         PlayerCharacter::update_player_character(&machine.conn, player, |mut target_char| {
             stat_changes.iter().for_each(
