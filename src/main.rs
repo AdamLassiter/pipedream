@@ -14,9 +14,21 @@ use pipedream_engine::{
 use pipedream_interface::{log_utils::finish_and_panic_threads, tui::Tui};
 use pipedream_prefab::{Generatable, Prefabricated};
 
-fn main() -> io::Result<()> {
-    let mut conn = Connection::open("game.db").expect("Failed to open db");
-    conn.trace(Some(|query| debug!(target:"Database/Query", "{}", query)));
+fn db_init(db_path: &str) -> Connection {
+    let mut conn = Connection::open(db_path).expect("Failed to open db");
+
+    if cfg!(debug_assertions) {
+        conn.execute_batch("PRAGMA jounal_mode = MEMORY;")
+            .expect("Failed to instantiate DB PRAGMAs");
+        conn.trace(Some(|query| debug!(target:"Database/Query", "{}", query)));
+    }
+
+    conn
+}
+
+pub fn main() -> io::Result<()> {
+    let conn = db_init("game.db");
+
     Card::initialise(&conn);
     Character::initialise(&conn);
     State::initialise(&conn);

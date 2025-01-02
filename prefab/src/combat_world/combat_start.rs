@@ -39,7 +39,7 @@ pub fn combat_start(machine: &StateMachine) -> State {
                     enemy_name = Some(character.name);
                 }
                 Player::World => {
-                    unreachable!();
+                    unimplemented!();
                 }
             }
 

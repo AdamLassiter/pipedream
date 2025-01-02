@@ -47,6 +47,13 @@ impl TargetCharacter {
         updated.update_action(character_id)
     }
 
+    pub fn delete_target_characters() -> Vec<Action> {
+        vec![
+            Action::pure(TargetCharacterDao::drop_table_sql()),
+            Action::pure(TargetCharacterDao::create_table_sql()),
+        ]
+    }
+
     pub fn get_target(conn: &Connection, target: &Target) -> (TargetCharacterId, TargetCharacter) {
         let (id, target_char) = TargetCharacterDao::select_target(conn, target)
             .unwrap_or_else(|e| panic!("Failed to find Target for {:?}: {}", target, e))

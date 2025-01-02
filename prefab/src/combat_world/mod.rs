@@ -1,4 +1,5 @@
 mod combat_defeat;
+mod combat_end;
 mod combat_start;
 mod combat_victory;
 mod player_damage;
@@ -13,6 +14,7 @@ use pipedream_domain::{location::Location, player::Player};
 use pipedream_engine::state::DynamicStateFn;
 
 use combat_defeat::combat_defeat;
+use combat_end::combat_end;
 use combat_start::combat_start;
 use combat_victory::combat_victory;
 use player_damage::player_damage;
@@ -45,6 +47,7 @@ impl Generatable for BTreeMap<Location, DynamicStateFn> {
         BTreeMap::from_iter(vec![
             // Global
             (COMBAT_START.clone(), DynamicStateFn::new(combat_start)),
+            (COMBAT_END.clone(), DynamicStateFn::new(combat_end)),
             (COMBAT_VICTORY.clone(), DynamicStateFn::new(combat_victory)),
             (COMBAT_DEFEAT.clone(), DynamicStateFn::new(combat_defeat)),
             // Human

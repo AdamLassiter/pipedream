@@ -9,7 +9,7 @@ use pipedream_engine::{command::UiMode, state_machine::StateMachine};
 
 use pipedream_engine::state::State;
 
-use crate::combat_world::{COMBAT_DEFEAT, COMBAT_VICTORY};
+use crate::combat_world::COMBAT_END;
 
 use super::{CPU_END, CPU_START, HUMAN_END, HUMAN_START};
 
@@ -25,22 +25,19 @@ pub fn turn_end(player: &Player, machine: &StateMachine) -> State {
         Player::World => unimplemented!(),
     };
 
-    let next_location = if *human
+    let human_health = *human
         .stats
         .resources
         .get(&Resource::Health)
-        .expect("Failed to find Human health")
-        <= 0
-    {
-        COMBAT_DEFEAT.clone()
-    } else if *cpu
+        .expect("Failed to find Human health");
+    let cpu_health = *cpu
         .stats
         .resources
         .get(&Resource::Health)
-        .expect("Failed to find Cpu health")
-        <= 0
-    {
-        COMBAT_VICTORY.clone()
+        .expect("Failed to find Cpu health");
+
+    let next_location = if human_health <= 0 || cpu_health <= 0 {
+        COMBAT_END.clone()
     } else {
         match player {
             Player::Human => CPU_START.clone(),
@@ -49,7 +46,7 @@ pub fn turn_end(player: &Player, machine: &StateMachine) -> State {
         }
     };
 
-    let actions = if next_location == *CPU_START || next_location == *CPU_END {
+    let actions = if next_location == *HUMAN_START || next_location == *CPU_START {
         vec![
             TargetCharacter::update_action(&machine.conn, &Target::Me, |mut target_char| {
                 target_char.target = Target::You;

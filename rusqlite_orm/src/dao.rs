@@ -62,24 +62,40 @@ impl Dao {
         }
     }
 
-    fn create(&self, table_name: &String) -> TokenStream {
+    fn create_sql(&self, table_name: &String) -> TokenStream {
         let table_defn = self.as_table_defn();
         let create_sql = format!("create table if not exists {} ({})", table_name, table_defn);
 
         quote! {
+            pub fn create_table_sql() -> String {
+                #create_sql.into()
+            }
+        }
+    }
+
+    fn create(&self) -> TokenStream {
+        quote! {
             pub fn create_table(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
-                conn.execute(#create_sql, ())?;
+                conn.execute(&Self::create_table_sql(), ())?;
                 Ok(())
             }
         }
     }
 
-    fn drop(&self, table_name: &String) -> TokenStream {
+    fn drop_sql(&self, table_name: &String) -> TokenStream {
         let drop_sql = format!("drop table if exists {}", table_name);
 
         quote! {
+            pub fn drop_table_sql() -> String {
+                #drop_sql.into()
+            }
+        }
+    }
+
+    fn drop(&self) -> TokenStream {
+        quote! {
             pub fn drop_table(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
-                conn.execute(#drop_sql, ())?;
+                conn.execute(&Self::drop_table_sql(), ())?;
                 Ok(())
             }
         }
@@ -148,8 +164,10 @@ impl Dao {
         let ident_dao = format_ident!("{}Dao", ident);
 
         let table_name_fn = self.table_name(table_name);
-        let create_fn = self.create(table_name);
-        let drop_fn = self.drop(table_name);
+        let create_sql_fn = self.create_sql(table_name);
+        let create_fn = self.create();
+        let drop_sql_fn = self.drop_sql(table_name);
+        let drop_fn = self.drop();
         let insert_fn = self.insert(ident_id, table_name);
         let select_sql_fn = self.select_sql(table_name);
         let update_sql_fn = self.update_sql(table_name);
@@ -194,8 +212,12 @@ impl Dao {
             impl #ident_dao {
                 #table_name_fn
 
+                #create_sql_fn
                 #create_fn
+
+                #drop_sql_fn
                 #drop_fn
+
                 #insert_fn
 
                 #select_sql_fn

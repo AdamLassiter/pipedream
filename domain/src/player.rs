@@ -57,4 +57,11 @@ impl PlayerCharacter {
         let updated = update(character);
         updated.update_action(character_id)
     }
+
+    pub fn delete_player_characters() -> Vec<Action> {
+        vec![
+            Action::pure(PlayerCharacterDao::drop_table_sql()),
+            Action::pure(PlayerCharacterDao::create_table_sql()),
+        ]
+    }
 }

@@ -72,7 +72,9 @@ pub fn player_damage(player: &Player, machine: &StateMachine) -> State {
                                 .stats
                                 .max_resources
                                 .get(&Resource::Health)
-                                .expect("Failed to get Player max health");
+                                .unwrap_or_else(|| {
+                                    panic!("Failed to get {:?} for {:?}", Resource::Health, player)
+                                });
                             if let Some(health) =
                                 target_char.stats.resources.get_mut(&Resource::Health)
                             {

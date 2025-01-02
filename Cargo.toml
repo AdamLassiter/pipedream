@@ -11,12 +11,12 @@ edition = "2024"
 
 [workspace]
 members = [
-    "bichannel",
-    "domain",
-    "engine",
-    "interface",
-    "prefab",
-    "rusqlite_orm",
+  "bichannel",
+  "domain",
+  "engine",
+  "interface",
+  "prefab",
+  "rusqlite_orm",
 ]
 
 
@@ -56,3 +56,4 @@ pipedream_prefab = { path = "prefab" }
 
 log.workspace = true
 rusqlite.workspace = true
+

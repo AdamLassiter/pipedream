@@ -113,4 +113,11 @@ impl PlacedCard {
             })
             .collect()
     }
+
+    pub fn delete_placed_cards() -> Vec<Action> {
+        vec![
+            Action::pure(PlacedCardDao::drop_table_sql()),
+            Action::pure(PlacedCardDao::create_table_sql()),
+        ]
+    }
 }
