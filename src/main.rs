@@ -5,7 +5,7 @@ use log::debug;
 use rusqlite::Connection;
 
 use pipedream::game_coordinator::GameCoordinator;
-use pipedream_domain::{card::Card, character::Character, location::Location};
+use pipedream_domain::{card::Card, character::Character, location::Location, message::MessageLog};
 use pipedream_engine::{
     command::UiMode,
     state::{DynamicStateFn, State},
@@ -18,8 +18,8 @@ fn db_init(db_path: &str) -> Connection {
     let mut conn = Connection::open(db_path).expect("Failed to open db");
 
     if cfg!(debug_assertions) {
-        conn.execute_batch("PRAGMA jounal_mode = MEMORY;")
-            .expect("Failed to instantiate DB PRAGMAs");
+        conn.pragma_update(None, "journal_mode", "MEMORY")
+            .expect("Failed to set DB PRAGMA");
         conn.trace(Some(|query| debug!(target:"Database/Query", "{}", query)));
     }
 
@@ -31,6 +31,7 @@ pub fn main() -> io::Result<()> {
 
     Card::initialise(&conn);
     Character::initialise(&conn);
+    MessageLog::initialise(&conn);
     State::initialise(&conn);
 
     let (mut monitor, monitor_thread) = BichannelMonitor::spawn();

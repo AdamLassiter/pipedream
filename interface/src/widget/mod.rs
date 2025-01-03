@@ -3,3 +3,4 @@ pub mod image;
 pub mod instructions;
 pub mod scene;
 pub mod stats;
+pub mod location;

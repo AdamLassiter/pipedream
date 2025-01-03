@@ -101,9 +101,31 @@ impl Dao {
         }
     }
 
-    fn insert(&self, ident_id: &Ident, table_name: &String) -> TokenStream {
+    fn all(&self, table_name: &String) -> TokenStream {
+        let all_sql = format!("select * from {}", table_name);
+
+        quote! {
+            pub fn all(conn: &rusqlite::Connection) -> rusqlite::Result<std::vec::Vec<Self>> {
+                Ok(conn.prepare(#all_sql)?
+                    .query_and_then([], |row| serde_rusqlite::from_row::<Self>(row))?
+                    .map(|row| row.expect("Sql for Column was not valid Json"))
+                    .collect::<std::vec::Vec<Self>>())
+            }
+        }
+    }
+
+    fn insert_sql(&self, table_name: &String) -> TokenStream {
         let row_defn = self.as_row_defn();
         let insert_sql = format!("insert into {} values ({})", table_name, row_defn);
+
+        quote! {
+            pub fn insert_sql() -> String {
+                #insert_sql.into()
+            }
+        }
+    }
+
+    fn insert(&self, ident_id: &Ident) -> TokenStream {
         let dao_fieldnames = TokenStream::from_iter(
             self.bindings
                 .iter()
@@ -115,8 +137,8 @@ impl Dao {
             pub fn insert(self, conn: &rusqlite::Connection) -> rusqlite::Result<#ident_id> {
                 let Self {
                     #dao_fieldnames
-                } = self;
-                conn.prepare(#insert_sql)?
+                } = &self;
+                conn.prepare(&Self::insert_sql())?
                     .execute(rusqlite::named_params! {#values})?;
                 Ok(#ident_id(conn.last_insert_rowid()))
             }
@@ -168,7 +190,9 @@ impl Dao {
         let create_fn = self.create();
         let drop_sql_fn = self.drop_sql(table_name);
         let drop_fn = self.drop();
-        let insert_fn = self.insert(ident_id, table_name);
+        let all_fn = self.all(table_name);
+        let insert_sql_fn = self.insert_sql(table_name);
+        let insert_fn = self.insert(ident_id);
         let select_sql_fn = self.select_sql(table_name);
         let update_sql_fn = self.update_sql(table_name);
         let fields = TokenStream::from_iter(bindings.iter().map(Column::as_struct_defn));
@@ -218,6 +242,9 @@ impl Dao {
                 #drop_sql_fn
                 #drop_fn
 
+                #all_fn
+
+                #insert_sql_fn
                 #insert_fn
 
                 #select_sql_fn

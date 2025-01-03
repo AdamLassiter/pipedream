@@ -23,6 +23,12 @@ impl SceneComponent {
             .unwrap_or(0) as u16;
 
         // Layouts
+        let location_line = Rect {
+            x: area.x,
+            y: area.y - 1,
+            width: area.width,
+            height: 1,
+        };
         let [stats_area, scene_area, cards_area] = Layout::vertical([
             Constraint::Length(portrait_height_hint),
             Constraint::Length(scene_size_hint),
@@ -39,6 +45,9 @@ impl SceneComponent {
                 .areas(enemy_stats_area);
 
         // Render
+        if let Some(location) = self.location.as_ref() {
+            location.render(location_line, buf);
+        }
         if let Some(scene) = self.scene.as_ref() {
             scene.render(scene_area, buf);
         }

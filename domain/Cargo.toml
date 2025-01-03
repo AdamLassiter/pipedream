@@ -12,7 +12,7 @@ rusqlite.workspace = true
 serde_rusqlite.workspace = true
 
 rand.workspace = true
-
+chrono.workspace = true
 log.workspace = true
 
 strum.workspace = true

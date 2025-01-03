@@ -1,8 +1,9 @@
-use std::time::Duration;
-
 use log::debug;
 
-use crate::combat_world::{HUMAN_DRAW, HUMAN_PLAY};
+use crate::{
+    COMBAT_ADVANCE_TIME,
+    combat_world::{HUMAN_DRAW, HUMAN_PLAY},
+};
 use pipedream_domain::{
     card::PlacedCard,
     choice::Choices,
@@ -55,7 +56,7 @@ pub fn player_draw(player: &Player, machine: &StateMachine) -> State {
                 transition: Transition::Goto(next_location),
                 actions: deck_draw,
             },
-            Duration::from_secs(2),
+            COMBAT_ADVANCE_TIME,
         ),
         ui_mode: UiMode::Combat,
     }

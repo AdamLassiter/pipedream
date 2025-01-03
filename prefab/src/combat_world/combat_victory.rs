@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use pipedream_domain::{
     choice::Choices,
     description::Description,
@@ -7,7 +5,7 @@ use pipedream_domain::{
 };
 use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
-use crate::combat_world::COMBAT_VICTORY;
+use crate::{COMBAT_ADVANCE_TIME, combat_world::COMBAT_VICTORY};
 
 pub fn combat_victory(_machine: &StateMachine) -> State {
     State {
@@ -20,7 +18,7 @@ pub fn combat_victory(_machine: &StateMachine) -> State {
                 transition: Transition::Leave,
                 ..Default::default()
             },
-            Duration::from_secs(2),
+            COMBAT_ADVANCE_TIME,
         ),
         ui_mode: UiMode::Combat,
     }

@@ -10,7 +10,9 @@ use ratatui::prelude::*;
 
 use super::Component;
 use crate::{Handler, Renderable, TickResult, widget::choice::ChoicesWidget};
-use pipedream_domain::{choice::Choices, image::Image, player::Player, stats::Stats};
+use pipedream_domain::{
+    choice::Choices, image::Image, location::LocationStack, player::Player, stats::Stats,
+};
 use pipedream_engine::{
     command::{EngineCommand, UiCommand, UiMode},
     scene::Scene,
@@ -19,6 +21,7 @@ use pipedream_engine::{
 pub struct SceneComponent {
     ui_mode: UiMode,
     pub channel: Bichannel<EngineCommand, UiCommand>,
+    pub location: Option<LocationStack>,
     pub scene: Option<Scene>,
     pub choices: Option<ChoicesWidget>,
     pub player_image: Option<Image>,
@@ -32,6 +35,7 @@ impl SceneComponent {
     pub fn new(channel: Bichannel<EngineCommand, UiCommand>) -> Self {
         Self {
             channel,
+            location: None,
             scene: None,
             choices: None,
             player_image: None,
@@ -81,6 +85,7 @@ impl Handler for SceneComponent {
         while let Ok(ev) = self.channel.try_recv() {
             debug!(target:"Interface/Event/Command", "{:?}", ev);
             match ev {
+                UiCommand::ShowLocation(loc) => self.location = Some(loc),
                 UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowChoices(opts) => {
                     self.choices = Some(ChoicesWidget::new(opts, &self.ui_mode))

@@ -32,6 +32,12 @@ impl SceneComponent {
         };
 
         // Layouts
+        let location_line = Rect {
+            x: area.x,
+            y: area.y - 1,
+            width: area.width,
+            height: 1,
+        };
         let [description_area, details_area] =
             Layout::horizontal([Constraint::Fill(1), Constraint::Fill(1)]).areas(area);
         let [portrait_and_stats_area, scene_and_choices_area] = Layout::vertical([
@@ -49,6 +55,9 @@ impl SceneComponent {
         .areas(scene_and_choices_area);
 
         // Render
+        if let Some(location) = self.location.as_ref() {
+            location.render(location_line, buf);
+        }
         if let Some(scene) = self.scene.as_ref() {
             scene.render(scene_area, buf);
         }

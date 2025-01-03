@@ -14,7 +14,7 @@ use pipedream_domain::{
     description::Description,
     effect::{Effect, Transition},
     image::Image,
-    location::Location,
+    location::{Location, LocationStack},
     player::{Player, PlayerCharacter},
     predicate::Predicate,
     stats::Stats,
@@ -79,6 +79,12 @@ impl StateMachine {
 
     pub fn next_options(&mut self) -> Vec<UiCommand> {
         let (location, ui_mode) = self.location();
+        let locations = LocationStack(
+            self.location_stack
+                .iter()
+                .map(|(location, _)| location.clone())
+                .collect::<Vec<_>>(),
+        );
         let State { scene, choices, .. } = self.state(location);
         let mut scene = scene.clone();
         let mut choices = choices.clone();
@@ -106,6 +112,7 @@ impl StateMachine {
             choices.retain(|Choice { predicate, .. }| test(&self.conn, predicate));
         }
 
+        debug!(target:"Engine/StateMachine/Location", "{:?}", location);
         debug!(target:"Engine/StateMachine/UiMode", "{:?}", ui_mode);
         debug!(target:"Engine/StateMachine/ShowScene", "{:?}", &scene);
         debug!(target:"Engine/StateMachine/ShowChoices", "{:?}", &choices);
@@ -115,6 +122,7 @@ impl StateMachine {
             UiCommand::ShowPortrait(Player::Cpu, cpu_image),
             UiCommand::ShowStats(Player::Human, human_stats),
             UiCommand::ShowStats(Player::Cpu, cpu_stats),
+            UiCommand::ShowLocation(locations),
             UiCommand::ShowScene(scene),
             UiCommand::ShowChoices(choices),
         ]

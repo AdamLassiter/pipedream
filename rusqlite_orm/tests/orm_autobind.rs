@@ -62,18 +62,29 @@ fn setup() -> Result<Connection> {
 }
 
 #[test]
+fn all() -> Result<()> {
+    let conn = setup()?;
+
+    let daos = OrmDao::all(&conn)?;
+    let res = daos.into_iter().map(OrmDao::into).collect::<Vec<Orm>>();
+    assert_eq!(res, vec![foobar()]);
+
+    Ok(())
+}
+
+#[test]
 fn select() -> Result<()> {
     let conn = setup()?;
 
     let daos = OrmDao::select_bar(&conn, &42)?;
     let res = daos.into_iter().map(OrmDao::into).collect::<Vec<Orm>>();
-    assert_eq!(res, vec![foobar().into()]);
+    assert_eq!(res, vec![foobar()]);
 
     assert_eq!(OrmDao::select_bar(&conn, &1)?, vec![]);
 
     let daos = QuxDao::select_orm_id(&conn, &OrmId(1))?;
     let res = daos.into_iter().map(QuxDao::into).collect::<Vec<Qux>>();
-    assert_eq!(res, vec![qux(OrmId(1)).into()]);
+    assert_eq!(res, vec![qux(OrmId(1))]);
 
     Ok(())
 }
@@ -127,7 +138,7 @@ fn product() -> Result<()> {
 
     let daos = OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &42)?;
     let res = daos.into_iter().map(OrmDao::into).collect::<Vec<Orm>>();
-    assert_eq!(res, vec![foobar().into()]);
+    assert_eq!(res, vec![foobar()]);
 
     assert_eq!(
         OrmDao::select_foo_and_bar(&conn, &"foo1".into(), &1)?,

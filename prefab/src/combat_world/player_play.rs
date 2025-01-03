@@ -1,7 +1,10 @@
 use log::debug;
 use rusqlite::Connection;
 
-use crate::combat_world::{CPU_DAMAGE, CPU_END, CPU_PLAY, HUMAN_DAMAGE, HUMAN_END, HUMAN_PLAY};
+use crate::{
+    combat_world::{CPU_DAMAGE, CPU_END, CPU_PLAY, HUMAN_DAMAGE, HUMAN_END, HUMAN_PLAY},
+    states::insert_message,
+};
 use pipedream_domain::{
     card::{Card, PlacedCard},
     choice::{Choice, Choices},
@@ -13,7 +16,12 @@ use pipedream_domain::{
 use pipedream_engine::{command::UiMode, scene::Scene, state::State, state_machine::StateMachine};
 
 pub fn player_play(player: &Player, machine: &StateMachine) -> State {
-    let (character_id, _character) = PlayerCharacter::get_player_character(&machine.conn, player);
+    let colour = match player {
+        Player::Human => "yellow",
+        Player::Cpu => "red",
+        Player::World => "green",
+    };
+    let (character_id, character) = PlayerCharacter::get_player_character(&machine.conn, player);
     let player_hand = PlacedCard::get_placed_cards(&machine.conn, &character_id, &FieldPlace::Hand);
     debug!(target:"Prefab/Combat/Hand", "{:?}", player_hand);
 
@@ -52,7 +60,11 @@ pub fn player_play(player: &Player, machine: &StateMachine) -> State {
             Choice {
                 effect: Effect {
                     transition: Transition::Goto(next_location.clone()),
-                    ..card.choice.effect
+                    actions: [card.choice.effect.actions, vec![insert_message(format!(
+                        "<{} {}> played <blue {}>",
+                        colour, character.name, card.choice.title
+                    ))]]
+                    .concat(),
                 },
                 selectable,
                 ..card.choice

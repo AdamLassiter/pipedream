@@ -13,6 +13,8 @@ use crossbeam_channel::{
     Receiver, RecvError, SendError, Sender, TryRecvError, TrySendError, unbounded,
 };
 
+const POLL_INTERVAL: Duration = Duration::from_millis(1);
+
 pub struct Bichannel<Send, Recv>(Sender<Send>, Receiver<Recv>);
 
 #[derive(Clone)]
@@ -67,7 +69,7 @@ impl<Left: Send + Sync + Clone, Right: Send + Sync + Clone> BichannelMonitor<Lef
                             });
                         }
                     }
-                    thread::sleep(Duration::from_millis(1));
+                    thread::sleep(POLL_INTERVAL);
                 }
             });
         }

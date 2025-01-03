@@ -21,7 +21,7 @@ impl Column {
     pub fn as_value(&self) -> TokenStream {
         let ident = &self.ident;
         let ident_key = self.ident_key();
-        quote! { #ident_key: #ident }
+        quote! { #ident_key: *#ident }
     }
 
     pub fn as_serde_value(&self) -> TokenStream {

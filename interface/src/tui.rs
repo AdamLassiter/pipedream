@@ -1,7 +1,4 @@
-use std::{
-    thread::{self, JoinHandle},
-    time::Duration,
-};
+use std::thread::{self, JoinHandle};
 
 use bichannel::{Bichannel, BichannelMonitor};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
@@ -22,6 +19,7 @@ use ratatui::{
 use strum::{Display, EnumCount, FromRepr, VariantArray};
 
 use crate::{
+    EVENT_POLL_INTERVAL,
     component::{
         Component, inventory::InventoryComponent, logging::LoggingComponent, scene::SceneComponent,
     },
@@ -97,9 +95,7 @@ impl Tui {
     }
 
     fn handle_events(&mut self) {
-        while event::poll(Duration::from_millis(10))
-            .expect("Event pollng error while handling events")
-        {
+        while event::poll(EVENT_POLL_INTERVAL).expect("Event pollng error while handling events") {
             match event::read().expect("Event read error while handling events") {
                 Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                     self.handle_key_event(key_event)

@@ -4,7 +4,8 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    card::Card, description::Description, effect::Effect, image::Image, predicate::Predicate,
+    AUTO_CPU_TIME, AUTO_SKIP_TIME, card::Card, description::Description, effect::Effect,
+    image::Image, predicate::Predicate,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,7 +63,7 @@ impl Choices {
             .into_iter()
             .find(|choice| choice.selectable)
             .unwrap_or(default);
-        Self::Auto(choice.effect, Duration::from_secs(1))
+        Self::Auto(choice.effect, AUTO_CPU_TIME)
     }
 
     pub fn timed(value: Effect, duration: Duration) -> Self {
@@ -70,6 +71,6 @@ impl Choices {
     }
 
     pub fn skip(value: Effect) -> Self {
-        Self::Auto(value, Duration::from_secs(0))
+        Self::Auto(value, AUTO_SKIP_TIME)
     }
 }

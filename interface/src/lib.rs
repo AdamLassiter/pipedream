@@ -3,6 +3,8 @@
 #![feature(str_split_remainder)]
 #![feature(let_chains)]
 
+use std::time::Duration;
+
 use crossterm::event::KeyEvent;
 use ratatui::{buffer::Buffer, layout::Rect};
 
@@ -15,6 +17,9 @@ pub mod tui;
 pub mod widget;
 
 extern crate log;
+
+const CULL_POLL_INTERVAL: Duration = Duration::from_millis(10);
+const EVENT_POLL_INTERVAL: Duration = Duration::from_millis(10);
 
 pub trait Controllable {
     fn handle_key_event(&mut self, key_event: KeyEvent);

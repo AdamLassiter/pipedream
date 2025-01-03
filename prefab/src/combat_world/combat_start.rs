@@ -1,9 +1,10 @@
-use std::time::Duration;
-
 use log::debug;
 use strum::IntoEnumIterator;
 
-use crate::combat_world::{COMBAT_START, HUMAN_DRAW};
+use crate::{
+    COMBAT_ADVANCE_TIME,
+    combat_world::{COMBAT_START, HUMAN_DRAW},
+};
 use pipedream_domain::{
     card::{Card, PlacedCard},
     choice::Choices,
@@ -18,7 +19,9 @@ pub fn combat_start(machine: &StateMachine) -> State {
     let mut enemy_name = None;
 
     Player::iter()
-        .filter(|player| *player != Player::World)
+        .filter(
+            |player| *player != Player::World, /* Remove filter if implement World */
+        )
         .for_each(|player| {
             let (character_id, character) =
                 PlayerCharacter::get_player_character(&machine.conn, &player);
@@ -39,7 +42,7 @@ pub fn combat_start(machine: &StateMachine) -> State {
                     enemy_name = Some(character.name);
                 }
                 Player::World => {
-                    unimplemented!();
+                    unimplemented!("Remove above filter if implemented");
                 }
             }
 
@@ -67,7 +70,7 @@ pub fn combat_start(machine: &StateMachine) -> State {
             descriptions: vec![
                 Description::always("A challenger appears!"),
                 Description::always(format!(
-                    "{:?} is looking for a fight",
+                    "<red {}> is looking for a fight",
                     enemy_name.unwrap_or("Nobody".to_string())
                 )),
             ],
@@ -77,7 +80,7 @@ pub fn combat_start(machine: &StateMachine) -> State {
                 transition: Transition::Goto(HUMAN_DRAW.clone()),
                 ..Default::default()
             },
-            Duration::from_secs(2),
+            COMBAT_ADVANCE_TIME,
         ),
         ui_mode: UiMode::Combat,
     }

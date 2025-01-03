@@ -11,6 +11,7 @@ use pipedream_domain::{
     field::FieldPlace,
     image::Image,
     location::Location,
+    message::{Message, MessageDao},
     player::{Player, PlayerCharacterDao},
     predicate::Predicate,
 };
@@ -19,6 +20,19 @@ use pipedream_engine::{
     scene::Scene,
     state::{State, StateDao},
 };
+
+pub fn insert_message<T>(message: T) -> Action
+where
+    T: Into<String>,
+{
+    let message = Message::new(message);
+    let insert_sql = MessageDao::insert_sql();
+    let params = vec![
+        (":timestamp", serde_json::to_string(&message.timestamp)),
+        (":message", serde_json::to_string(&message.message)),
+    ];
+    Action::parameterised(insert_sql, params)
+}
 
 fn player_has_card<T>(player: Player, card_name: T) -> Predicate
 where
@@ -163,29 +177,29 @@ impl Prefabricated for State {
                 location: Location::new("woods:entrance"),
                 scene: Scene {
                     descriptions: vec![
-                        Description::always("You are in <green the woods>"),
+                        Description::always("You are in the <green woods>"),
                         Description::always(
-                            "There is a mysterious moss-covered shop in a small grove",
+                            "There is a mysterious moss-covered <green shop> in a small grove",
                         ),
                         Description::predicated(
-                            "You see a shiny sword lodged in a stone",
+                            "You see a shiny <blue sword> lodged in a stone",
                             player_has_card(Player::Human, "Mossy Sword").inverse(),
                         ),
                     ],
                 },
                 choices: Choices::manual(vec![
                     Choice {
-                        title: "Pick up the sword".into(),
+                        title: "Pick up the <blue sword>".into(),
                         image: Image::new("resources/hi-res/sword/png/without_shadow/7.png"),
                         predicate: Some(player_has_card(Player::Human, "Mossy Sword").inverse()),
-                        effect: Effect::actions(vec![give_player_card(
-                            Player::Human,
-                            "Mossy Sword",
-                        )]),
+                        effect: Effect::actions(vec![
+                            give_player_card(Player::Human, "Mossy Sword"),
+                            insert_message("You acquired a <blue sword>"),
+                        ]),
                         ..Default::default()
                     },
                     Choice {
-                        title: "Go into the shop".into(),
+                        title: "Go into the <green shop>".into(),
                         image: Image::new(
                             "resources/scenery/glade/png/objects_separated/assets_no_shadow/house1.png",
                         ),
@@ -195,7 +209,7 @@ impl Prefabricated for State {
                         ..Default::default()
                     },
                     Choice {
-                        title: "Go deeper into the woods".into(),
+                        title: "Go deeper into the <green woods>".into(),
                         image: Image::new(
                             "resources/scenery/forest/png/assets_no_shadow/luminous_tree1.png",
                         ),
@@ -208,11 +222,11 @@ impl Prefabricated for State {
             Self {
                 location: Location::new("woods:depths"),
                 scene: Scene {
-                    descriptions: vec![Description::always("You are lost in <green the woods>")],
+                    descriptions: vec![Description::always("You are lost in the <green woods>")],
                 },
                 choices: Choices::manual(vec![
                     Choice {
-                        title: "Go deeper into the woods".into(),
+                        title: "Go deeper into the <green woods>".into(),
                         image: Image::new(
                             "resources/scenery/forest/png/assets_no_shadow/luminous_tree2.png",
                         ),
@@ -234,16 +248,18 @@ impl Prefabricated for State {
                 location: Location::new("ephemeral:shop"),
                 scene: Scene {
                     descriptions: vec![
-                        Description::always("The shop is cozy, and staffed by a weathered crone"),
+                        Description::always(
+                            "The <blue shop> is cozy, and staffed by a <yellow weathered crone>",
+                        ),
                         Description::predicated(
-                            "Her eyes keep flitting to the sword at your side",
+                            "Her eyes keep flitting to the <blue sword> at your side",
                             player_has_card(Player::Human, "Mossy Sword"),
                         ),
                     ],
                 },
                 choices: Choices::manual(vec![
                     Choice {
-                        title: "Leave the shop".into(),
+                        title: "Leave the <green shop>".into(),
                         image: Image::new(
                             "resources/avatars/dark-elf-2/png/dark_elves_faces_transperent/character6_face1.png",
                         ),
@@ -251,7 +267,7 @@ impl Prefabricated for State {
                         ..Default::default()
                     },
                     Choice {
-                        title: "Trade a sword for two swords".into(),
+                        title: "Trade a <blue sword> for <blue two swords>".into(),
                         image: Image::new(
                             "resources/avatars/dark-elf-2/png/dark_elves_faces_transperent/character6_face2.png",
                         ),

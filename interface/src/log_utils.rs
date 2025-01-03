@@ -5,11 +5,12 @@ use std::{
     io::{self, Stdout, stdout},
     panic,
     thread::{self, JoinHandle},
-    time::Duration,
 };
 
 use crossterm::{execute, terminal::*};
 use ratatui::prelude::*;
+
+use crate::CULL_POLL_INTERVAL;
 
 pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 
@@ -22,9 +23,10 @@ pub fn init() -> io::Result<Tui> {
     if true {
         tui_logger::init_logger(LevelFilter::Trace).expect("Failed to initialise logger");
         tui_logger::set_default_level(LevelFilter::Trace);
-        // } else {
-        //     init_logfile();
     }
+    // } else {
+    //     init_logfile();
+    // }
 
     panic::update_hook(move |prev, info| {
         let _ = restore();
@@ -43,7 +45,7 @@ pub fn restore() -> io::Result<()> {
 pub fn finish_and_panic_threads(threads: Vec<JoinHandle<()>>) {
     // wait for a thread to finish
     while !(threads.iter().any(|thread| thread.is_finished())) {
-        thread::sleep(Duration::from_millis(100))
+        thread::sleep(CULL_POLL_INTERVAL)
     }
 
     // panic first joined errored thread
