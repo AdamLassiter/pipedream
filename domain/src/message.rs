@@ -3,6 +3,9 @@ use rusqlite::Connection;
 use rusqlite_orm::orm_autobind;
 use serde::{Deserialize, Serialize, Serializer};
 
+use crate::action::Action;
+
+#[derive(Clone, Debug)]
 #[orm_autobind]
 pub struct Message {
     pub timestamp: Timestamp,
@@ -17,7 +20,7 @@ impl Message {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Timestamp {
     #[serde(serialize_with = "default_timestamp")]
     datetime: Option<DateTime<Local>>,
@@ -47,9 +50,13 @@ impl MessageLog {
         Self(messages)
     }
 
-    // pub fn insert_message(conn: &Connection, message: Message) {
-    //     MessageDao::from(message)
-    //         .insert(conn)
-    //         .expect("Failed to write message to log");
-    // }
+    pub fn insert_message(message: String) -> Action {
+        let message = Message::new(message);
+        let insert_sql = MessageDao::insert_sql();
+        let params = vec![
+            (":timestamp", serde_json::to_string(&message.timestamp)),
+            (":message", serde_json::to_string(&message.message)),
+        ];
+        Action::parameterised(insert_sql, params)
+    }
 }

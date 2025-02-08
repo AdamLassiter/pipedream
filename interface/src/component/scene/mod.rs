@@ -85,11 +85,14 @@ impl Handler for SceneComponent {
         while let Ok(ev) = self.channel.try_recv() {
             debug!(target:"Interface/Event/Command", "{:?}", ev);
             match ev {
-                UiCommand::ShowLocation(loc) => self.location = Some(loc),
-                UiCommand::ShowScene(scen) => self.scene = Some(scen),
+                UiCommand::ChangeMode(mode) => {
+                    self.ui_mode = mode;
+                }
                 UiCommand::ShowChoices(opts) => {
                     self.choices = Some(ChoicesWidget::new(opts, &self.ui_mode))
                 }
+                UiCommand::ShowLocation(loc) => self.location = Some(loc),
+                UiCommand::ShowMessage(_msg) => { /* unimplemented */ }
                 UiCommand::ShowPortrait(player, image) => match player {
                     Player::Human => {
                         self.player_image = image;
@@ -99,6 +102,7 @@ impl Handler for SceneComponent {
                     }
                     _ => unimplemented!(),
                 },
+                UiCommand::ShowScene(scen) => self.scene = Some(scen),
                 UiCommand::ShowStats(player, stats) => match player {
                     Player::Human => {
                         self.player_stats = stats;
@@ -108,9 +112,6 @@ impl Handler for SceneComponent {
                     }
                     _ => unimplemented!(),
                 },
-                UiCommand::ChangeMode(mode) => {
-                    self.ui_mode = mode;
-                }
             }
             should_redraw = true;
         }

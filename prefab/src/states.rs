@@ -11,7 +11,7 @@ use pipedream_domain::{
     field::FieldPlace,
     image::Image,
     location::Location,
-    message::{Message, MessageDao},
+    message::MessageLog,
     player::{Player, PlayerCharacterDao},
     predicate::Predicate,
 };
@@ -21,17 +21,11 @@ use pipedream_engine::{
     state::{State, StateDao},
 };
 
-pub fn insert_message<T>(message: T) -> Action
+pub fn message<T>(message: T) -> Action
 where
     T: Into<String>,
 {
-    let message = Message::new(message);
-    let insert_sql = MessageDao::insert_sql();
-    let params = vec![
-        (":timestamp", serde_json::to_string(&message.timestamp)),
-        (":message", serde_json::to_string(&message.message)),
-    ];
-    Action::parameterised(insert_sql, params)
+    MessageLog::insert_message(message.into())
 }
 
 fn player_has_card<T>(player: Player, card_name: T) -> Predicate
@@ -194,7 +188,7 @@ impl Prefabricated for State {
                         predicate: Some(player_has_card(Player::Human, "Mossy Sword").inverse()),
                         effect: Effect::actions(vec![
                             give_player_card(Player::Human, "Mossy Sword"),
-                            insert_message("You acquired a <blue sword>"),
+                            message("You acquired a <blue sword>"),
                         ]),
                         ..Default::default()
                     },

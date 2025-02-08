@@ -3,7 +3,7 @@ use rusqlite::Connection;
 
 use crate::{
     combat_world::{CPU_DAMAGE, CPU_END, CPU_PLAY, HUMAN_DAMAGE, HUMAN_END, HUMAN_PLAY},
-    states::insert_message,
+    states::message,
 };
 use pipedream_domain::{
     card::{Card, PlacedCard},
@@ -60,10 +60,13 @@ pub fn player_play(player: &Player, machine: &StateMachine) -> State {
             Choice {
                 effect: Effect {
                     transition: Transition::Goto(next_location.clone()),
-                    actions: [card.choice.effect.actions, vec![insert_message(format!(
-                        "<{} {}> played <blue {}>",
-                        colour, character.name, card.choice.title
-                    ))]]
+                    actions: [
+                        card.choice.effect.actions,
+                        vec![message(format!(
+                            "<{} {}> played <blue {}>",
+                            colour, character.name, card.choice.title
+                        ))],
+                    ]
                     .concat(),
                 },
                 selectable,

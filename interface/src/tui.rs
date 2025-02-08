@@ -21,7 +21,8 @@ use strum::{Display, EnumCount, FromRepr, VariantArray};
 use crate::{
     EVENT_POLL_INTERVAL,
     component::{
-        Component, inventory::InventoryComponent, logging::LoggingComponent, scene::SceneComponent,
+        Component, inventory::InventoryComponent, logging::LoggingComponent,
+        messages::MessagesComponent, scene::SceneComponent,
     },
     log_utils,
     widget::instructions::instructions,
@@ -32,7 +33,8 @@ use crate::{
 enum SelectedTab {
     Campaign = 0,
     Inventory = 1,
-    Logging = 2,
+    Messages = 2,
+    Logging = 3,
 }
 impl SelectedTab {
     fn title(self) -> Line<'static> {
@@ -57,6 +59,7 @@ impl Tui {
             tabs: vec![
                 Box::new(SceneComponent::new(monitor.new_left())),
                 Box::new(InventoryComponent::new(monitor.new_left())),
+                Box::new(MessagesComponent::new(monitor.new_left())),
                 Box::new(LoggingComponent::new()),
             ],
             channel,
