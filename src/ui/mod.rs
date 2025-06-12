@@ -7,10 +7,6 @@ pub mod state;
 
 mod interactive_sprites;
 
-mod battle;
-mod campaign;
-mod menu;
-
 #[derive(Default)]
 pub struct UiPlugin;
 
@@ -21,9 +17,6 @@ impl Plugin for UiPlugin {
             script::ScriptsPlugin,
             resource::ResourcesPlugin,
             interactive_sprites::InteractiveSpritesPlugin,
-            menu::MenuUiPlugin,
-            campaign::CampaignUiPlugin,
-            battle::BattleUiPlugin,
         ));
     }
 }
