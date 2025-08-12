@@ -1,7 +1,6 @@
-use crate::state::AppState;
 use bevy::prelude::*;
 
-use super::state::MenuState;
+use crate::state::{AppState, MenuState};
 
 mod main_menu;
 mod settings;

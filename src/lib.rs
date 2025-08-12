@@ -7,6 +7,7 @@ use bevy_pixcam::{PixelViewport, PixelZoom};
 pub mod battle;
 pub mod campaign;
 pub mod event;
+pub mod menu;
 pub mod state;
 pub mod ui;
 

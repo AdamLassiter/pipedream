@@ -3,7 +3,6 @@ use bevy::prelude::*;
 pub mod event;
 pub mod resource;
 pub mod script;
-pub mod state;
 
 mod interactive_sprites;
 

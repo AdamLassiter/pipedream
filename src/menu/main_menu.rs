@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::ui::{resource::Language, state::MenuState};
+use crate::{state::MenuState, ui::resource::Language};
 
 use super::{BACKDROP, MenuButtonAction, NORMAL_BUTTON, TEXT};
 

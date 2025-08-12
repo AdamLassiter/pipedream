@@ -3,7 +3,9 @@ use bevy_pixcam::PixelCameraPlugin;
 use bevy_scriptum::prelude::*;
 use bevy_scriptum::runtimes::lua::prelude::*;
 
-use pipedream::{event::EventsPlugin, setup_app, state::StatesPlugin, ui::UiPlugin};
+use pipedream::{
+    campaign::CampaignUiPlugin, event::EventsPlugin, menu::MenuUiPlugin, setup_app, state::StatesPlugin, ui::UiPlugin
+};
 
 fn main() {
     let mut app = App::new();
@@ -14,7 +16,13 @@ fn main() {
     .add_scripting::<LuaRuntime>(|_| {
         // instantiated through ::add_scripting_api
     })
-    .add_plugins((UiPlugin, EventsPlugin, StatesPlugin))
+    .add_plugins((
+        UiPlugin,
+        EventsPlugin,
+        StatesPlugin,
+        MenuUiPlugin,
+        CampaignUiPlugin,
+    ))
     .add_systems(Startup, setup_app);
     app.run();
 }
