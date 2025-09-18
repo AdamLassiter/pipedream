@@ -56,7 +56,7 @@ pub enum Resource {
 
 #[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
 pub enum SleightOfHand {
-    Inspiration, // Draw count
+    Inspiration,  // Draw count
     Versatility,  // Hand size
     Tranquility,  // Deck min
     Recollection, // Deck max

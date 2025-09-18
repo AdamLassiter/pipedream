@@ -13,7 +13,6 @@ pub mod ui;
 
 extern crate log;
 
-
 #[derive(Component)]
 pub struct MainCamera;
 

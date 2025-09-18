@@ -4,7 +4,8 @@ use bevy_scriptum::prelude::*;
 use bevy_scriptum::runtimes::lua::prelude::*;
 
 use pipedream::{
-    campaign::CampaignUiPlugin, event::EventsPlugin, menu::MenuUiPlugin, setup_app, state::StatesPlugin, ui::UiPlugin
+    campaign::CampaignUiPlugin, event::EventsPlugin, menu::MenuUiPlugin, setup_app,
+    state::StatesPlugin, ui::UiPlugin,
 };
 
 fn main() {
