@@ -14,7 +14,7 @@ use crate::state::AppState;
 
 fn setup_battle_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Script::<LuaScript>::new(
-        asset_server.load("scripts/spawn.lua"),
+        asset_server.load("scripts/spawn_battle.lua"),
     ));
 }
 

@@ -8,7 +8,7 @@ use crate::state::AppState;
 
 fn setup_campaign_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Script::<LuaScript>::new(
-        asset_server.load("scripts/spawn.lua"),
+        asset_server.load("scripts/spawn_campaign.lua"),
     ));
 }
 
