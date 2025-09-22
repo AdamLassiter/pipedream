@@ -8,8 +8,27 @@ use super::event::{NodeInteraction, NodeInteractionType};
 
 const DRAG_DURATION: Duration = Duration::from_millis(60);
 
-#[derive(Component)]
-pub struct InteractiveNode;
+#[derive(Default)]
+pub struct LerpTarget {
+    position: Vec2,
+    strength: f32,
+}
+
+impl LerpTarget {
+    fn lerp(&self, translation: Vec3, delta: Duration) -> Vec3 {
+        let s = self.strength * delta.as_secs_f32() * 10.;
+        Vec3::new(
+            translation.x * (1. - s) + self.position.x * s,
+            translation.y * (1. - s) + self.position.y * s,
+            translation.z,
+        )
+    }
+}
+
+#[derive(Component, Default)]
+pub struct InteractiveNode {
+    target: LerpTarget,
+}
 
 #[derive(Default)]
 struct HoldingState {
@@ -27,12 +46,12 @@ fn follow_drag_event(
     mut node_interaction_events: EventReader<NodeInteraction>,
     windows: Query<&Window>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut sprite_query: Query<(&Sprite, &mut Transform, Entity), With<InteractiveNode>>,
+    mut sprite_query: Query<(&Sprite, &mut InteractiveNode, Entity)>,
 ) {
     let window = windows.single().unwrap();
     let (camera, camera_transform) = camera.single().unwrap();
     let interactions = node_interaction_events.read().collect::<Vec<_>>();
-    for (_sprite, mut transform, entity) in sprite_query.iter_mut() {
+    for (_sprite, mut inode, entity) in sprite_query.iter_mut() {
         if let Some(&interaction) = interactions
             .iter()
             .find(|&interaction| interaction.entity == entity)
@@ -42,13 +61,24 @@ fn follow_drag_event(
                     if let Some(cursor_transform) = window.cursor_position().and_then(|cursor| {
                         camera.viewport_to_world_2d(camera_transform, cursor).ok()
                     }) {
-                        transform.translation.x = cursor_transform.x;
-                        transform.translation.y = cursor_transform.y;
+                        inode.target = LerpTarget {
+                            position: cursor_transform,
+                            strength: 0.5,
+                        }
                     }
                 }
                 _ => { /* do nothing */ }
             }
         }
+    }
+}
+
+fn lerp_to_target(
+    mut sprite_query: Query<(&Sprite, &mut Transform, &InteractiveNode)>,
+    time: Res<Time>,
+) {
+    for (_sprite, mut transform, inode) in sprite_query.iter_mut() {
+        transform.translation = inode.target.lerp(transform.translation, time.delta());
     }
 }
 
@@ -88,19 +118,20 @@ fn interactive_sprite(
                     let y_max = node_transform.affine().translation.y + size.1 / 2.;
                     let z_current = node_transform.affine().translation.z;
 
-                    if let Some(pos) = primary_window.cursor_position() {
-                        if let Ok(pos) = camera.viewport_to_world_2d(camera_transform, pos) {
-                            if x_min < pos.x && pos.x < x_max && y_min < pos.y && pos.y < y_max {
-                                if let Some((_, z)) = active_entity {
-                                    if z < z_current {
-                                        active_entity = Some((entity, z_current));
-                                    }
-                                } else {
-                                    active_entity =
-                                        Some((entity, node_transform.affine().translation.z));
-                                }
+                    if let Some(pos) = primary_window.cursor_position()
+                        && let Ok(pos) = camera.viewport_to_world_2d(camera_transform, pos)
+                        && x_min < pos.x
+                        && pos.x < x_max
+                        && y_min < pos.y
+                        && pos.y < y_max
+                    {
+                        if let Some((_, z)) = active_entity {
+                            if z < z_current {
+                                active_entity = Some((entity, z_current));
                             }
-                        };
+                        } else {
+                            active_entity = Some((entity, node_transform.affine().translation.z));
+                        }
                     }
                 }
             }
@@ -188,6 +219,6 @@ pub struct InteractiveSpritesPlugin;
 impl Plugin for InteractiveSpritesPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreUpdate, interactive_sprite)
-            .add_systems(Update, follow_drag_event);
+            .add_systems(Update, (follow_drag_event, lerp_to_target));
     }
 }

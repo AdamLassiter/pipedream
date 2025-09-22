@@ -34,3 +34,7 @@ log4rs = "1.4.0"
 bevy = { version = "0.16.1", features = ["default", "dynamic_linking"] }
 bevy_pixcam = "0.16.0"
 bevy_scriptum = { version = "0.9.1", features = ["lua"] }
+
+
+[features]
+dev_mode = ["bevy/bevy_dev_tools"]

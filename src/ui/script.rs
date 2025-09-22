@@ -17,7 +17,7 @@ fn spawn_interactive(
 ) {
     let image = asset_server.load(path);
     commands.spawn((
-        InteractiveNode,
+        InteractiveNode::default(),
         SpawnedByScript,
         Sprite::from_image(image.clone()),
         Transform {

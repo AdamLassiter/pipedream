@@ -25,5 +25,15 @@ fn main() {
         CampaignUiPlugin,
     ))
     .add_systems(Startup, setup_app);
+
+    #[cfg(feature = "dev_mode")]
+    {
+        app.add_plugins(
+            (bevy::dev_tools::fps_overlay::FpsOverlayPlugin {
+                ..Default::default()
+            }),
+        );
+    }
+
     app.run();
 }

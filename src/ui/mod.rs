@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
 pub mod event;
+pub mod interactive_sprites;
 pub mod resource;
 pub mod script;
-
-mod interactive_sprites;
 
 #[derive(Default)]
 pub struct UiPlugin;
