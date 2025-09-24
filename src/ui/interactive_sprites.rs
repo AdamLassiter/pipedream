@@ -8,7 +8,7 @@ use super::event::{NodeInteraction, NodeInteractionType};
 
 const DRAG_DURATION: Duration = Duration::from_millis(60);
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct LerpTarget {
     position: Vec2,
     strength: f32,
@@ -26,8 +26,30 @@ impl LerpTarget {
 }
 
 #[derive(Component, Default)]
+pub struct DropZoneNode {
+    position: Vec2,
+    size: Vec2,
+}
+
+impl DropZoneNode {
+    fn contains(&self, point: &Vec2) -> bool {
+        let dx = (self.position.x - point.x).abs();
+        let dy = (self.position.y - point.y).abs();
+        dx <= self.size.x && dy <= self.size.y
+    }
+
+    fn distance(&self, point: &Vec2) -> f32 {
+        let dx = (self.position.x - point.x).abs();
+        let dy = (self.position.y - point.y).abs();
+        (dx * dx + dy * dy).sqrt()
+    }
+}
+
+#[derive(Component, Default)]
 pub struct InteractiveNode {
-    target: LerpTarget,
+    lerp_target: LerpTarget,
+    last_drop: Option<LerpTarget>,
+    next_drop: Option<LerpTarget>,
 }
 
 #[derive(Default)]
@@ -42,16 +64,30 @@ fn get_timestamp() -> u128 {
     duration.as_millis()
 }
 
+fn lerp_drop_zone(cursor: Vec2, drop_zones: &Vec<&DropZoneNode>) -> Option<LerpTarget> {
+    let mut intersects = drop_zones
+        .iter()
+        .filter(|&drop_zone| drop_zone.contains(&cursor))
+        .collect::<Vec<_>>();
+    intersects.sort_by(|&x, &y| x.distance(&cursor).total_cmp(&y.distance(&cursor)));
+    intersects.first().map(|&drop_zone| LerpTarget {
+        position: drop_zone.position,
+        strength: 0.5,
+    })
+}
+
 fn follow_drag_event(
     mut node_interaction_events: EventReader<NodeInteraction>,
     windows: Query<&Window>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut sprite_query: Query<(&Sprite, &mut InteractiveNode, Entity)>,
+    drop_zone_query: Query<&DropZoneNode>,
 ) {
     let window = windows.single().unwrap();
     let (camera, camera_transform) = camera.single().unwrap();
     let interactions = node_interaction_events.read().collect::<Vec<_>>();
-    for (_sprite, mut inode, entity) in sprite_query.iter_mut() {
+    let drop_zones = drop_zone_query.iter().collect::<Vec<_>>();
+    for (_sprite, mut interactive_node, entity) in sprite_query.iter_mut() {
         if let Some(&interaction) = interactions
             .iter()
             .find(|&interaction| interaction.entity == entity)
@@ -61,14 +97,27 @@ fn follow_drag_event(
                     if let Some(cursor_transform) = window.cursor_position().and_then(|cursor| {
                         camera.viewport_to_world_2d(camera_transform, cursor).ok()
                     }) {
-                        inode.target = LerpTarget {
-                            position: cursor_transform,
-                            strength: 0.5,
-                        }
+                        interactive_node.next_drop = lerp_drop_zone(cursor_transform, &drop_zones);
+                        interactive_node.lerp_target =
+                            interactive_node.next_drop.clone().unwrap_or(LerpTarget {
+                                position: cursor_transform,
+                                strength: 0.5,
+                            });
                     }
                 }
                 _ => { /* do nothing */ }
             }
+        }
+    }
+}
+
+fn update_last_drop(
+    mut node_interaction_events: EventReader<NodeInteraction>,
+    mut sprite_query: Query<(&mut InteractiveNode, Entity)>,
+) {
+    for interaction_event in node_interaction_events.read() {
+        if let Ok((mut interactive_node, _)) = sprite_query.get_mut(interaction_event.entity) {
+            interactive_node.last_drop = interactive_node.next_drop.clone();
         }
     }
 }
@@ -78,7 +127,7 @@ fn lerp_to_target(
     time: Res<Time>,
 ) {
     for (_sprite, mut transform, inode) in sprite_query.iter_mut() {
-        transform.translation = inode.target.lerp(transform.translation, time.delta());
+        transform.translation = inode.lerp_target.lerp(transform.translation, time.delta());
     }
 }
 
@@ -87,7 +136,7 @@ fn interactive_sprite(
     windows: Query<&Window, With<PrimaryWindow>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_images: Res<Assets<Image>>,
-    sprite_query: Query<(&Sprite, &GlobalTransform, Entity), With<InteractiveNode>>,
+    sprite_query: Query<(&Sprite, &GlobalTransform, Entity)>,
     camera_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut node_interaction_events: EventWriter<NodeInteraction>,
     mut holding_state: Local<HoldingState>,
@@ -218,7 +267,9 @@ pub struct InteractiveSpritesPlugin;
 
 impl Plugin for InteractiveSpritesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreUpdate, interactive_sprite)
-            .add_systems(Update, (follow_drag_event, lerp_to_target));
+        app.add_systems(PreUpdate, interactive_sprite).add_systems(
+            Update,
+            (follow_drag_event, lerp_to_target, update_last_drop),
+        );
     }
 }
