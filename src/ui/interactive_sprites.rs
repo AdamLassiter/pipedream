@@ -116,7 +116,10 @@ fn update_last_drop(
     mut sprite_query: Query<(&mut InteractiveNode, Entity)>,
 ) {
     for interaction_event in node_interaction_events.read() {
-        if let Ok((mut interactive_node, _)) = sprite_query.get_mut(interaction_event.entity) {
+        println!("ev: {:?}", interaction_event.interaction_type);
+        if let NodeInteractionType::LeftDrop = interaction_event.interaction_type
+            && let Ok((mut interactive_node, _)) = sprite_query.get_mut(interaction_event.entity)
+        {
             interactive_node.last_drop = interactive_node.next_drop.clone();
         }
     }
@@ -141,124 +144,132 @@ fn interactive_sprite(
     mut node_interaction_events: EventWriter<NodeInteraction>,
     mut holding_state: Local<HoldingState>,
 ) {
-    for (camera, camera_transform) in camera_query.iter() {
-        for primary_window in windows.iter() {
-            let scale_factor = primary_window.scale_factor();
-            let mut active_entity = None;
-            if !cursor_moved_events.is_empty() || buttons.get_pressed().size_hint().0 > 0 {
-                for (sprite, node_transform, entity) in sprite_query.iter() {
-                    let size = match sprite.custom_size {
-                        Some(size) => (size.x, size.y),
-                        None => {
-                            if let Some(sprite_image) = res_images.get(&sprite.image) {
-                                (
-                                    sprite_image.size().x as f32 / scale_factor,
-                                    sprite_image.size().y as f32 / scale_factor,
-                                )
-                            } else {
-                                (1., 1.)
-                            }
-                        }
-                    };
+    let primary_window = windows.single().unwrap();
+    let (camera, camera_transform) = camera_query.single().unwrap();
+    let scale_factor = primary_window.scale_factor();
 
-                    let x_min = node_transform.affine().translation.x - size.0 / 2.;
-                    let y_min = node_transform.affine().translation.y - size.1 / 2.;
-                    let x_max = node_transform.affine().translation.x + size.0 / 2.;
-                    let y_max = node_transform.affine().translation.y + size.1 / 2.;
-                    let z_current = node_transform.affine().translation.z;
-
-                    if let Some(pos) = primary_window.cursor_position()
-                        && let Ok(pos) = camera.viewport_to_world_2d(camera_transform, pos)
-                        && x_min < pos.x
-                        && pos.x < x_max
-                        && y_min < pos.y
-                        && pos.y < y_max
-                    {
-                        if let Some((_, z)) = active_entity {
-                            if z < z_current {
-                                active_entity = Some((entity, z_current));
-                            }
-                        } else {
-                            active_entity = Some((entity, node_transform.affine().translation.z));
-                        }
-                    }
-                }
-            }
-
-            if let Some(active) = active_entity
-                .map(|active| active.0)
-                .or(holding_state.entity)
-            {
-                let now_ms = get_timestamp();
-                let mut is_hover = true;
-                if buttons.just_pressed(MouseButton::Left) {
-                    is_hover = false;
-                    *holding_state = HoldingState {
-                        duration: Duration::from_millis(now_ms as u64),
-                        entity: Some(active),
-                        is_holding: false,
-                    };
-                }
-                if buttons.just_pressed(MouseButton::Right) {
-                    is_hover = false;
-                    node_interaction_events.write(NodeInteraction {
-                        entity: active,
-                        interaction_type: NodeInteractionType::RightClick,
-                    });
-                }
-
-                if buttons.pressed(MouseButton::Left)
-                    && Duration::from_millis(now_ms as u64) - holding_state.duration > DRAG_DURATION
-                    && holding_state.entity.is_some()
-                {
-                    is_hover = false;
-                    holding_state.is_holding = true;
-                    node_interaction_events.write(NodeInteraction {
-                        entity: active,
-                        interaction_type: NodeInteractionType::LeftDrag,
-                    });
-                }
-
-                if buttons.just_released(MouseButton::Left) {
-                    if let Some(dropped_entity) = holding_state.entity
-                        && holding_state.is_holding
-                    {
-                        node_interaction_events.write(NodeInteraction {
-                            entity: dropped_entity,
-                            interaction_type: NodeInteractionType::LeftDrop,
-                        });
+    // Get the entity under mouse hover
+    let mut active_entity = None;
+    if !cursor_moved_events.is_empty() || buttons.get_pressed().size_hint().0 > 0 {
+        for (sprite, node_transform, entity) in sprite_query.iter() {
+            let size = match sprite.custom_size {
+                Some(size) => (size.x, size.y),
+                None => {
+                    if let Some(sprite_image) = res_images.get(&sprite.image) {
+                        (
+                            sprite_image.size().x as f32 / scale_factor,
+                            sprite_image.size().y as f32 / scale_factor,
+                        )
                     } else {
-                        node_interaction_events.write(NodeInteraction {
-                            entity: active,
-                            interaction_type: NodeInteractionType::LeftClick,
-                        });
+                        (1., 1.)
                     }
-                    *holding_state = HoldingState {
-                        is_holding: false,
-                        duration: Duration::ZERO,
-                        entity: None,
-                    };
                 }
+            };
 
-                if is_hover {
-                    node_interaction_events.write(NodeInteraction {
-                        entity: active,
-                        interaction_type: NodeInteractionType::Hover,
-                    });
+            // Find the bounds for this sprite
+            let x_min = node_transform.affine().translation.x - size.0 / 2.;
+            let y_min = node_transform.affine().translation.y - size.1 / 2.;
+            let x_max = node_transform.affine().translation.x + size.0 / 2.;
+            let y_max = node_transform.affine().translation.y + size.1 / 2.;
+            let z_current = node_transform.affine().translation.z;
+
+            if let Some(pos) = primary_window.cursor_position()
+                && let Ok(pos) = camera.viewport_to_world_2d(camera_transform, pos)
+                && x_min < pos.x
+                && pos.x < x_max
+                && y_min < pos.y
+                && pos.y < y_max
+            {
+                if let Some((_, z)) = active_entity {
+                    // Prefer the largest z-index if covering two sprites
+                    if z < z_current {
+                        active_entity = Some((entity, z_current));
+                    }
+                } else {
+                    // Pick this if just one sprite
+                    active_entity = Some((entity, node_transform.affine().translation.z));
                 }
-            } else if buttons.just_released(MouseButton::Left) {
-                // if held entity is deleted
-                *holding_state = HoldingState {
-                    is_holding: false,
-                    duration: Duration::ZERO,
-                    entity: None,
-                };
-                node_interaction_events.write(NodeInteraction {
-                    entity: Entity::PLACEHOLDER,
-                    interaction_type: NodeInteractionType::LeftDrop,
-                });
             }
         }
+    }
+
+    // If there was a hovered entity, or last frame there was a held entity
+    if let Some(active) = active_entity
+        .map(|active| active.0)
+        .or(holding_state.entity)
+    {
+        let now_ms = get_timestamp();
+        let mut is_hover = true;
+
+        // Left and right click
+        if buttons.just_pressed(MouseButton::Left) {
+            is_hover = false;
+            *holding_state = HoldingState {
+                duration: Duration::from_millis(now_ms as u64),
+                entity: Some(active),
+                is_holding: false,
+            };
+        }
+        if buttons.just_pressed(MouseButton::Right) {
+            is_hover = false;
+            node_interaction_events.write(NodeInteraction {
+                entity: active,
+                interaction_type: NodeInteractionType::RightClick,
+            });
+        }
+
+        // Left hold
+        if buttons.pressed(MouseButton::Left)
+            && Duration::from_millis(now_ms as u64) - holding_state.duration > DRAG_DURATION
+        {
+            is_hover = false;
+            holding_state.is_holding = true;
+            let held_entity = *holding_state.entity.get_or_insert(active);
+            node_interaction_events.write(NodeInteraction {
+                entity: held_entity,
+                interaction_type: NodeInteractionType::LeftDrag,
+            });
+        }
+
+        // Left drop
+        if buttons.just_released(MouseButton::Left) {
+            if let Some(dropped_entity) = holding_state.entity
+                && holding_state.is_holding
+            {
+                node_interaction_events.write(NodeInteraction {
+                    entity: dropped_entity,
+                    interaction_type: NodeInteractionType::LeftDrop,
+                });
+            } else {
+                node_interaction_events.write(NodeInteraction {
+                    entity: active,
+                    interaction_type: NodeInteractionType::LeftClick,
+                });
+            }
+            *holding_state = HoldingState {
+                is_holding: false,
+                duration: Duration::ZERO,
+                entity: None,
+            };
+        }
+
+        if is_hover {
+            node_interaction_events.write(NodeInteraction {
+                entity: active,
+                interaction_type: NodeInteractionType::Hover,
+            });
+        }
+    } else if buttons.just_released(MouseButton::Left) {
+        // if held entity is deleted
+        *holding_state = HoldingState {
+            is_holding: false,
+            duration: Duration::ZERO,
+            entity: None,
+        };
+        node_interaction_events.write(NodeInteraction {
+            entity: Entity::PLACEHOLDER,
+            interaction_type: NodeInteractionType::LeftDrop,
+        });
     }
 }
 
