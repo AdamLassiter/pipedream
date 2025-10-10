@@ -28,11 +28,9 @@ fn main() {
 
     #[cfg(feature = "dev_mode")]
     {
-        app.add_plugins(
-            (bevy::dev_tools::fps_overlay::FpsOverlayPlugin {
-                ..Default::default()
-            }),
-        );
+        app.add_plugins(bevy::dev_tools::fps_overlay::FpsOverlayPlugin {
+            ..Default::default()
+        });
     }
 
     app.run();
