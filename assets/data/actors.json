@@ -1,0 +1,16 @@
+{
+  "urdr": {
+    "name": "Urdr",
+    "actor_type": "Fate",
+    "stats": {
+      "max_resources": {
+        "Health": 1,
+        "Stamina": 1,
+        "Mana": 1,
+        "Favour": 1
+      }
+    },
+    "image": "avatars/demon/character17_face1.png",
+    "face_image": "avatars/demon_face/character17_face1.png"
+  }
+}

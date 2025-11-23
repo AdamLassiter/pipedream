@@ -1,6 +1,7 @@
 {
   "punch": {
     "name": "Punch",
+    "card_type": "Combat",
     "cost": {
       "resources": {
         "Stamina": 1

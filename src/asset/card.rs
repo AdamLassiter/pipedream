@@ -17,9 +17,17 @@ pub struct CardId(pub String);
 #[derive(Serialize, Deserialize)]
 pub struct Card {
     pub name: String,
+    pub card_type: CardType,
     pub cost: Stats,
     pub deal: Stats,
     pub image: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum CardType {
+    Combat,
+    Negotiation,
+    Hybrid,
 }
 
 pub enum CardPlace {
