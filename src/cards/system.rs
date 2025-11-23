@@ -1,9 +1,12 @@
-use super::{DropZoneNode, HoldingState, InteractiveNode, LerpTarget, utils::*};
 use crate::MainCamera;
-use crate::ui::event::{NodeInteraction, NodeInteractionType};
+use crate::cards::event::{NodeInteraction, NodeInteractionType};
+use crate::cards::{DropZoneNode, HoldingState, InteractiveNode, LerpTarget, utils::*};
+use crate::zindex::Z_DEBUG;
 use bevy::{prelude::*, window::PrimaryWindow};
 
-pub fn follow_drag_event(
+const LERP_STRENGTH: f32 = 2.;
+
+fn follow_drag_event(
     mut node_interaction_events: EventReader<NodeInteraction>,
     windows: Query<&Window>,
     camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
@@ -28,7 +31,7 @@ pub fn follow_drag_event(
                         interactive_node.lerp_target =
                             interactive_node.next_drop.clone().unwrap_or(LerpTarget {
                                 position: cursor_transform,
-                                strength: 0.5,
+                                strength: LERP_STRENGTH,
                             });
                     }
                 }
@@ -38,7 +41,7 @@ pub fn follow_drag_event(
     }
 }
 
-pub fn update_last_drop(
+fn update_last_drop(
     mut node_interaction_events: EventReader<NodeInteraction>,
     mut sprite_query: Query<(&mut InteractiveNode, Entity)>,
 ) {
@@ -51,7 +54,7 @@ pub fn update_last_drop(
     }
 }
 
-pub fn lerp_to_target(
+fn lerp_to_target(
     mut sprite_query: Query<(&Sprite, &mut Transform, &InteractiveNode)>,
     time: Res<Time>,
 ) {
@@ -60,12 +63,12 @@ pub fn lerp_to_target(
     }
 }
 
-pub fn drag_drop_sprite(
+fn drag_drop_sprite(
     cursor_moved_events: EventReader<CursorMoved>,
     windows: Query<&Window, With<PrimaryWindow>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_images: Res<Assets<Image>>,
-    sprite_query: Query<(&Sprite, &GlobalTransform, Entity)>,
+    sprite_query: Query<(&Sprite, &GlobalTransform, Entity), With<InteractiveNode>>,
     camera_query: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut node_interaction_events: EventWriter<NodeInteraction>,
     mut holding_state: Local<HoldingState>,
@@ -119,5 +122,36 @@ pub fn drag_drop_sprite(
         handle_hover(&mut node_interaction_events, is_hover, active);
     } else if buttons.just_released(MouseButton::Left) {
         handle_drop_deleted_entity(node_interaction_events, holding_state);
+    }
+}
+
+fn trace_dropzone(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    drop_zone_query: Query<(Entity, &DropZoneNode), Without<Mesh2d>>,
+) {
+    for (entity, drop_zone) in drop_zone_query.iter() {
+        commands.entity(entity).insert((
+            Mesh2d(meshes.add(drop_zone.debug_rect)),
+            MeshMaterial2d(materials.add(Color::linear_rgba(1., 0., 0., 0.5))),
+            Transform::from_xyz(drop_zone.position.x, drop_zone.position.y, Z_DEBUG),
+        ));
+    }
+}
+
+#[derive(Default)]
+pub struct SystemsPlugin;
+
+impl Plugin for SystemsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(PreUpdate, drag_drop_sprite).add_systems(
+            Update,
+            (follow_drag_event, lerp_to_target, update_last_drop),
+        );
+        #[cfg(feature = "dev_mode")]
+        {
+            app.add_systems(PreUpdate, (trace_dropzone,));
+        }
     }
 }

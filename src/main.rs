@@ -4,8 +4,8 @@ use bevy_scriptum::prelude::*;
 use bevy_scriptum::runtimes::lua::prelude::*;
 
 use pipedream::{
-    campaign::CampaignUiPlugin, event::EventsPlugin, menu::MenuUiPlugin, setup_app,
-    state::StatesPlugin, ui::UiPlugin,
+    asset::AssetDataPlugin, battle::BattlePlugin, campaign::CampaignPlugin,
+    cards::InteractiveCardsPlugin, menu::MenuUiPlugin, setup_app, state::StatesPlugin,
 };
 
 fn main() {
@@ -18,11 +18,12 @@ fn main() {
         // instantiated through ::add_scripting_api
     })
     .add_plugins((
-        UiPlugin,
-        EventsPlugin,
-        StatesPlugin,
+        AssetDataPlugin,
+        BattlePlugin,
+        CampaignPlugin,
+        InteractiveCardsPlugin,
         MenuUiPlugin,
-        CampaignUiPlugin,
+        StatesPlugin,
     ))
     .add_systems(Startup, setup_app);
 

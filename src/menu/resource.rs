@@ -8,7 +8,7 @@ pub enum Language {
 impl Language {
     pub fn font_path(&self) -> &'static str {
         match self {
-            Language::Futhark => "fonts/ElderFuthark.ttf",
+            Self::Futhark => "fonts/ElderFuthark.ttf",
         }
     }
 }

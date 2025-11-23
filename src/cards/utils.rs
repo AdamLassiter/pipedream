@@ -1,9 +1,10 @@
-use super::{DropZoneNode, HoldingState, LerpTarget};
-use crate::ui::event::{NodeInteraction, NodeInteractionType};
+use crate::cards::event::{NodeInteraction, NodeInteractionType};
+use crate::cards::{DropZoneNode, HoldingState, InteractiveNode, LerpTarget};
 use bevy::prelude::*;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const DRAG_DURATION: Duration = Duration::from_millis(60);
+const LERP_STRENGTH: f32 = 0.999;
 
 pub fn get_timestamp() -> u128 {
     let duration = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
@@ -18,7 +19,7 @@ pub fn lerp_drop_zone(cursor: Vec2, drop_zones: &Vec<&DropZoneNode>) -> Option<L
     intersects.sort_by(|&x, &y| x.distance(cursor).total_cmp(&y.distance(cursor)));
     intersects.first().map(|&drop_zone| LerpTarget {
         position: drop_zone.position,
-        strength: 0.5,
+        strength: LERP_STRENGTH,
     })
 }
 
@@ -132,7 +133,7 @@ pub fn get_active_entity(
     cursor_moved_events: EventReader<'_, '_, CursorMoved>,
     buttons: &Res<'_, ButtonInput<MouseButton>>,
     res_images: Res<'_, Assets<Image>>,
-    sprite_query: Query<'_, '_, (&Sprite, &GlobalTransform, Entity)>,
+    sprite_query: Query<'_, '_, (&Sprite, &GlobalTransform, Entity), With<InteractiveNode>>,
     primary_window: &Window,
     camera: &Camera,
     camera_transform: &GlobalTransform,

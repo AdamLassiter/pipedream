@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct Description {
+pub struct Lore {
     pub description: String,
 }

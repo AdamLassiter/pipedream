@@ -1,0 +1,16 @@
+{
+  "punch": {
+    "name": "Punch",
+    "cost": {
+      "resources": {
+        "Stamina": 1
+      }
+    },
+    "deal": {
+      "resources": {
+        "Health": -1
+      }
+    },
+    "image": "skills/barbarian/icon1.png"
+  }
+}

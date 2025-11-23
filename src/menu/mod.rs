@@ -1,8 +1,12 @@
 use bevy::prelude::*;
 
-use crate::state::{AppState, MenuState};
+use crate::{
+    menu::resource::ResourcesPlugin,
+    state::{AppState, MenuState},
+};
 
 mod main_menu;
+mod resource;
 mod settings;
 
 #[derive(Component)]
@@ -54,7 +58,7 @@ fn handle_menu_action(
         if *interaction == Interaction::Pressed {
             match menu_button_action {
                 MenuButtonAction::Play => {
-                    app_state.set(AppState::Campaign);
+                    app_state.set(AppState::Battle);
                 }
                 MenuButtonAction::MainMenu => {
                     menu_state.set(MenuState::MainMenu);
@@ -91,6 +95,7 @@ pub struct MenuUiPlugin;
 impl Plugin for MenuUiPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<MenuState>()
+            .add_plugins(ResourcesPlugin)
             .add_systems(OnEnter(AppState::Menu), setup_menu)
             .add_plugins((main_menu::MainMenuUiPlugin, settings::SettingsMenuUiPlugin))
             .add_systems(PreUpdate, (handle_button_interaction, handle_menu_action))

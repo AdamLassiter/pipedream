@@ -1,8 +1,12 @@
+mod event;
+mod script;
 mod system;
 mod utils;
 
 use bevy::prelude::*;
 use std::time::Duration;
+
+use crate::cards::{event::EventsPlugin, script::ScriptsPlugin, system::SystemsPlugin};
 
 #[derive(Default, Clone)]
 pub struct LerpTarget {
@@ -21,13 +25,23 @@ impl LerpTarget {
     }
 }
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug)]
 pub struct DropZoneNode {
     position: Vec2,
     size: Vec2,
+    debug_rect: Rectangle,
 }
 
 impl DropZoneNode {
+    pub fn new(position: Vec2, size: Vec2) -> Self {
+        let debug_rect = Rectangle::new(size.x, size.y);
+        Self {
+            position,
+            size,
+            debug_rect,
+        }
+    }
+
     fn as_rect(&self) -> Rect {
         Rect::from_center_size(self.position, self.size)
     }
@@ -41,25 +55,22 @@ impl DropZoneNode {
     }
 }
 
-pub struct DropZoneBundle {
-    drop_zone: DropZoneNode,
-    debug_rect: Rectangle,
-}
-impl DropZoneBundle {
-    fn new(drop_zone: DropZoneNode) -> Self {
-        let debug_rect = Rectangle::new(drop_zone.size.x, drop_zone.size.y);
-        Self {
-            drop_zone,
-            debug_rect,
-        }
-    }
-}
-
 #[derive(Component, Default)]
 pub struct InteractiveNode {
     lerp_target: LerpTarget,
     last_drop: Option<LerpTarget>,
     next_drop: Option<LerpTarget>,
+}
+
+#[derive(Component)]
+pub struct CardBacking {
+    image: String,
+}
+
+impl Default for CardBacking {
+    fn default() -> Self {
+        Self { image: "cards/front.png".to_string() }
+    }
 }
 
 #[derive(Default)]
@@ -70,18 +81,10 @@ struct HoldingState {
 }
 
 #[derive(Default)]
-pub struct InteractiveSpritesPlugin;
+pub struct InteractiveCardsPlugin;
 
-impl Plugin for InteractiveSpritesPlugin {
+impl Plugin for InteractiveCardsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreUpdate, system::drag_drop_sprite)
-            .add_systems(
-                Update,
-                (
-                    system::follow_drag_event,
-                    system::lerp_to_target,
-                    system::update_last_drop,
-                ),
-            );
+        app.add_plugins((EventsPlugin, ScriptsPlugin, SystemsPlugin));
     }
 }

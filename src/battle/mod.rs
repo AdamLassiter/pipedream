@@ -1,20 +1,18 @@
-pub mod card;
-pub mod class;
-pub mod controller;
-pub mod description;
-pub mod place;
-pub mod stats;
-pub mod target;
-
 use bevy::prelude::*;
 use bevy_scriptum::prelude::*;
 use bevy_scriptum::runtimes::lua::prelude::*;
 
+use crate::cards::DropZoneNode;
 use crate::state::AppState;
+use crate::{HEIGHT, WIDTH};
 
 fn setup_battle_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Script::<LuaScript>::new(
         asset_server.load("scripts/spawn_battle.lua"),
+    ));
+    commands.spawn(DropZoneNode::new(
+        vec2(0., -HEIGHT / 2. + 32.),
+        vec2(WIDTH - 32., 50.),
     ));
 }
 

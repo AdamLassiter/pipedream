@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{state::MenuState, ui::resource::Language};
-
-use super::{BACKDROP, MenuButtonAction, NORMAL_BUTTON, TEXT};
+use crate::{
+    menu::{BACKDROP, MenuButtonAction, NORMAL_BUTTON, TEXT, resource::Language},
+    state::MenuState,
+};
 
 #[derive(Component)]
 pub struct OnMainMenuScreen;
@@ -13,7 +14,7 @@ fn setup_main_menu(
     asset_server: Res<AssetServer>,
 ) {
     let font = asset_server.load(language.font_path());
-    let background = asset_server.load("backgrounds/mountain/Mountains4/Bright/mountains4.png");
+    let background = asset_server.load("backgrounds/mountains/mountains4.png");
 
     // Common style for all buttons on the screen
     let button_node = Node {

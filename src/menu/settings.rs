@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 
-use super::{BACKDROP, MenuButtonAction, NORMAL_BUTTON, TEXT};
-use crate::{state::MenuState, ui::resource::Language};
+use crate::{
+    menu::{BACKDROP, MenuButtonAction, NORMAL_BUTTON, TEXT, resource::Language},
+    state::MenuState,
+};
 
 #[derive(Component)]
 pub struct OnSettingsMenuScreen;

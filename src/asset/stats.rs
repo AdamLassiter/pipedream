@@ -1,16 +1,24 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 use strum::{EnumIter, IntoEnumIterator};
 
 use std::collections::BTreeMap;
 
-#[derive(Component)]
+#[derive(Serialize, Deserialize)]
 pub struct Stats {
+    #[serde(default = "BTreeMap::new")]
     pub resources: BTreeMap<Resource, i64>,
+    #[serde(default = "BTreeMap::new")]
     pub max_resources: BTreeMap<Resource, u64>,
+    #[serde(default = "BTreeMap::new")]
     pub sleight_of_hand: BTreeMap<SleightOfHand, u16>,
+    #[serde(default = "BTreeMap::new")]
     pub assistances: BTreeMap<Assistance, u16>,
+    #[serde(default = "BTreeMap::new")]
     pub resistances: BTreeMap<Resistance, u16>,
+    #[serde(default = "BTreeMap::new")]
     pub buffs: BTreeMap<Buff, u16>,
+    #[serde(default = "BTreeMap::new")]
     pub debuffs: BTreeMap<Debuff, u16>,
 }
 impl Default for Stats {
@@ -37,6 +45,7 @@ impl Default for Stats {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum Stat {
     SleightOfHand(SleightOfHand),
     Element(Element),
@@ -46,7 +55,7 @@ pub enum Stat {
     Debuff(Debuff),
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Resource {
     Health,
     Stamina,
@@ -54,7 +63,7 @@ pub enum Resource {
     Favour,
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum SleightOfHand {
     Inspiration,  // Draw count
     Versatility,  // Hand size
@@ -62,27 +71,27 @@ pub enum SleightOfHand {
     Recollection, // Deck max
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Assistance {
     Strength,
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Resistance {
     Endurance,
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Element {
     Bludgeoning,
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Buff {
     Overwhelm,
 }
 
-#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(EnumIter, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Debuff {
     Stun,
 }
